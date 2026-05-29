@@ -4,7 +4,6 @@ import com.example.kontoauszuege.model.BankStatement;
 import com.example.kontoauszuege.service.BankStatementService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -21,7 +20,7 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-@Route("")
+@Route(value = "", layout = MainLayout.class)
 @PageTitle("Kontoauszüge")
 public class KontoauszuegeView extends VerticalLayout {
 
@@ -39,21 +38,10 @@ public class KontoauszuegeView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        add(createHeader());
         add(createToolbar());
         add(createGrid());
 
         ladeKontoauszuege("");
-    }
-
-    private HorizontalLayout createHeader() {
-        H2 title = new H2("Kontoauszüge");
-        title.getStyle().set("margin", "0");
-
-        HorizontalLayout header = new HorizontalLayout(title);
-        header.setWidthFull();
-        header.setAlignItems(Alignment.CENTER);
-        return header;
     }
 
     private HorizontalLayout createToolbar() {
