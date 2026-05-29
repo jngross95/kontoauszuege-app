@@ -1,0 +1,146 @@
+/* ============================================================
+   LUMO VARIABLE OVERRIDES
+   ============================================================ */
+html {
+  --lumo-primary-color: #6366f1;
+  --lumo-primary-color-50pct: rgba(99, 102, 241, 0.5);
+  --lumo-primary-color-10pct: rgba(99, 102, 241, 0.1);
+  --lumo-primary-text-color: #4f46e5;
+  --lumo-primary-contrast-color: #ffffff;
+  --lumo-border-radius-m: 8px;
+  --lumo-border-radius-l: 12px;
+  --lumo-border-radius-s: 4px;
+}
+
+/* ============================================================
+   NAVBAR — Gradient
+   ============================================================ */
+vaadin-app-layout::part(navbar) {
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 55%, #24243e 100%);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.45);
+  padding: 0 1.25rem;
+}
+
+/* App title */
+vaadin-app-layout h1 {
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 0 24px rgba(139, 92, 246, 0.7);
+  white-space: nowrap;
+  margin-right: 1.5rem;
+}
+
+/* ============================================================
+   TABS in Navbar
+   ============================================================ */
+vaadin-tabs {
+  --lumo-primary-color: #ffffff;
+  background: transparent;
+}
+
+vaadin-tab {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  transition: color 0.2s ease;
+}
+
+vaadin-tab:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+vaadin-tab[selected] {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Tab indicator line */
+vaadin-tabs::part(tabs-container) {
+  --lumo-primary-color: #a5b4fc;
+}
+
+/* ============================================================
+   CONTENT AREA
+   ============================================================ */
+vaadin-app-layout::part(content) {
+  background: linear-gradient(160deg, #f8faff 0%, #f1f4ff 100%);
+}
+
+/* ============================================================
+   GRID
+   ============================================================ */
+vaadin-grid {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.1), 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid #e0e4f7;
+}
+
+vaadin-grid::part(header-cell) {
+  background: linear-gradient(180deg, #f0f2ff 0%, #e5e8ff 100%);
+  color: #3730a3;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+vaadin-grid::part(even-row-cell) {
+  background-color: #ffffff;
+}
+
+vaadin-grid::part(odd-row-cell) {
+  background-color: #fafbff;
+}
+
+vaadin-grid::part(row):hover > vaadin-grid-cell {
+  background: rgba(99, 102, 241, 0.06) !important;
+}
+
+vaadin-grid::part(selected-row-cell) {
+  background: rgba(99, 102, 241, 0.12) !important;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+vaadin-button[theme~="primary"]::part(label) {
+  font-weight: 600;
+}
+
+vaadin-button[theme~="primary"] {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+vaadin-button[theme~="primary"]:hover {
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.55);
+  transform: translateY(-1px);
+}
+
+vaadin-button[theme~="primary"]:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+/* ============================================================
+   TEXT FIELD
+   ============================================================ */
+vaadin-text-field::part(input-field) {
+  border-radius: 8px;
+  border: 1.5px solid #dde1f5;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+vaadin-text-field[focused]::part(input-field) {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
