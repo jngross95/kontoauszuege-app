@@ -117,9 +117,9 @@ public class KontoauszuegeView extends VerticalLayout {
             Span betragSpan = new Span(CURRENCY_FORMAT.format(statement.getBetrag()));
             betragSpan.getStyle().set("font-weight", "bold");
             if (statement.getBetrag().compareTo(BigDecimal.ZERO) < 0) {
-                betragSpan.getStyle().set("color", "var(--lumo-error-color)");
+                betragSpan.getStyle().set("color", "#e53935");
             } else {
-                betragSpan.getStyle().set("color", "var(--lumo-success-color)");
+                betragSpan.getStyle().set("color", "#43a047");
             }
             return betragSpan;
         }))
