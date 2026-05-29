@@ -116,6 +116,14 @@ public class BankStatementService {
     }
 
     public List<BankStatement> findAll() {
+           statements.add(new BankStatement(1L,
+                LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 1),
+                "Max Mustermann", "Stadtwerke Musterstadt",
+                "Stromrechnung Mai 2026 \nKundennr. 123456",
+                "DE89 3704 0044 0532 0130 00",
+                new BigDecimal("-87.50"), "EUR",
+                new BigDecimal("2312.45")));
+                
         return new ArrayList<>(statements);
     }
 

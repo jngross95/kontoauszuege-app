@@ -2,6 +2,8 @@ package com.example.kontoauszuege.view;
 
 import com.example.kontoauszuege.model.BankStatement;
 import com.example.kontoauszuege.service.BankStatementService;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Span;
@@ -52,7 +54,11 @@ public class KontoauszuegeView extends VerticalLayout {
         suchfeld.setValueChangeMode(ValueChangeMode.LAZY);
         suchfeld.addValueChangeListener(e -> ladeKontoauszuege(e.getValue()));
 
-        HorizontalLayout toolbar = new HorizontalLayout(suchfeld);
+        Button holenButton = new Button("Holen", VaadinIcon.REFRESH.create());
+        holenButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        holenButton.addClickListener(e -> ladeKontoauszuege(suchfeld.getValue()));
+
+        HorizontalLayout toolbar = new HorizontalLayout(suchfeld, holenButton);
         toolbar.setAlignItems(Alignment.BASELINE);
         return toolbar;
     }
