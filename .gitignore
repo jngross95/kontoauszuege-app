@@ -1,0 +1,36 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.eclipse/
+.classpath
+.project
+.settings/
+*.launch
+.vscode/
+
+# Spring Boot
+*.log
+spring-pid
+
+# Vaadin
+node_modules/
+node/
+package-lock.json
+package.json
+webpack.config.js
+webpack.generated.js
+tsconfig.json
+types.d.ts
+pnpm-lock.yaml
+pnpmfile.cjs
+.pnpmfile.cjs
+src/main/frontend/generated/
