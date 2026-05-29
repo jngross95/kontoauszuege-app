@@ -66,6 +66,7 @@ public class KontoauszuegeView extends VerticalLayout {
                 .setHeader("Buchungsdatum")
                 .setSortable(true)
                 .setComparator(BankStatement::getBuchungsdatum)
+                .setResizable(true)
                 .setWidth("150px")
                 .setFlexGrow(0);
 
@@ -73,18 +74,21 @@ public class KontoauszuegeView extends VerticalLayout {
                 .setHeader("Valutadatum")
                 .setSortable(true)
                 .setComparator(BankStatement::getValutadatum)
+                .setResizable(true)
                 .setWidth("140px")
                 .setFlexGrow(0);
 
         grid.addColumn(BankStatement::getAuftraggeber)
                 .setHeader("Auftraggeber")
                 .setSortable(true)
+                .setResizable(true)
                 .setWidth("200px")
                 .setFlexGrow(0);
 
         grid.addColumn(BankStatement::getEmpfaenger)
                 .setHeader("Empfänger")
                 .setSortable(true)
+                .setResizable(true)
                 .setWidth("200px")
                 .setFlexGrow(0);
 
@@ -94,10 +98,12 @@ public class KontoauszuegeView extends VerticalLayout {
             return span;
         }))
                 .setHeader("Verwendungszweck")
+                .setResizable(true)
                 .setFlexGrow(1);
 
         grid.addColumn(BankStatement::getIban)
                 .setHeader("IBAN")
+                .setResizable(true)
                 .setWidth("220px")
                 .setFlexGrow(0);
 
@@ -114,6 +120,7 @@ public class KontoauszuegeView extends VerticalLayout {
                 .setHeader("Betrag")
                 .setSortable(true)
                 .setComparator(BankStatement::getBetrag)
+                .setResizable(true)
                 .setWidth("140px")
                 .setFlexGrow(0)
                 .setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
@@ -122,6 +129,7 @@ public class KontoauszuegeView extends VerticalLayout {
                 .setHeader("Kontostand")
                 .setSortable(true)
                 .setComparator(BankStatement::getKontostand)
+                .setResizable(true)
                 .setWidth("150px")
                 .setFlexGrow(0)
                 .setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
