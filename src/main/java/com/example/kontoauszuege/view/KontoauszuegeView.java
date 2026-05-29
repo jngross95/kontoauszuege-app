@@ -65,6 +65,7 @@ public class KontoauszuegeView extends VerticalLayout {
 
     private Grid<BankStatement> createGrid() {
         grid.setSizeFull();
+        grid.setMultiSort(true);
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS,
                 GridVariant.LUMO_WRAP_CELL_CONTENT);
 
