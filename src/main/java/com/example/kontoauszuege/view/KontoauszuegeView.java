@@ -59,7 +59,8 @@ public class KontoauszuegeView extends VerticalLayout {
 
     private Grid<BankStatement> createGrid() {
         grid.setSizeFull();
-        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS);
+        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS,
+                GridVariant.LUMO_WRAP_CELL_CONTENT);
 
         grid.addColumn(new LocalDateRenderer<>(BankStatement::getBuchungsdatum, DATE_FORMAT))
                 .setHeader("Buchungsdatum")
@@ -87,7 +88,11 @@ public class KontoauszuegeView extends VerticalLayout {
                 .setWidth("200px")
                 .setFlexGrow(0);
 
-        grid.addColumn(BankStatement::getVerwendungszweck)
+        grid.addColumn(new ComponentRenderer<>(statement -> {
+            Span span = new Span(statement.getVerwendungszweck());
+            span.getStyle().set("white-space", "pre-wrap");
+            return span;
+        }))
                 .setHeader("Verwendungszweck")
                 .setFlexGrow(1);
 
