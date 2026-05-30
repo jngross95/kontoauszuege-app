@@ -39,6 +39,7 @@ public class KontoauszuegeView extends VerticalLayout {
         setSizeFull();
         setPadding(true);
         setSpacing(true);
+        addClassName("kontoauszuege-view");
 
         add(createToolbar());
         add(createGrid());
