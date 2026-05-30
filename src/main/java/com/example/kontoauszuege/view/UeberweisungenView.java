@@ -5,6 +5,7 @@ import com.example.kontoauszuege.service.BankStatementService;
 import com.example.kontoauszuege.service.UeberweisungService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -112,6 +113,12 @@ public class UeberweisungenView extends VerticalLayout {
     // ── Grid ──────────────────────────────────────────────────────────────
 
     private void configureGrid() {
+        grid.addComponentColumn(u -> {
+            Checkbox cb = new Checkbox(u.isAusgewaehlt());
+            cb.addValueChangeListener(e -> u.setAusgewaehlt(e.getValue()));
+            return cb;
+        }).setHeader("Senden").setWidth("80px").setFlexGrow(0);
+
         grid.addColumn(Ueberweisung::getSender)
                 .setHeader("Sender").setResizable(true).setSortable(true).setAutoWidth(true);
         grid.addColumn(Ueberweisung::getEmpfaenger)
@@ -204,14 +211,16 @@ public class UeberweisungenView extends VerticalLayout {
     }
 
     private void senden() {
-        if (selected == null) {
-            Notification.show("Bitte zuerst eine Überweisung auswählen.",
+        List<Ueberweisung> zumSenden = service.findAll().stream()
+                .filter(Ueberweisung::isAusgewaehlt)
+                .collect(Collectors.toList());
+        if (zumSenden.isEmpty()) {
+            Notification.show("Keine Überweisung zum Senden markiert.",
                     2500, Notification.Position.MIDDLE);
             return;
         }
         Notification n = Notification.show(
-                "Überweisung über " + selected.getBetrag() + " € an "
-                + selected.getEmpfaengerIban() + " wurde gesendet.",
+                zumSenden.size() + " Überweisung(en) wurden gesendet.",
                 4000, Notification.Position.MIDDLE);
         n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     }

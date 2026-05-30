@@ -6,6 +6,7 @@ import java.util.UUID;
 public class Ueberweisung {
 
     private final String id;
+    private boolean ausgewaehlt = true;
     private String sender;
     private String empfaenger;
     private String empfaengerIban;
@@ -27,6 +28,9 @@ public class Ueberweisung {
     }
 
     public String getId()                         { return id; }
+
+    public boolean isAusgewaehlt()                    { return ausgewaehlt; }
+    public void    setAusgewaehlt(boolean ausgewaehlt) { this.ausgewaehlt = ausgewaehlt; }
 
     public String getSender()                     { return sender; }
     public void   setSender(String sender)        { this.sender = sender; }
