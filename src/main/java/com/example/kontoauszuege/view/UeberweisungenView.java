@@ -150,11 +150,15 @@ public class UeberweisungenView extends VerticalLayout {
         betragField.setPlaceholder("0,00");
         betragField.setWidthFull();
 
-        FormLayout form = new FormLayout(senderField, empfaengerField, ibanField, verwendungszweck, betragField);
+        FormLayout form = new FormLayout();
         form.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("500px", 2),
-                new FormLayout.ResponsiveStep("900px", 4));
+                new FormLayout.ResponsiveStep("500px", 2));
+        form.add(senderField, empfaengerField);   // Zeile 1: Sender | Empfänger
+        form.add(ibanField);                       // Zeile 2: IBAN (halbe Breite)
+        form.add(verwendungszweck);                // Zeile 3: Verwendungszweck (volle Breite)
+        form.setColspan(verwendungszweck, 2);
+        form.add(betragField);                     // Zeile 4: Betrag (halbe Breite)
         form.setWidthFull();
 
         Button speichernBtn = new Button("Speichern", VaadinIcon.CHECK.create(), e -> speichern());
