@@ -7,6 +7,7 @@ public class Ueberweisung {
 
     private final String id;
     private String sender;
+    private String empfaenger;
     private String empfaengerIban;
     private String verwendungszweck;
     private BigDecimal betrag;
@@ -15,10 +16,11 @@ public class Ueberweisung {
         this.id = UUID.randomUUID().toString();
     }
 
-    public Ueberweisung(String sender, String empfaengerIban,
+    public Ueberweisung(String sender, String empfaenger, String empfaengerIban,
                         String verwendungszweck, BigDecimal betrag) {
         this();
         this.sender = sender;
+        this.empfaenger = empfaenger;
         this.empfaengerIban = empfaengerIban;
         this.verwendungszweck = verwendungszweck;
         this.betrag = betrag;
@@ -28,6 +30,9 @@ public class Ueberweisung {
 
     public String getSender()                     { return sender; }
     public void   setSender(String sender)        { this.sender = sender; }
+
+    public String getEmpfaenger()                        { return empfaenger; }
+    public void   setEmpfaenger(String empfaenger)       { this.empfaenger = empfaenger; }
 
     public String getEmpfaengerIban()                        { return empfaengerIban; }
     public void   setEmpfaengerIban(String empfaengerIban)   { this.empfaengerIban = empfaengerIban; }

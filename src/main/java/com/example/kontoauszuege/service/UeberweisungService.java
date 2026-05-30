@@ -15,11 +15,13 @@ public class UeberweisungService {
     public UeberweisungService() {
         ueberweisungen.add(new Ueberweisung(
                 "Max Mustermann",
+                "Stadtwerke Musterstadt",
                 "DE89 3704 0044 0532 0130 00",
                 "Miete Juni 2026",
                 new BigDecimal("950.00")));
         ueberweisungen.add(new Ueberweisung(
                 "Max Mustermann",
+                "Energieversorger GmbH",
                 "DE27 2007 0000 0532 0130 00",
                 "Strom & Gas Mai 2026",
                 new BigDecimal("87.50")));
