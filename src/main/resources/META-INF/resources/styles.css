@@ -1,4 +1,22 @@
 /* ============================================================
+   TAB-WECHSEL FADE-ANIMATION
+   ============================================================ */
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-fade-in {
+  animation: pageFadeIn 0.5s ease forwards;
+}
+
+/* ============================================================
    LUMO VARIABLE OVERRIDES
    ============================================================ */
 html {
