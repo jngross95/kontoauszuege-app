@@ -17,7 +17,6 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.PageTitle;
@@ -42,7 +41,7 @@ public class UeberweisungenView extends VerticalLayout {
     private final ComboBox<String> empfaengerField   = new ComboBox<>("Empfänger");
     private final TextField        ibanField          = new TextField("Empfänger-IBAN");
     private final TextField        verwendungszweck   = new TextField("Verwendungszweck");
-    private final NumberField      betragField        = new NumberField("Betrag (€)");
+    private final TextField        betragField        = new TextField("Betrag (€)");
 
     private Ueberweisung selected = null;
 
@@ -148,7 +147,7 @@ public class UeberweisungenView extends VerticalLayout {
         verwendungszweck.setWidthFull();
 
         betragField.setPrefixComponent(new Span("€"));
-        betragField.setStep(0.01);
+        betragField.setPlaceholder("0,00");
         betragField.setWidthFull();
 
         FormLayout form = new FormLayout(senderField, empfaengerField, ibanField, verwendungszweck, betragField);
@@ -212,8 +211,14 @@ public class UeberweisungenView extends VerticalLayout {
         selected.setEmpfaenger(empfaengerField.getValue());
         selected.setEmpfaengerIban(ibanField.getValue());
         selected.setVerwendungszweck(verwendungszweck.getValue());
-        Double val = betragField.getValue();
-        selected.setBetrag(val != null ? BigDecimal.valueOf(val) : BigDecimal.ZERO);
+        String betragText = betragField.getValue().trim().replace(",", ".");
+        try {
+            selected.setBetrag(betragText.isEmpty() ? BigDecimal.ZERO : new BigDecimal(betragText));
+        } catch (NumberFormatException ex) {
+            Notification.show("Ungültiger Betrag – bitte Zahl eingeben (z. B. 12,50)",
+                    3000, Notification.Position.MIDDLE);
+            return;
+        }
         service.update(selected);
         refreshGrid();
         grid.select(selected);
@@ -225,7 +230,8 @@ public class UeberweisungenView extends VerticalLayout {
         empfaengerField.setValue(u.getEmpfaenger()  != null ? u.getEmpfaenger()     : "");
         ibanField.setValue(u.getEmpfaengerIban()   != null ? u.getEmpfaengerIban() : "");
         verwendungszweck.setValue(u.getVerwendungszweck() != null ? u.getVerwendungszweck() : "");
-        betragField.setValue(u.getBetrag()         != null ? u.getBetrag().doubleValue() : 0.0);
+        betragField.setValue(u.getBetrag() != null
+                ? u.getBetrag().toPlainString().replace(".", ",") : "");
     }
 
     private void clearFormular() {
