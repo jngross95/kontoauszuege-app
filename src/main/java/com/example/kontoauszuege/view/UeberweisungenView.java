@@ -42,6 +42,7 @@ public class UeberweisungenView extends VerticalLayout {
     private final Select<String>   senderField        = new Select<>();
     private final ComboBox<String> empfaengerField    = new ComboBox<>("Empfänger");
     private final TextField        verwendungszweck   = new TextField("Verwendungszweck");
+    private final TextField        empfaengerIbanField = new TextField("Empfänger-IBAN");
     private final TextField        betragField        = new TextField("Betrag (€)");
 
     private List<String> senderItems = List.of();
@@ -163,16 +164,23 @@ public class UeberweisungenView extends VerticalLayout {
         form.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("500px", 4));
-        form.add(senderField, empfaengerField, betragField);
-        form.setColspan(empfaengerField, 2);
+        form.add(senderField);
+        form.setColspan(senderField, 4);
+        form.add(empfaengerField);
+        form.setColspan(empfaengerField, 4);
+        empfaengerIbanField.setWidthFull();
+        form.add(empfaengerIbanField);
+        form.setColspan(empfaengerIbanField, 4);
         form.add(verwendungszweck);
         form.setColspan(verwendungszweck, 4);
+        form.add(betragField);
         form.setWidthFull();
 
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Überweisung bearbeiten");
-        dialog.setWidth("900px");
-        dialog.setHeight("400px");
+        dialog.setWidth("33vw");
+        dialog.setCloseOnOutsideClick(false);
+        dialog.setCloseOnEsc(true);
         dialog.add(form);
 
         Button okBtn = new Button("Ok", VaadinIcon.CHECK.create(), e -> {
@@ -241,6 +249,7 @@ public class UeberweisungenView extends VerticalLayout {
         if (selected == null) return;
         selected.setSender(senderField.getValue());
         selected.setEmpfaenger(empfaengerField.getValue());
+        selected.setEmpfaengerIban(empfaengerIbanField.getValue());
         selected.setVerwendungszweck(verwendungszweck.getValue());
         String betragText = betragField.getValue().trim().replace(",", ".");
         try {
@@ -260,6 +269,7 @@ public class UeberweisungenView extends VerticalLayout {
         String sv = u.getSender();
         senderField.setValue(sv != null && senderItems.contains(sv) ? sv : null);
         empfaengerField.setValue(u.getEmpfaenger() != null ? u.getEmpfaenger() : "");
+        empfaengerIbanField.setValue(u.getEmpfaengerIban() != null ? u.getEmpfaengerIban() : "");
         verwendungszweck.setValue(u.getVerwendungszweck() != null ? u.getVerwendungszweck() : "");
         betragField.setValue(u.getBetrag() != null
                 ? u.getBetrag().toPlainString().replace(".", ",") : "");
@@ -268,6 +278,7 @@ public class UeberweisungenView extends VerticalLayout {
     private void clearFormular() {
         senderField.clear();
         empfaengerField.clear();
+        empfaengerIbanField.clear();
         verwendungszweck.clear();
         betragField.clear();
     }
