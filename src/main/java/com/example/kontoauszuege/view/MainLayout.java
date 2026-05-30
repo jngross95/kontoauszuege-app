@@ -1,6 +1,5 @@
 package com.example.kontoauszuege.view;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -42,17 +41,6 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
             tabs.setSelectedTab(tabKontoauszuege);
         } else if (path.equals("ueberweisungen")) {
             tabs.setSelectedTab(tabUeberweisungen);
-        }
-
-        // Fade-In-Animation beim Tab-Wechsel neu starten
-        Component content = getContent();
-        if (content != null) {
-            content.getElement().executeJs(
-                "const el = this;" +
-                "el.classList.remove('page-fade-in');" +
-                "void el.offsetWidth;" +   // Reflow erzwingen um Animation neu zu starten
-                "el.classList.add('page-fade-in');"
-            );
         }
     }
 }
