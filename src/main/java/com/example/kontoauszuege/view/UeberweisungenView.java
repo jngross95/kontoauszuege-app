@@ -97,7 +97,7 @@ public class UeberweisungenView extends VerticalLayout {
         neuBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button loeschenBtn = new Button("Löschen", VaadinIcon.TRASH.create(), e -> loeschen());
-        loeschenBtn.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
+        loeschenBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
         Button sendenBtn = new Button("Senden", VaadinIcon.PAPERPLANE.create(), e -> senden());
         sendenBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
@@ -162,17 +162,18 @@ public class UeberweisungenView extends VerticalLayout {
 
         betragField.setPrefixComponent(new Span("€"));
         betragField.setPlaceholder("0,00");
-        betragField.setWidth("14ch");
+        betragField.setWidthFull();
 
         verwendungszweck.setWidthFull();
 
         FormLayout form = new FormLayout();
         form.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("500px", 3));
-        form.add(senderField, empfaengerField, betragField); // Zeile 1: Sender | Empfänger | Betrag
+                new FormLayout.ResponsiveStep("500px", 4));
+        form.add(senderField, empfaengerField, betragField); // Zeile 1: Sender(1) | Empfänger(2) | Betrag(1)
+        form.setColspan(empfaengerField, 2);
         form.add(verwendungszweck);                          // Zeile 2: Verwendungszweck (volle Breite)
-        form.setColspan(verwendungszweck, 3);
+        form.setColspan(verwendungszweck, 4);
         form.setWidthFull();
 
         Button speichernBtn = new Button("Speichern", VaadinIcon.CHECK.create(), e -> speichern());
