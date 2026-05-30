@@ -7,10 +7,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -46,7 +46,7 @@ public class UeberweisungenView extends VerticalLayout {
 
     private List<String> senderItems = List.of();
     private Ueberweisung selected = null;
-    private VerticalLayout formSection;
+    private Dialog editDialog;
 
     public UeberweisungenView(UeberweisungService service,
                               BankStatementService bankStatementService) {
@@ -66,9 +66,7 @@ public class UeberweisungenView extends VerticalLayout {
         add(grid);
         setFlexGrow(1, grid);
 
-        add(new Hr());
-
-        // ── Teil 3: Formular ──────────────────────────────────────────────
+        // ── Teil 3: Dialog vorbereiten ────────────────────────────────────
         senderItems = bankStatementService.findAll().stream()
                 .map(b -> b.getAuftraggeber())
                 .filter(s -> s != null && !s.isBlank())
@@ -83,9 +81,8 @@ public class UeberweisungenView extends VerticalLayout {
                 .sorted()
                 .collect(Collectors.toList());
 
-        formSection = createForm(bekannteEmpfaenger);
-        formSection.setVisible(false);
-        add(formSection);
+        editDialog = buildDialog(bekannteEmpfaenger);
+        add(editDialog);
 
         refreshGrid();
     }
@@ -96,13 +93,16 @@ public class UeberweisungenView extends VerticalLayout {
         Button neuBtn = new Button("Neu", VaadinIcon.PLUS.create(), e -> neueUeberweisung());
         neuBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
+        Button bearbeitenBtn = new Button("Bearbeiten", VaadinIcon.EDIT.create(), e -> bearbeiten());
+        bearbeitenBtn.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+
         Button loeschenBtn = new Button("Löschen", VaadinIcon.TRASH.create(), e -> loeschen());
         loeschenBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
         Button sendenBtn = new Button("Senden", VaadinIcon.PAPERPLANE.create(), e -> senden());
         sendenBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
 
-        HorizontalLayout toolbar = new HorizontalLayout(neuBtn, loeschenBtn, sendenBtn);
+        HorizontalLayout toolbar = new HorizontalLayout(neuBtn, bearbeitenBtn, loeschenBtn, sendenBtn);
         toolbar.setAlignItems(FlexComponent.Alignment.CENTER);
         toolbar.setPadding(false);
         toolbar.setSpacing(true);
@@ -137,20 +137,13 @@ public class UeberweisungenView extends VerticalLayout {
 
         grid.setWidthFull();
         grid.addSelectionListener(e -> {
-            if (e.getFirstSelectedItem().isPresent()) {
-                ladeFormular(e.getFirstSelectedItem().get());
-                formSection.setVisible(true);
-            } else {
-                selected = null;
-                clearFormular();
-                formSection.setVisible(false);
-            }
+            selected = e.getFirstSelectedItem().orElse(null);
         });
     }
 
-    // ── Formular ──────────────────────────────────────────────────────────
+    // ── Dialog ────────────────────────────────────────────────────────────
 
-    private VerticalLayout createForm(List<String> bekannteEmpfaenger) {
+    private Dialog buildDialog(List<String> bekannteEmpfaenger) {
         senderField.setLabel("Sender");
         senderField.setItems(senderItems);
         senderField.setWidthFull();
@@ -170,24 +163,30 @@ public class UeberweisungenView extends VerticalLayout {
         form.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("500px", 4));
-        form.add(senderField, empfaengerField, betragField); // Zeile 1: Sender(1) | Empfänger(2) | Betrag(1)
+        form.add(senderField, empfaengerField, betragField);
         form.setColspan(empfaengerField, 2);
-        form.add(verwendungszweck);                          // Zeile 2: Verwendungszweck (volle Breite)
+        form.add(verwendungszweck);
         form.setColspan(verwendungszweck, 4);
         form.setWidthFull();
 
-        Button speichernBtn = new Button("Speichern", VaadinIcon.CHECK.create(), e -> speichern());
-        speichernBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Überweisung bearbeiten");
+        dialog.setWidth("900px");
+        dialog.setHeight("400px");
+        dialog.add(form);
 
-        H3 titel = new H3("Überweisung bearbeiten");
-        titel.getStyle().set("margin", "var(--lumo-space-s) 0");
+        Button okBtn = new Button("Ok", VaadinIcon.CHECK.create(), e -> {
+            speichern();
+            dialog.close();
+        });
+        okBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        VerticalLayout section = new VerticalLayout(titel, form, speichernBtn);
-        section.setPadding(false);
-        section.setSpacing(true);
-        section.setWidthFull();
-        section.getStyle().set("padding-top", "var(--lumo-space-s)");
-        return section;
+        Button abbrechenBtn = new Button("Abbrechen", e -> dialog.close());
+        abbrechenBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+        dialog.getFooter().add(abbrechenBtn, okBtn);
+
+        return dialog;
     }
 
     // ── Aktionen ──────────────────────────────────────────────────────────
@@ -197,6 +196,18 @@ public class UeberweisungenView extends VerticalLayout {
         service.add(neu);
         refreshGrid();
         grid.select(neu);
+        ladeFormular(neu);
+        editDialog.open();
+    }
+
+    private void bearbeiten() {
+        if (selected == null) {
+            Notification.show("Bitte zuerst eine Überweisung auswählen.",
+                    2500, Notification.Position.MIDDLE);
+            return;
+        }
+        ladeFormular(selected);
+        editDialog.open();
     }
 
     private void loeschen() {
