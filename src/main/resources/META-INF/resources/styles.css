@@ -16,7 +16,7 @@ html {
    NAVBAR — Gradient
    ============================================================ */
 vaadin-app-layout::part(navbar) {
-  background: linear-gradient(135deg, #0f0c29 0%, #302b63 55%, #24243e 100%);
+  background: linear-gradient(135deg, #3730a3 0%, #6366f1 55%, #a855f7 100%);
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.45);
   padding: 0 1.25rem;
 }
