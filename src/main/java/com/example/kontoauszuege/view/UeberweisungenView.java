@@ -6,6 +6,7 @@ import com.example.kontoauszuege.service.UeberweisungService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
@@ -37,12 +38,12 @@ public class UeberweisungenView extends VerticalLayout {
     private final Grid<Ueberweisung> grid = new Grid<>(Ueberweisung.class, false);
 
     // Formularfelder
-    private final ComboBox<String> senderField       = new ComboBox<>("Sender");
-    private final ComboBox<String> empfaengerField   = new ComboBox<>("Empfänger");
-    private final TextField        ibanField          = new TextField("Empfänger-IBAN");
+    private final Select<String>   senderField        = new Select<>();
+    private final ComboBox<String> empfaengerField    = new ComboBox<>("Empfänger");
     private final TextField        verwendungszweck   = new TextField("Verwendungszweck");
     private final TextField        betragField        = new TextField("Betrag (€)");
 
+    private List<String> senderItems = List.of();
     private Ueberweisung selected = null;
 
     public UeberweisungenView(UeberweisungService service,
@@ -66,7 +67,7 @@ public class UeberweisungenView extends VerticalLayout {
         add(new Hr());
 
         // ── Teil 3: Formular ──────────────────────────────────────────────
-        List<String> knowneSender = bankStatementService.findAll().stream()
+        senderItems = bankStatementService.findAll().stream()
                 .map(b -> b.getAuftraggeber())
                 .filter(s -> s != null && !s.isBlank())
                 .distinct()
@@ -80,7 +81,7 @@ public class UeberweisungenView extends VerticalLayout {
                 .sorted()
                 .collect(Collectors.toList());
 
-        add(createForm(knowneSender, bekannteEmpfaenger));
+        add(createForm(bekannteEmpfaenger));
 
         refreshGrid();
     }
@@ -130,10 +131,9 @@ public class UeberweisungenView extends VerticalLayout {
 
     // ── Formular ──────────────────────────────────────────────────────────
 
-    private VerticalLayout createForm(List<String> knowneSender, List<String> bekannteEmpfaenger) {
-        senderField.setItems(knowneSender);
-        senderField.setAllowCustomValue(true);
-        senderField.addCustomValueSetListener(e -> senderField.setValue(e.getDetail()));
+    private VerticalLayout createForm(List<String> bekannteEmpfaenger) {
+        senderField.setLabel("Sender");
+        senderField.setItems(senderItems);
         senderField.setWidthFull();
 
         empfaengerField.setItems(bekannteEmpfaenger);
@@ -141,24 +141,19 @@ public class UeberweisungenView extends VerticalLayout {
         empfaengerField.addCustomValueSetListener(e -> empfaengerField.setValue(e.getDetail()));
         empfaengerField.setWidthFull();
 
-        ibanField.setPlaceholder("DE00 0000 0000 0000 0000 00");
-        ibanField.setWidthFull();
-
-        verwendungszweck.setWidthFull();
-
         betragField.setPrefixComponent(new Span("€"));
         betragField.setPlaceholder("0,00");
-        betragField.setWidthFull();
+        betragField.setWidth("14ch");
+
+        verwendungszweck.setWidthFull();
 
         FormLayout form = new FormLayout();
         form.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("500px", 2));
-        form.add(senderField, empfaengerField);   // Zeile 1: Sender | Empfänger
-        form.add(ibanField);                       // Zeile 2: IBAN (halbe Breite)
-        form.add(verwendungszweck);                // Zeile 3: Verwendungszweck (volle Breite)
-        form.setColspan(verwendungszweck, 2);
-        form.add(betragField);                     // Zeile 4: Betrag (halbe Breite)
+                new FormLayout.ResponsiveStep("500px", 3));
+        form.add(senderField, empfaengerField, betragField); // Zeile 1: Sender | Empfänger | Betrag
+        form.add(verwendungszweck);                          // Zeile 2: Verwendungszweck (volle Breite)
+        form.setColspan(verwendungszweck, 3);
         form.setWidthFull();
 
         Button speichernBtn = new Button("Speichern", VaadinIcon.CHECK.create(), e -> speichern());
@@ -213,7 +208,6 @@ public class UeberweisungenView extends VerticalLayout {
         if (selected == null) return;
         selected.setSender(senderField.getValue());
         selected.setEmpfaenger(empfaengerField.getValue());
-        selected.setEmpfaengerIban(ibanField.getValue());
         selected.setVerwendungszweck(verwendungszweck.getValue());
         String betragText = betragField.getValue().trim().replace(",", ".");
         try {
@@ -230,9 +224,9 @@ public class UeberweisungenView extends VerticalLayout {
 
     private void ladeFormular(Ueberweisung u) {
         selected = u;
-        senderField.setValue(u.getSender()         != null ? u.getSender()         : "");
-        empfaengerField.setValue(u.getEmpfaenger()  != null ? u.getEmpfaenger()     : "");
-        ibanField.setValue(u.getEmpfaengerIban()   != null ? u.getEmpfaengerIban() : "");
+        String sv = u.getSender();
+        senderField.setValue(sv != null && senderItems.contains(sv) ? sv : null);
+        empfaengerField.setValue(u.getEmpfaenger() != null ? u.getEmpfaenger() : "");
         verwendungszweck.setValue(u.getVerwendungszweck() != null ? u.getVerwendungszweck() : "");
         betragField.setValue(u.getBetrag() != null
                 ? u.getBetrag().toPlainString().replace(".", ",") : "");
@@ -241,7 +235,6 @@ public class UeberweisungenView extends VerticalLayout {
     private void clearFormular() {
         senderField.clear();
         empfaengerField.clear();
-        ibanField.clear();
         verwendungszweck.clear();
         betragField.clear();
     }
