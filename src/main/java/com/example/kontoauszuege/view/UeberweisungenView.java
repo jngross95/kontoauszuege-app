@@ -45,6 +45,7 @@ public class UeberweisungenView extends VerticalLayout {
 
     private List<String> senderItems = List.of();
     private Ueberweisung selected = null;
+    private VerticalLayout formSection;
 
     public UeberweisungenView(UeberweisungService service,
                               BankStatementService bankStatementService) {
@@ -81,7 +82,9 @@ public class UeberweisungenView extends VerticalLayout {
                 .sorted()
                 .collect(Collectors.toList());
 
-        add(createForm(bekannteEmpfaenger));
+        formSection = createForm(bekannteEmpfaenger);
+        formSection.setVisible(false);
+        add(formSection);
 
         refreshGrid();
     }
@@ -126,7 +129,16 @@ public class UeberweisungenView extends VerticalLayout {
                 .setAutoWidth(true);
 
         grid.setWidthFull();
-        grid.addSelectionListener(e -> e.getFirstSelectedItem().ifPresent(this::ladeFormular));
+        grid.addSelectionListener(e -> {
+            if (e.getFirstSelectedItem().isPresent()) {
+                ladeFormular(e.getFirstSelectedItem().get());
+                formSection.setVisible(true);
+            } else {
+                selected = null;
+                clearFormular();
+                formSection.setVisible(false);
+            }
+        });
     }
 
     // ── Formular ──────────────────────────────────────────────────────────
