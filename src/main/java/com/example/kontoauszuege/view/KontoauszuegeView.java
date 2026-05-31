@@ -10,6 +10,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LocalDateRenderer;
@@ -20,6 +21,7 @@ import com.vaadin.flow.router.Route;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
 
 @Route(value = "", layout = MainLayout.class)
@@ -29,6 +31,8 @@ public class KontoauszuegeView extends VerticalLayout {
     private final BankStatementService service;
     private final Grid<BankStatement> grid = new Grid<>(BankStatement.class, false);
     private final TextField suchfeld = new TextField();
+    private final Select<String> kontoSelect = new Select<>();
+    private String aktivesKonto = null;
 
     private static final String DATE_FORMAT = "dd.MM.yyyy";
     private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.GERMANY);
@@ -40,6 +44,21 @@ public class KontoauszuegeView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
         addClassName("kontoauszuege-view");
+
+        List<String> konten = service.findAll().stream()
+                .map(BankStatement::getAuftraggeber)
+                .filter(k -> k != null && !k.isBlank())
+                .distinct()
+                .sorted()
+                .collect(java.util.stream.Collectors.toList());
+        kontoSelect.setLabel("Konto");
+        kontoSelect.setItems(konten);
+        kontoSelect.setEmptySelectionAllowed(true);
+        kontoSelect.setEmptySelectionCaption("– alle –");
+        kontoSelect.addValueChangeListener(e -> {
+            aktivesKonto = e.getValue();
+            ladeKontoauszuege(suchfeld.getValue());
+        });
 
         add(createToolbar());
         add(createGrid());
@@ -59,8 +78,22 @@ public class KontoauszuegeView extends VerticalLayout {
         holenButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         holenButton.addClickListener(e -> ladeKontoauszuege(suchfeld.getValue()));
 
-        HorizontalLayout toolbar = new HorizontalLayout(suchfeld, holenButton);
+        Button alleHolenButton = new Button("Alle holen", VaadinIcon.DOWNLOAD.create());
+        alleHolenButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        alleHolenButton.addClickListener(e -> {
+            suchfeld.clear();
+            kontoSelect.clear();
+            aktivesKonto = null;
+            ladeKontoauszuege("");
+        });
+
+        HorizontalLayout left = new HorizontalLayout(kontoSelect, holenButton, alleHolenButton);
+        left.setAlignItems(Alignment.BASELINE);
+
+        HorizontalLayout toolbar = new HorizontalLayout(left, suchfeld);
+        toolbar.setWidthFull();
         toolbar.setAlignItems(Alignment.BASELINE);
+        toolbar.expand(left);
         return toolbar;
     }
 
@@ -146,6 +179,12 @@ public class KontoauszuegeView extends VerticalLayout {
     }
 
     private void ladeKontoauszuege(String filter) {
-        grid.setItems(service.findByFilter(filter));
+        var liste = service.findByFilter(filter);
+        if (aktivesKonto != null && !aktivesKonto.isBlank()) {
+            liste = liste.stream()
+                    .filter(s -> aktivesKonto.equals(s.getAuftraggeber()))
+                    .toList();
+        }
+        grid.setItems(liste);
     }
 }
