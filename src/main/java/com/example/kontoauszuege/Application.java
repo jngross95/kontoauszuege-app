@@ -34,13 +34,14 @@ public class Application {
         Thread browserThread = new Thread(() -> {
             try {
                 log.info("Browser starten ... ");
-
-                if (Desktop.isDesktopSupported()
-                        && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                    Desktop.getDesktop().browse(new URI(url));
-                } else {
-                    // Fallback für Linux ohne GUI-Desktop (z.B. xdg-open)
-                    new ProcessBuilder("xdg-open", url).start();
+                if (!tryAppMode(url)) {
+                    // Fallback: Standard-Browser
+                    if (Desktop.isDesktopSupported()
+                            && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                        Desktop.getDesktop().browse(new URI(url));
+                    } else {
+                        new ProcessBuilder("xdg-open", url).start();
+                    }
                 }
             } catch (Exception e) {
                 log.error("Browser konnte nicht geöffnet werden: {}", e.getMessage(), e);
@@ -48,5 +49,20 @@ public class Application {
         }, "browser-opener");
         //browserThread.setDaemon(true);
         browserThread.start();
+    }
+
+    /** Versucht, Chrome/Chromium im App-Modus zu starten (kein Tab, kein Adressfeld). */
+    private static boolean tryAppMode(String url) {
+        String[] candidates = {"google-chrome", "google-chrome-stable", "chromium", "chromium-browser"};
+        for (String browser : candidates) {
+            try {
+                new ProcessBuilder(browser, "--app=" + url).start();
+                log.info("App-Modus gestartet mit: {}", browser);
+                return true;
+            } catch (Exception ignored) {
+                // nächsten Kandidaten versuchen
+            }
+        }
+        return false;
     }
 }
