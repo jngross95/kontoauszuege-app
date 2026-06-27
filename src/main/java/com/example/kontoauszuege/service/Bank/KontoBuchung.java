@@ -1,4 +1,4 @@
-package com.example.kontoauszuege.service.BankBase;
+package com.example.kontoauszuege.service.Bank;
 
 import java.math.BigDecimal;
 import java.util.Date;

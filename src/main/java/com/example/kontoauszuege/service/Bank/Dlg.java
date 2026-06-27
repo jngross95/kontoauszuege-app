@@ -1,16 +1,16 @@
-package com.example.kontoauszuege.service.BankBase;
+package com.example.kontoauszuege.service.Bank;
 
-import java.awt.BorderLayout;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 
 public class Dlg extends JDialog  {
 
     public String tan = null;
 
-    public Dlg( String kontaktName, String inputFieldText, String message, byte[] image) throws Exception {
+    public Dlg(String kontaktName, String inputFieldText, String message, byte[] image) throws Exception {
         super(new JFrame(), "BankingSrv: "+kontaktName, true);
 
         //Message

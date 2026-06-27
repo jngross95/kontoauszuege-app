@@ -5,5 +5,4 @@ public class BankContact {
     public String blz;
     public String user;
     public String bankPin;
-    public String passportPin;
 }

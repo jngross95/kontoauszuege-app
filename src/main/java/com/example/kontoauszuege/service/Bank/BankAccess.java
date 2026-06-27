@@ -1,6 +1,5 @@
 package com.example.kontoauszuege.service.Bank;
 
-import com.example.kontoauszuege.service.BankBase.*;
 import org.kapott.hbci.GV.HBCIJob;
 import org.kapott.hbci.GV_Result.GVRKUms;
 import org.kapott.hbci.callback.AbstractHBCICallback;
@@ -420,7 +419,7 @@ public class BankAccess implements AutoCloseable {
                 // Die Ergebnis-Daten muessen in dem StringBuffer "retData" platziert werden.
                 case NEED_PASSPHRASE_LOAD:
                 case NEED_PASSPHRASE_SAVE:
-                    retData.replace(0,retData.length(),contact.passportPin);
+                    retData.replace(0,retData.length(),contact.bankPin);
                     break;
 
                 // PIN wird benoetigt
