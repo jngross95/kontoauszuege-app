@@ -28,7 +28,7 @@ public class Application {
     @EventListener
     static public void onServerReady(ServletWebServerInitializedEvent event) {
         //int port = event.getWebServer().getPort();
-        int port = 8080;
+        int port = 8084;
         String url = "http://localhost:" + port;
 
         Thread browserThread = new Thread(() -> {
