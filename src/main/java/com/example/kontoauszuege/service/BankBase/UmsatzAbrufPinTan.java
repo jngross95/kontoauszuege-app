@@ -1,4 +1,4 @@
-package com.example.kontoauszuege.service.Base;
+package com.example.kontoauszuege.service.BankBase;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -655,19 +655,19 @@ public class UmsatzAbrufPinTan
 
     /**
      * Gibt die angegebene Meldung aus.
+     *
      * @param msg die Meldung.
      */
-    private static void log(String msg)
-    {
+    private static void log(String msg) {
         System.out.println(msg);
     }
 
     /**
      * Beendet das Programm mit der angegebenen Fehler-Meldung.
+     *
      * @param msg die Meldung.
      */
-    private static void error(String msg)
-    {
+    private static void error(String msg) {
         System.err.println(msg);
         System.exit(1);
     }

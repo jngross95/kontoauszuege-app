@@ -1,4 +1,4 @@
-package com.example.kontoauszuege.service.Base;
+package com.example.kontoauszuege.service.BankBase;
 
 import java.awt.BorderLayout;
 import java.awt.image.BufferedImage;

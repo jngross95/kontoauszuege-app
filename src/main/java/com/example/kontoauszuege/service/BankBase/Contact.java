@@ -1,4 +1,4 @@
-package com.example.kontoauszuege.service.Base;
+package com.example.kontoauszuege.service.BankBase;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -13,7 +13,7 @@ public class Contact {
     public String passportPin;
 
     //--- Ums+Ueb
-    public String iban;   //Achtung: keine IBAN!! das was KL liefert!
+    public String iban;
 
 
     //----Ums
