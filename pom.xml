@@ -45,6 +45,30 @@
             <version>3.1.88</version>
         </dependency>
 
+        <!-- Persistenz: Spring Data JPA / Hibernate -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- H2 Datenbank (Datei-basiert, PostgreSQL-Kompatibilitätsmodus) -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+
+        <!-- Flyway für Schema-Versionierung -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
+        <!-- Spring-Boot-Autokonfiguration für Flyway (in Boot 4 eigenes Modul) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-flyway</artifactId>
+        </dependency>
+
 
         <!-- Vaadin Flow + Spring Boot Integration -->
         <dependency>

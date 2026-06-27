@@ -9,6 +9,8 @@ import org.springframework.context.event.EventListener;
 
 import java.awt.Desktop;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @SpringBootApplication
 public class Application {
@@ -18,10 +20,26 @@ public class Application {
     public static void main(String[] args) {
         try{
             log.info("Starte Kontoauszüge App ...");
+            ensureDataDirectory();
             SpringApplication.run(Application.class, args);
         } catch (Exception e) {
             log.error("Fehler beim Starten der Anwendung: {}", e.getMessage(), e);
             onServerReady(null);
+        }
+    }
+
+    /**
+     * Stellt sicher, dass das Datenverzeichnis ~/.jbanking existiert, bevor die
+     * H2-Datenbank initialisiert wird (H2 legt das übergeordnete Verzeichnis nicht
+     * selbst an). Ist der Ordner bereits vorhanden, passiert nichts.
+     */
+    private static void ensureDataDirectory() {
+        try {
+            Path dir = Path.of(System.getProperty("user.home"), ".jbanking");
+            Files.createDirectories(dir);
+            log.info("Datenverzeichnis: {}", dir.toAbsolutePath());
+        } catch (Exception e) {
+            log.error("Datenverzeichnis konnte nicht angelegt werden: {}", e.getMessage(), e);
         }
     }
 
