@@ -38,6 +38,14 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.github.hbci4j/hbci4j-core -->
+        <dependency>
+            <groupId>com.github.hbci4j</groupId>
+            <artifactId>hbci4j-core</artifactId>
+            <version>3.1.88</version>
+        </dependency>
+
+
         <!-- Vaadin Flow + Spring Boot Integration -->
         <dependency>
             <groupId>com.vaadin</groupId>
