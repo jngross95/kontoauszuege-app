@@ -18,7 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-public class BankAccess {
+public class BankAccess implements AutoCloseable {
     BankInfo info;
     HBCIHandler handle;
     HBCIPassport passport;
@@ -75,7 +75,7 @@ public class BankAccess {
         HBCIUtils.setParam("client.passport.PinTan.init", "1");
 
         // Erzeugen des Passport-Objektes.
-        HBCIPassport passport = AbstractHBCIPassport.getInstance();
+        passport = AbstractHBCIPassport.getInstance();
 
         // Konfigurieren des Passport-Objektes.
         // Das kann alternativ auch alles ueber den Callback unten geschehen
@@ -94,10 +94,37 @@ public class BankAccess {
         passport.setFilterType("Base64");
 
         // Das Handle ist die eigentliche HBCI-Verbindung zum Server
-        HBCIHandler handle = null;
 
         // Verbindung zum Server aufbauen
         handle = new HBCIHandler(HBCIVersion.HBCI_300.getId(), passport);
+    }
+
+    /**
+     * Gibt die belegten Ressourcen wieder frei. Sowohl das HBCI-Handle als auch
+     * das Passport-Objekt werden geschlossen, sofern sie gesetzt sind.
+     * Dadurch kann diese Klasse in einem try-with-resources verwendet werden.
+     */
+    @Override
+    public void close() {
+        if (handle != null) {
+            try {
+                handle.close();
+            } catch (Exception ex) {
+                System.out.println("Fehler beim Schliessen des HBCI-Handles: " + ex);
+            } finally {
+                handle = null;
+            }
+        }
+
+        if (passport != null) {
+            try {
+                passport.close();
+            } catch (Exception ex) {
+                System.out.println("Fehler beim Schliessen des Passports: " + ex);
+            } finally {
+                passport = null;
+            }
+        }
     }
 
     List<BankAccount> getAccounts() throws Exception {
