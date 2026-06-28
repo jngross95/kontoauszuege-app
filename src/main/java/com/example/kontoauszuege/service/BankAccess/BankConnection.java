@@ -15,6 +15,8 @@ import org.springframework.util.Assert;
 import java.io.File;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 
@@ -189,6 +191,10 @@ public class BankConnection implements AutoCloseable {
     List<KontoBuchung> UmsaetzeAbholen(
             String iban,
             Date startdate) throws Exception {
+        if (isTestBank()) {
+            return getTestUmsaetze(iban);
+        }
+
         var k = getKonto(iban);
 /*
             // 1. Auftrag fuer das Abrufen des Saldos erzeugen
@@ -319,6 +325,77 @@ public class BankConnection implements AutoCloseable {
         System.out.println("------------- Kontoauszüge holen erfolgreich  --------------- ");
 
         return Arrays.stream(kblist).toList();
+    }
+
+    /**
+     * Liefert Test-Umsätze für die Test-Bank (BIC "0").
+     * Orientiert sich an BankStatementTestService und liefert je nach Konto
+     * unterschiedliche Buchungen für die Test-IBANs "iban1" und "iban2".
+     */
+    private List<KontoBuchung> getTestUmsaetze(String iban) {
+        List<KontoBuchung> umsaetze = new ArrayList<>();
+
+        if ("iban1".equals(iban)) {
+            umsaetze.add(testBuchung(
+                    LocalDate.of(2026, 5, 1), "Stadtwerke Musterstadt",
+                    "DE89 3704 0044 0532 0130 00",
+                    "Stromrechnung Mai 2026\nKundennr. 123456",
+                    new BigDecimal("-87.50"), new BigDecimal("2312.45")));
+
+            umsaetze.add(testBuchung(
+                    LocalDate.of(2026, 5, 2), "Arbeitgeber GmbH",
+                    "DE27 2007 0000 0532 0130 00",
+                    "Gehalt April 2026",
+                    new BigDecimal("2850.00"), new BigDecimal("5162.45")));
+
+            umsaetze.add(testBuchung(
+                    LocalDate.of(2026, 5, 5), "REWE Supermarkt",
+                    "DE12 5001 0517 0648 4898 90",
+                    "Einkauf REWE 05.05.2026",
+                    new BigDecimal("-63.20"), new BigDecimal("5099.25")));
+        } else if ("iban2".equals(iban)) {
+            umsaetze.add(testBuchung(
+                    LocalDate.of(2026, 5, 8), "Vodafone GmbH",
+                    "DE46 2007 0000 0660 7370 00",
+                    "Mobilfunk Vertragsnummer 987654 Mai 2026",
+                    new BigDecimal("-35.99"), new BigDecimal("1240.10")));
+
+            umsaetze.add(testBuchung(
+                    LocalDate.of(2026, 5, 12), "Finanzamt München",
+                    "DE91 7000 0000 0012 3456 78",
+                    "Steuererstattung 2025 St-Nr. 133/815/08155",
+                    new BigDecimal("540.00"), new BigDecimal("1780.10")));
+
+            umsaetze.add(testBuchung(
+                    LocalDate.of(2026, 5, 15), "Vermieter Hans Huber",
+                    "DE02 7001 0080 0619 3400 02",
+                    "Miete Juni 2026 Wohnung Hauptstr. 1",
+                    new BigDecimal("-950.00"), new BigDecimal("830.10")));
+        }
+
+        return umsaetze;
+    }
+
+    /**
+     * Erzeugt eine einzelne Test-Buchung (KontoBuchung) aus den übergebenen Werten.
+     */
+    private static KontoBuchung testBuchung(LocalDate datum, String empfaenger,
+                                            String empfaengerKontoNr, String verwendungszweck,
+                                            BigDecimal betrag, BigDecimal saldo) {
+        var kb = new KontoBuchung();
+        Date d = toDate(datum);
+        kb.Buchungsdatum = d;
+        kb.Wertstellungsdatum = d;
+        kb.Empfaenger = empfaenger;
+        kb.EmpfaengerKontoNr = empfaengerKontoNr;
+        kb.Verwendungszweck = verwendungszweck;
+        kb.Betrag = betrag;
+        kb.Saldo = saldo;
+        return kb;
+    }
+
+    private static Date toDate(LocalDate localDate) {
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     String  UeberweisungAusfuehren(
