@@ -10,6 +10,7 @@ import org.kapott.hbci.passport.HBCIPassport;
 import org.kapott.hbci.status.HBCIExecStatus;
 import org.kapott.hbci.structures.Konto;
 import org.kapott.hbci.structures.Value;
+import org.springframework.util.Assert;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -24,13 +25,13 @@ public class BankConnection implements AutoCloseable {
 
     // --- Zugangsdaten (zuvor in BankContact) ---
     final String name;       // Nur zu Logzwecken
-    final String blzOrBic;
+    final String bic;
     final String user;
     final String bankPin;
 
-    public BankConnection(String name, String blzOrBic, String user, String bankPin) {
+    public BankConnection(String name, String bic, String user, String bankPin) {
         this.name = name;
-        this.blzOrBic = blzOrBic;
+        this.bic = bic;
         this.user = user;
         this.bankPin = bankPin;
     }
@@ -51,21 +52,25 @@ public class BankConnection implements AutoCloseable {
 
     void connect() throws Exception {
         // Server-Adresse angeben. Koennen wir entweder manuell eintragen oder direkt von HBCI4Java ermitteln lassen
-        var bi = HBCIUtils.searchBankInfo(blzOrBic);
+        var bi = HBCIUtils.searchBankInfo(bic);
         if (bi.size() == 0) {
-            throw new Exception(String.format("Keine BankInfo gefunden für die BLZ/BIC: %s", blzOrBic));
+            throw new Exception(String.format("Keine BankInfo gefunden für die BIC: %s", bic));
         } else if (bi.size() > 1) {
-            throw new Exception(String.format("mehrere  Banken zu '%s' gefunden", blzOrBic));
+            throw new Exception(String.format("mehrere  Banken zu '%s' gefunden", bic));
         }
 
         info = bi.getFirst();
+        // assert: info.bic == bic (BIC der ermittelten Bank stimmt mit übergebenem Wert überein)
+        Assert.state(Objects.equals(info.getBic(), bic),
+                "info.bic == bic: BIC der ermittelten Bank ('" + info.getBic()
+                        + "') stimmt nicht mit der übergebenen BIC ('" + bic + "') überein");
         // HBCI4Java initialisieren
         // In "props" koennen optional Kernel-Parameter abgelegt werden, die in der Klasse
         // org.kapott.hbci.manager.HBCIUtils (oben im Javadoc) beschrieben sind.
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
 
 
-        System.out.println(String.format("!connect:  name='%s' blz=%s user=%s", name, blzOrBic, user));
+        System.out.println(String.format("!connect:  name='%s' blz=%s user=%s", name, bic, user));
 
         Properties props = new Properties();
         HBCIUtils.init(props, new MyHBCICallback());
@@ -75,7 +80,7 @@ public class BankConnection implements AutoCloseable {
         // wenn der Parameter "client.passport.PinTan.init" den Wert "1" hat (siehe unten).
         // Wir speichern die Datei der Einfachheit halber im aktuellen Verzeichnis.
 
-        final File passportFile = new File(String.format("passport2-%s-%s.dat", blzOrBic, user));
+        final File passportFile = new File(String.format("passport2-%s-%s.dat", bic, user));
 
 
         System.out.println(String.format("passport-file = %s", passportFile.getAbsolutePath()));
@@ -439,7 +444,7 @@ public class BankConnection implements AutoCloseable {
 
                 // BLZ wird benoetigt
                 case NEED_BLZ:
-                    retData.replace(0,retData.length(),blzOrBic);
+                    retData.replace(0,retData.length(), bic);
                     break;
 
                 // Die Benutzerkennung
