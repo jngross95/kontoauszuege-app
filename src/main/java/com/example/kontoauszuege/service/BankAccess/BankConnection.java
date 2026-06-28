@@ -36,6 +36,10 @@ public class BankConnection implements AutoCloseable {
         this.bankPin = bankPin;
     }
 
+    private boolean isTestBank(){
+        return "0".equals(bic);
+    }
+
     private  static Date startOfDay(Date date)
     {
         if (date == null)
@@ -51,6 +55,9 @@ public class BankConnection implements AutoCloseable {
     }
 
     public void connect() throws Exception {
+        if(isTestBank())
+            return;
+
         // Server-Adresse angeben. Koennen wir entweder manuell eintragen oder direkt von HBCI4Java ermitteln lassen
         var bi = HBCIUtils.searchBankInfo(bic);
         if (bi.size() == 0) {
