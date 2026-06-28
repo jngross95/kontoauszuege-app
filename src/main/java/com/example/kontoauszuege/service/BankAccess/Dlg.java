@@ -1,4 +1,4 @@
-package com.example.kontoauszuege.service.Bank;
+package com.example.kontoauszuege.service.BankAccess;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

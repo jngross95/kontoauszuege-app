@@ -1,4 +1,4 @@
-package com.example.kontoauszuege.service.Bank;
+package com.example.kontoauszuege.service.BankAccess;
 
 import org.kapott.hbci.GV.HBCIJob;
 import org.kapott.hbci.GV_Result.GVRKUms;

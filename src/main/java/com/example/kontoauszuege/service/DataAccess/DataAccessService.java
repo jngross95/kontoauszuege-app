@@ -2,8 +2,8 @@ package com.example.kontoauszuege.service.DataAccess;
 
 import com.example.kontoauszuege.model.Entity;
 import com.example.kontoauszuege.repository.EntityRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -98,7 +98,7 @@ public class DataAccessService {
     private String toJson(DataObject obj) {
         try {
             return objectMapper.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException(
                     "Fehler beim Serialisieren von " + obj.getClass().getName(), e);
         }
@@ -110,7 +110,7 @@ public class DataAccessService {
             obj.setPk(entity.getPk());
             obj.setEntity(entity);
             return obj;
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException(
                     "Fehler beim Deserialisieren von Entity id=" + entity.getId()
                             + " nach " + type.getName(), e);
