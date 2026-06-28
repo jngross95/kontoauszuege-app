@@ -42,6 +42,33 @@ public class BankConnection implements AutoCloseable {
         return "0".equals(bic);
     }
 
+    /**
+     * Ermittelt die BIC zu einer (deutschen) IBAN anhand der in HBCI4Java
+     * hinterlegten Bankenliste. Eine Initialisierung von HBCI4Java ist dafür
+     * nicht erforderlich.
+     *
+     * @param iban die IBAN, mit oder ohne Leerzeichen
+     * @return die ermittelte BIC oder {@code null}, wenn keine bestimmt werden kann
+     */
+    public static String bicAusIban(String iban) {
+        if (iban == null) {
+            return null;
+        }
+        String norm = iban.trim().replace(" ", "").toUpperCase(Locale.ROOT);
+        // BLZ-Extraktion und Bankenliste gelten nur für deutsche IBANs.
+        if (!norm.startsWith("DE") || norm.length() < 12) {
+            return null;
+        }
+
+
+        String blz = norm.substring(4, 12);
+        BankInfo info = HBCIUtils.getBankInfo(blz);
+        if (info == null) {
+            return null;
+        }
+        return info.getBic();
+    }
+
     private  static Date startOfDay(Date date)
     {
         if (date == null)
@@ -329,7 +356,7 @@ public class BankConnection implements AutoCloseable {
 
     /**
      * Liefert Test-Umsätze für die Test-Bank (BIC "0").
-     * Orientiert sich an BankStatementTestService und liefert je nach Konto
+        * Liefert je nach Konto
      * unterschiedliche Buchungen für die Test-IBANs "iban1" und "iban2".
      */
     private List<KontoBuchung> getTestUmsaetze(String iban) {
@@ -398,7 +425,7 @@ public class BankConnection implements AutoCloseable {
         return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
-    String  UeberweisungAusfuehren(
+    public String  UeberweisungAusfuehren(
             String iban,
 
             String dstName,

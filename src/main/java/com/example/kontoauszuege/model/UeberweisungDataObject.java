@@ -1,33 +1,33 @@
 package com.example.kontoauszuege.model;
 
+import com.example.kontoauszuege.service.DataAccess.DataObject;
+
 import java.math.BigDecimal;
-import java.util.UUID;
 
-public class Ueberweisung {
+public class UeberweisungDataObject extends DataObject {
 
-    private final String id;
     private boolean ausgewaehlt = true;
     private String sender;
+
     private String empfaenger;
     private String empfaengerIban;
+    private String empfaengerBic;
     private String verwendungszweck;
     private BigDecimal betrag;
 
-    public Ueberweisung() {
-        this.id = UUID.randomUUID().toString();
+    public UeberweisungDataObject() {
     }
 
-    public Ueberweisung(String sender, String empfaenger, String empfaengerIban,
-                        String verwendungszweck, BigDecimal betrag) {
+    public UeberweisungDataObject(String sender, String empfaenger, String empfaengerIban,
+                                  String empfaengerBic, String verwendungszweck, BigDecimal betrag) {
         this();
         this.sender = sender;
         this.empfaenger = empfaenger;
         this.empfaengerIban = empfaengerIban;
+        this.empfaengerBic = empfaengerBic;
         this.verwendungszweck = verwendungszweck;
         this.betrag = betrag;
     }
-
-    public String getId()                         { return id; }
 
     public boolean isAusgewaehlt()                    { return ausgewaehlt; }
     public void    setAusgewaehlt(boolean ausgewaehlt) { this.ausgewaehlt = ausgewaehlt; }
@@ -40,6 +40,9 @@ public class Ueberweisung {
 
     public String getEmpfaengerIban()                        { return empfaengerIban; }
     public void   setEmpfaengerIban(String empfaengerIban)   { this.empfaengerIban = empfaengerIban; }
+
+    public String getEmpfaengerBic()                        { return empfaengerBic; }
+    public void   setEmpfaengerBic(String empfaengerBic)    { this.empfaengerBic = empfaengerBic; }
 
     public String getVerwendungszweck()                           { return verwendungszweck; }
     public void   setVerwendungszweck(String verwendungszweck)    { this.verwendungszweck = verwendungszweck; }

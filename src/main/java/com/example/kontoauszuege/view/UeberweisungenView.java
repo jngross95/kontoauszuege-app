@@ -1,7 +1,8 @@
 package com.example.kontoauszuege.view;
 
-import com.example.kontoauszuege.model.Ueberweisung;
-import com.example.kontoauszuege.service.BankStatementTestService;
+import com.example.kontoauszuege.model.UeberweisungDataObject;
+import com.example.kontoauszuege.service.BankAccountService;
+import com.example.kontoauszuege.service.BankStatementService;
 import com.example.kontoauszuege.service.UeberweisungService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -36,7 +37,7 @@ public class UeberweisungenView extends VerticalLayout {
 
     private final UeberweisungService service;
 
-    private final Grid<Ueberweisung> grid = new Grid<>(Ueberweisung.class, false);
+    private final Grid<UeberweisungDataObject> grid = new Grid<>(UeberweisungDataObject.class, false);
 
     // Formularfelder
     private final Select<String>   senderField        = new Select<>();
@@ -46,11 +47,12 @@ public class UeberweisungenView extends VerticalLayout {
     private final TextField        betragField        = new TextField("Betrag (€)");
 
     private List<String> senderItems = List.of();
-    private Ueberweisung selected = null;
+    private UeberweisungDataObject selected = null;
     private Dialog editDialog;
 
     public UeberweisungenView(UeberweisungService service,
-                              BankStatementTestService bankStatementTestService) {
+                              BankAccountService bankAccountService,
+                              BankStatementService bankStatementService) {
         this.service = service;
 
         setSizeFull();
@@ -68,14 +70,14 @@ public class UeberweisungenView extends VerticalLayout {
         setFlexGrow(1, grid);
 
         // ── Teil 3: Dialog vorbereiten ────────────────────────────────────
-        senderItems = bankStatementTestService.findAll().stream()
-                .map(b -> b.getAuftraggeber())
+        senderItems = bankAccountService.getAllBankAccounts().stream()
+            .map(b -> b.getName())
                 .filter(s -> s != null && !s.isBlank())
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
 
-        List<String> bekannteEmpfaenger = bankStatementTestService.findAll().stream()
+        List<String> bekannteEmpfaenger = bankStatementService.getAllStatements().stream()
                 .map(b -> b.getEmpfaenger())
                 .filter(s -> s != null && !s.isBlank())
                 .distinct()
@@ -120,20 +122,20 @@ public class UeberweisungenView extends VerticalLayout {
             return cb;
         }).setHeader("Senden").setWidth("80px").setFlexGrow(0);
 
-        grid.addColumn(Ueberweisung::getSender)
+        grid.addColumn(UeberweisungDataObject::getSender)
                 .setHeader("Sender").setResizable(true).setSortable(true).setAutoWidth(true);
-        grid.addColumn(Ueberweisung::getEmpfaenger)
+        grid.addColumn(UeberweisungDataObject::getEmpfaenger)
                 .setHeader("Empfänger").setResizable(true).setSortable(true).setAutoWidth(true);
-        grid.addColumn(Ueberweisung::getEmpfaengerIban)
+        grid.addColumn(UeberweisungDataObject::getEmpfaengerIban)
                 .setHeader("Empfänger-IBAN").setResizable(true).setSortable(true).setAutoWidth(true);
-        grid.addColumn(Ueberweisung::getVerwendungszweck)
+        grid.addColumn(UeberweisungDataObject::getVerwendungszweck)
                 .setHeader("Verwendungszweck").setResizable(true).setSortable(true).setFlexGrow(1);
         grid.addColumn(new NumberRenderer<>(
-                        Ueberweisung::getBetrag,
+                        UeberweisungDataObject::getBetrag,
                         NumberFormat.getCurrencyInstance(Locale.GERMANY)))
                 .setHeader("Betrag")
                 .setSortable(true)
-                .setComparator(Ueberweisung::getBetrag)
+                .setComparator(UeberweisungDataObject::getBetrag)
                 .setAutoWidth(true);
 
         grid.setWidthFull();
@@ -200,7 +202,7 @@ public class UeberweisungenView extends VerticalLayout {
     // ── Aktionen ──────────────────────────────────────────────────────────
 
     private void neueUeberweisung() {
-        Ueberweisung neu = new Ueberweisung();
+        UeberweisungDataObject neu = new UeberweisungDataObject();
         service.add(neu);
         refreshGrid();
         grid.select(neu);
@@ -231,8 +233,8 @@ public class UeberweisungenView extends VerticalLayout {
     }
 
     private void senden() {
-        List<Ueberweisung> zumSenden = service.findAll().stream()
-                .filter(Ueberweisung::isAusgewaehlt)
+        List<UeberweisungDataObject> zumSenden = service.findAll().stream()
+                .filter(UeberweisungDataObject::isAusgewaehlt)
                 .collect(Collectors.toList());
         if (zumSenden.isEmpty()) {
             Notification.show("Keine Überweisung zum Senden markiert.",
@@ -264,7 +266,7 @@ public class UeberweisungenView extends VerticalLayout {
         grid.select(selected);
     }
 
-    private void ladeFormular(Ueberweisung u) {
+    private void ladeFormular(UeberweisungDataObject u) {
         selected = u;
         String sv = u.getSender();
         senderField.setValue(sv != null && senderItems.contains(sv) ? sv : null);
@@ -284,14 +286,8 @@ public class UeberweisungenView extends VerticalLayout {
     }
 
     private void refreshGrid() {
-        List<Ueberweisung> alle = service.findAll();
+        List<UeberweisungDataObject> alle = service.findAll();
         grid.setItems(alle);
-        if (selected != null) {
-            alle.stream()
-                .filter(u -> u.getId().equals(selected.getId()))
-                .findFirst()
-                .ifPresent(grid::select);
-        }
     }
 }
 
