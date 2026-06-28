@@ -9,6 +9,8 @@ import com.example.kontoauszuege.service.DataAccess.DataAccessService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +85,21 @@ public class BankStatementService {
                         continue;
                     }
 
-                    List<KontoBuchung> buchungen = connection.UmsaetzeAbholen(iban, new Date(0));
+                    // Startdatum ermitteln: Maximum (Buchungsdatum) der bestehenden
+                    // Statements dieses Kontos und davon eine Woche abziehen.
+                    Date startDate = bestehendeStatements.stream()
+                            .filter(s -> iban.equals(normalize(s.getIban())))
+                            .map(BankStatementDataObject::getBuchungsdatum)
+                            .filter(Objects::nonNull)
+                            .max(Date::compareTo)
+                            .orElse(null);
+
+                    // Vom Startdatum 7 Tage abziehen (Instant)
+                    if (startDate != null) {
+                        startDate = Date.from(startDate.toInstant().minus(7, ChronoUnit.DAYS));
+                    }
+
+                    List<KontoBuchung> buchungen = connection.UmsaetzeAbholen(iban, startDate);
                     for (KontoBuchung buchung : buchungen) {
                         BankStatementDataObject statement = toDataObject(iban, buchung);
                         String key = buildStatementKey(statement);
