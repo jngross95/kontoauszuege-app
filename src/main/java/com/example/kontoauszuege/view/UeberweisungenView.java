@@ -1,7 +1,7 @@
 package com.example.kontoauszuege.view;
 
 import com.example.kontoauszuege.model.Ueberweisung;
-import com.example.kontoauszuege.service.BankStatementService;
+import com.example.kontoauszuege.service.BankStatementTestService;
 import com.example.kontoauszuege.service.UeberweisungService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -50,7 +50,7 @@ public class UeberweisungenView extends VerticalLayout {
     private Dialog editDialog;
 
     public UeberweisungenView(UeberweisungService service,
-                              BankStatementService bankStatementService) {
+                              BankStatementTestService bankStatementTestService) {
         this.service = service;
 
         setSizeFull();
@@ -68,14 +68,14 @@ public class UeberweisungenView extends VerticalLayout {
         setFlexGrow(1, grid);
 
         // ── Teil 3: Dialog vorbereiten ────────────────────────────────────
-        senderItems = bankStatementService.findAll().stream()
+        senderItems = bankStatementTestService.findAll().stream()
                 .map(b -> b.getAuftraggeber())
                 .filter(s -> s != null && !s.isBlank())
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
 
-        List<String> bekannteEmpfaenger = bankStatementService.findAll().stream()
+        List<String> bekannteEmpfaenger = bankStatementTestService.findAll().stream()
                 .map(b -> b.getEmpfaenger())
                 .filter(s -> s != null && !s.isBlank())
                 .distinct()

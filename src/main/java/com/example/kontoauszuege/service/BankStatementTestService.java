@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class BankStatementService {
+public class BankStatementTestService {
 
     private final List<BankStatement> statements = new ArrayList<>();
 
-    public BankStatementService() {
+    public BankStatementTestService() {
         initSampleData();
     }
 

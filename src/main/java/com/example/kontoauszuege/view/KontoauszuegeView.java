@@ -1,7 +1,9 @@
 package com.example.kontoauszuege.view;
 
+import com.example.kontoauszuege.model.BankAccountDataObject;
 import com.example.kontoauszuege.model.BankStatement;
-import com.example.kontoauszuege.service.BankStatementService;
+import com.example.kontoauszuege.service.BankAccountService;
+import com.example.kontoauszuege.service.BankStatementTestService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
@@ -23,21 +25,22 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("Kontoauszüge")
 public class KontoauszuegeView extends VerticalLayout {
 
-    private final BankStatementService service;
+    private final transient BankStatementTestService service;
     private final Grid<BankStatement> grid = new Grid<>(BankStatement.class, false);
     private final TextField suchfeld = new TextField();
-    private final Select<String> kontoSelect = new Select<>();
-    private String aktivesKonto = null;
+    private final Select<BankAccountDataObject> kontoSelect = new Select<>();
+    private String aktiveKontoIban = null;
 
     private static final String DATE_FORMAT = "dd.MM.yyyy";
     private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
-    public KontoauszuegeView(BankStatementService service) {
+    public KontoauszuegeView(BankStatementTestService service, BankAccountService bankAccountService) {
         this.service = service;
 
         setSizeFull();
@@ -45,18 +48,25 @@ public class KontoauszuegeView extends VerticalLayout {
         setSpacing(true);
         addClassName("kontoauszuege-view");
 
-        List<String> konten = service.findAll().stream()
-                .map(BankStatement::getAuftraggeber)
-                .filter(k -> k != null && !k.isBlank())
+        List<BankAccountDataObject> konten = bankAccountService.getAllBankAccounts().stream()
+                .filter(k -> k.getName() != null && !k.getName().isBlank())
                 .distinct()
-                .sorted()
-                .collect(java.util.stream.Collectors.toList());
+                .sorted(java.util.Comparator.comparing(BankAccountDataObject::getName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+
         kontoSelect.setLabel("Konto");
         kontoSelect.setItems(konten);
+        kontoSelect.setItemLabelGenerator(konto -> {
+            if (konto == null || konto.getName() == null || konto.getName().isBlank()) {
+                return "";
+            }
+            return konto.getName();
+        });
         kontoSelect.setEmptySelectionAllowed(true);
         kontoSelect.setEmptySelectionCaption("– alle –");
         kontoSelect.addValueChangeListener(e -> {
-            aktivesKonto = e.getValue();
+            BankAccountDataObject konto = e.getValue();
+            aktiveKontoIban = konto == null ? null : konto.getIban();
             ladeKontoauszuege(suchfeld.getValue());
         });
 
@@ -83,7 +93,7 @@ public class KontoauszuegeView extends VerticalLayout {
         alleHolenButton.addClickListener(e -> {
             suchfeld.clear();
             kontoSelect.clear();
-            aktivesKonto = null;
+            aktiveKontoIban = null;
             ladeKontoauszuege("");
         });
 
@@ -180,11 +190,18 @@ public class KontoauszuegeView extends VerticalLayout {
 
     private void ladeKontoauszuege(String filter) {
         var liste = service.findByFilter(filter);
-        if (aktivesKonto != null && !aktivesKonto.isBlank()) {
+        if (aktiveKontoIban != null && !aktiveKontoIban.isBlank()) {
             liste = liste.stream()
-                    .filter(s -> aktivesKonto.equals(s.getAuftraggeber()))
+                    .filter(s -> Objects.equals(normalisiereIban(aktiveKontoIban), normalisiereIban(s.getIban())))
                     .toList();
         }
         grid.setItems(liste);
+    }
+
+    private String normalisiereIban(String iban) {
+        if (iban == null) {
+            return "";
+        }
+        return iban.trim().replace(" ", "").toUpperCase(Locale.ROOT);
     }
 }
