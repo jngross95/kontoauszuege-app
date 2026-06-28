@@ -1,9 +1,9 @@
 package com.example.kontoauszuege.view;
 
 import com.example.kontoauszuege.model.BankAccountDataObject;
-import com.example.kontoauszuege.model.BankStatement;
+import com.example.kontoauszuege.model.BankStatementDataObject;
 import com.example.kontoauszuege.service.BankAccountService;
-import com.example.kontoauszuege.service.BankStatementTestService;
+import com.example.kontoauszuege.service.BankStatementService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
@@ -15,8 +15,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.LocalDateRenderer;
-import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -31,16 +29,17 @@ import java.util.Objects;
 @PageTitle("Kontoauszüge")
 public class KontoauszuegeView extends VerticalLayout {
 
-    private final transient BankStatementTestService service;
-    private final Grid<BankStatement> grid = new Grid<>(BankStatement.class, false);
+    private final transient BankStatementService service;
+    private final Grid<BankStatementDataObject> grid = new Grid<>(BankStatementDataObject.class, false);
     private final TextField suchfeld = new TextField();
     private final Select<BankAccountDataObject> kontoSelect = new Select<>();
     private String aktiveKontoIban = null;
 
     private static final String DATE_FORMAT = "dd.MM.yyyy";
+    private static final String WIDTH_150PX = "150px";
     private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
-    public KontoauszuegeView(BankStatementTestService service, BankAccountService bankAccountService) {
+    public KontoauszuegeView(BankStatementService service, BankAccountService bankAccountService) {
         this.service = service;
 
         setSizeFull();
@@ -107,36 +106,48 @@ public class KontoauszuegeView extends VerticalLayout {
         return toolbar;
     }
 
-    private Grid<BankStatement> createGrid() {
+    private Grid<BankStatementDataObject> createGrid() {
         grid.setSizeFull();
         grid.setMultiSort(true);
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS,
                 GridVariant.LUMO_WRAP_CELL_CONTENT);
 
-        grid.addColumn(new LocalDateRenderer<>(BankStatement::getBuchungsdatum, DATE_FORMAT))
+        grid.addColumn(new ComponentRenderer<>(stmt -> {
+            var dateStr = stmt.getBuchungsdatum() != null ? new java.text.SimpleDateFormat(DATE_FORMAT).format(stmt.getBuchungsdatum()) : "";
+            return new Span(dateStr);
+        }))
                 .setHeader("Buchungsdatum")
                 .setSortable(true)
-                .setComparator(BankStatement::getBuchungsdatum)
+                .setComparator((s1, s2) -> {
+                    if (s1.getBuchungsdatum() == null || s2.getBuchungsdatum() == null) return 0;
+                    return s1.getBuchungsdatum().compareTo(s2.getBuchungsdatum());
+                })
                 .setResizable(true)
-                .setWidth("150px")
+                .setWidth(WIDTH_150PX)
                 .setFlexGrow(0);
 
-        grid.addColumn(new LocalDateRenderer<>(BankStatement::getValutadatum, DATE_FORMAT))
-                .setHeader("Valutadatum")
+        grid.addColumn(new ComponentRenderer<>(stmt -> {
+            var dateStr = stmt.getWertstellungsdatum() != null ? new java.text.SimpleDateFormat(DATE_FORMAT).format(stmt.getWertstellungsdatum()) : "";
+            return new Span(dateStr);
+        }))
+                .setHeader("Wertstellungsdatum")
                 .setSortable(true)
-                .setComparator(BankStatement::getValutadatum)
+                .setComparator((s1, s2) -> {
+                    if (s1.getWertstellungsdatum() == null || s2.getWertstellungsdatum() == null) return 0;
+                    return s1.getWertstellungsdatum().compareTo(s2.getWertstellungsdatum());
+                })
                 .setResizable(true)
-                .setWidth("140px")
+                .setWidth(WIDTH_150PX)
                 .setFlexGrow(0);
 
-        grid.addColumn(BankStatement::getAuftraggeber)
-                .setHeader("Auftraggeber")
+        grid.addColumn(BankStatementDataObject::getGeschaeftsvorfall)
+                .setHeader("Geschäftsvorfall")
                 .setSortable(true)
                 .setResizable(true)
                 .setWidth("200px")
                 .setFlexGrow(0);
 
-        grid.addColumn(BankStatement::getEmpfaenger)
+        grid.addColumn(BankStatementDataObject::getEmpfaenger)
                 .setHeader("Empfänger")
                 .setSortable(true)
                 .setResizable(true)
@@ -152,7 +163,7 @@ public class KontoauszuegeView extends VerticalLayout {
                 .setResizable(true)
                 .setFlexGrow(1);
 
-        grid.addColumn(BankStatement::getIban)
+        grid.addColumn(BankStatementDataObject::getIban)
                 .setHeader("IBAN")
                 .setResizable(true)
                 .setWidth("220px")
@@ -170,18 +181,22 @@ public class KontoauszuegeView extends VerticalLayout {
         }))
                 .setHeader("Betrag")
                 .setSortable(true)
-                .setComparator(BankStatement::getBetrag)
+                .setComparator(BankStatementDataObject::getBetrag)
                 .setResizable(true)
                 .setWidth("140px")
                 .setFlexGrow(0)
                 .setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
 
-        grid.addColumn(new NumberRenderer<>(BankStatement::getKontostand, CURRENCY_FORMAT))
-                .setHeader("Kontostand")
+        grid.addColumn(new ComponentRenderer<>(stmt -> {
+            Span saldoSpan = new Span(CURRENCY_FORMAT.format(stmt.getSaldo()));
+            saldoSpan.getStyle().set("font-weight", "bold");
+            return saldoSpan;
+        }))
+                .setHeader("Saldo")
                 .setSortable(true)
-                .setComparator(BankStatement::getKontostand)
+                .setComparator(BankStatementDataObject::getSaldo)
                 .setResizable(true)
-                .setWidth("150px")
+                .setWidth(WIDTH_150PX)
                 .setFlexGrow(0)
                 .setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
 
@@ -189,7 +204,11 @@ public class KontoauszuegeView extends VerticalLayout {
     }
 
     private void ladeKontoauszuege(String filter) {
-        var liste = service.findByFilter(filter);
+        var liste = service.getAllStatements().stream()
+                .filter(s -> filter == null || filter.isBlank() || 
+                        (s.getEmpfaenger() != null && s.getEmpfaenger().toLowerCase().contains(filter.toLowerCase())) ||
+                        (s.getVerwendungszweck() != null && s.getVerwendungszweck().toLowerCase().contains(filter.toLowerCase())))
+                .toList();
         if (aktiveKontoIban != null && !aktiveKontoIban.isBlank()) {
             liste = liste.stream()
                     .filter(s -> Objects.equals(normalisiereIban(aktiveKontoIban), normalisiereIban(s.getIban())))
