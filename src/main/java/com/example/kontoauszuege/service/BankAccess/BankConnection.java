@@ -150,7 +150,7 @@ public class BankConnection implements AutoCloseable {
         }
     }
 
-    List<BankAccount> getAccounts() throws Exception {
+    public List<BankAccount> getAccounts() throws Exception {
         if(isTestBank()) {
             return List.of(new BankAccount("iban1", "0"), new BankAccount("iban2", "0"));
         }
