@@ -50,7 +50,7 @@ public class BankConnection implements AutoCloseable {
         return cal.getTime();
     }
 
-    void connect() throws Exception {
+    public void connect() throws Exception {
         // Server-Adresse angeben. Koennen wir entweder manuell eintragen oder direkt von HBCI4Java ermitteln lassen
         var bi = HBCIUtils.searchBankInfo(bic);
         if (bi.size() == 0) {
