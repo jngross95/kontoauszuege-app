@@ -124,6 +124,19 @@ public class UeberweisungenView extends VerticalLayout {
             return cb;
         }).setHeader("Senden").setWidth("80px").setFlexGrow(0);
 
+        grid.addComponentColumn(u -> {
+            com.vaadin.flow.component.html.Span badge = new com.vaadin.flow.component.html.Span(
+                    u.getStatus() != null ? u.getStatus().name() : UeberweisungStatus.NEW.name());
+            String theme = switch (u.getStatus() != null ? u.getStatus() : UeberweisungStatus.NEW) {
+                case NEW     -> "badge contrast";
+                case SENDING -> "badge";
+                case SENT    -> "badge success";
+                case ERROR   -> "badge error";
+            };
+            badge.getElement().setAttribute("theme", theme);
+            return badge;
+        }).setHeader("Status").setAutoWidth(true).setSortable(false);
+
         grid.addColumn(UeberweisungDataObject::getSender)
                 .setHeader("Sender").setResizable(true).setSortable(true).setAutoWidth(true);
         grid.addColumn(UeberweisungDataObject::getEmpfaenger)
@@ -141,18 +154,6 @@ public class UeberweisungenView extends VerticalLayout {
                 .setSortable(true)
                 .setComparator(UeberweisungDataObject::getBetrag)
                 .setAutoWidth(true);
-        grid.addComponentColumn(u -> {
-            com.vaadin.flow.component.html.Span badge = new com.vaadin.flow.component.html.Span(
-                    u.getStatus() != null ? u.getStatus().name() : UeberweisungStatus.NEW.name());
-            String theme = switch (u.getStatus() != null ? u.getStatus() : UeberweisungStatus.NEW) {
-                case NEW     -> "badge contrast";
-                case SENDING -> "badge";
-                case SENT    -> "badge success";
-                case ERROR   -> "badge error";
-            };
-            badge.getElement().setAttribute("theme", theme);
-            return badge;
-        }).setHeader("Status").setAutoWidth(true).setSortable(false);
 
         grid.setWidthFull();
         grid.addSelectionListener(e -> {
