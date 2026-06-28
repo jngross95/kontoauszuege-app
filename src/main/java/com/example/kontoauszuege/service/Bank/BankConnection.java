@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-public class BankAccess implements AutoCloseable {
+public class BankConnection implements AutoCloseable {
     BankInfo info;
     HBCIHandler handle;
     HBCIPassport passport;
@@ -38,11 +38,11 @@ public class BankAccess implements AutoCloseable {
 
     void connect(BankContact contact) throws Exception {
         // Server-Adresse angeben. Koennen wir entweder manuell eintragen oder direkt von HBCI4Java ermitteln lassen
-        var bi = HBCIUtils.searchBankInfo(contact.blzOrIban);
+        var bi = HBCIUtils.searchBankInfo(contact.blzOrBic);
         if (bi.size() == 0) {
-            throw new Exception(String.format("Keine BankInfo gefunden für die BLZ/BIC: %s", contact.blzOrIban));
+            throw new Exception(String.format("Keine BankInfo gefunden für die BLZ/BIC: %s", contact.blzOrBic));
         } else if (bi.size() > 1) {
-            throw new Exception(String.format("mehrere  Banken zu '%s' gefunden", contact.blzOrIban));
+            throw new Exception(String.format("mehrere  Banken zu '%s' gefunden", contact.blzOrBic));
         }
 
         info = bi.getFirst();
@@ -52,7 +52,7 @@ public class BankAccess implements AutoCloseable {
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
 
 
-        System.out.println(String.format("!connect:  name='%s' blz=%s user=%s", contact.name, contact.blzOrIban, contact.user));
+        System.out.println(String.format("!connect:  name='%s' blz=%s user=%s", contact.name, contact.blzOrBic, contact.user));
 
         Properties props = new Properties();
         HBCIUtils.init(props, new MyHBCICallback(contact));
@@ -62,7 +62,7 @@ public class BankAccess implements AutoCloseable {
         // wenn der Parameter "client.passport.PinTan.init" den Wert "1" hat (siehe unten).
         // Wir speichern die Datei der Einfachheit halber im aktuellen Verzeichnis.
 
-        final File passportFile = new File(String.format("passport2-%s-%s.dat", contact.blzOrIban, contact.user));
+        final File passportFile = new File(String.format("passport2-%s-%s.dat", contact.blzOrBic, contact.user));
 
 
         System.out.println(String.format("passport-file = %s", passportFile.getAbsolutePath()));
@@ -81,7 +81,6 @@ public class BankAccess implements AutoCloseable {
 
         // Das Land.
         passport.setCountry("DE");
-
 
         passport.setHost(info.getPinTanAddress());
 
@@ -429,7 +428,7 @@ public class BankAccess implements AutoCloseable {
 
                 // BLZ wird benoetigt
                 case NEED_BLZ:
-                    retData.replace(0,retData.length(),contact.blzOrIban);
+                    retData.replace(0,retData.length(),contact.blzOrBic);
                     break;
 
                 // Die Benutzerkennung
@@ -634,7 +633,7 @@ public class BankAccess implements AutoCloseable {
 
                 // Manche Fehlermeldungen werden hier ausgegeben
                 case HAVE_ERROR:
-                    BankAccess.log(msg);
+                    BankConnection.log(msg);
                     break;
                 case NEED_COUNTRY:
                     retData.replace(0,retData.length(),"DE");

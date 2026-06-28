@@ -1,8 +1,8 @@
 package com.example.kontoauszuege.service.Bank;
 
 public class BankContact {
-    public String name; //Nur zu Logzwecken Source KontoName
-    public String blzOrIban;
+    public String name;
+    public String blzOrBic;
     public String user;
     public String bankPin;
 }
