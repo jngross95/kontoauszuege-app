@@ -22,6 +22,19 @@ public class BankConnection implements AutoCloseable {
     HBCIHandler handle;
     HBCIPassport passport;
 
+    // --- Zugangsdaten (zuvor in BankContact) ---
+    final String name;       // Nur zu Logzwecken
+    final String blzOrBic;
+    final String user;
+    final String bankPin;
+
+    public BankConnection(String name, String blzOrBic, String user, String bankPin) {
+        this.name = name;
+        this.blzOrBic = blzOrBic;
+        this.user = user;
+        this.bankPin = bankPin;
+    }
+
     private  static Date startOfDay(Date date)
     {
         if (date == null)
@@ -36,13 +49,13 @@ public class BankConnection implements AutoCloseable {
         return cal.getTime();
     }
 
-    void connect(BankContact contact) throws Exception {
+    void connect() throws Exception {
         // Server-Adresse angeben. Koennen wir entweder manuell eintragen oder direkt von HBCI4Java ermitteln lassen
-        var bi = HBCIUtils.searchBankInfo(contact.blzOrBic);
+        var bi = HBCIUtils.searchBankInfo(blzOrBic);
         if (bi.size() == 0) {
-            throw new Exception(String.format("Keine BankInfo gefunden für die BLZ/BIC: %s", contact.blzOrBic));
+            throw new Exception(String.format("Keine BankInfo gefunden für die BLZ/BIC: %s", blzOrBic));
         } else if (bi.size() > 1) {
-            throw new Exception(String.format("mehrere  Banken zu '%s' gefunden", contact.blzOrBic));
+            throw new Exception(String.format("mehrere  Banken zu '%s' gefunden", blzOrBic));
         }
 
         info = bi.getFirst();
@@ -52,17 +65,17 @@ public class BankConnection implements AutoCloseable {
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
 
 
-        System.out.println(String.format("!connect:  name='%s' blz=%s user=%s", contact.name, contact.blzOrBic, contact.user));
+        System.out.println(String.format("!connect:  name='%s' blz=%s user=%s", name, blzOrBic, user));
 
         Properties props = new Properties();
-        HBCIUtils.init(props, new MyHBCICallback(contact));
+        HBCIUtils.init(props, new MyHBCICallback());
 
         // In der Passport-Datei speichert HBCI4Java die Daten des Bankzugangs (Bankparameterdaten, Benutzer-Parameter, etc.).
         // Die Datei kann problemlos geloescht werden. Sie wird beim naechsten mal automatisch neu erzeugt,
         // wenn der Parameter "client.passport.PinTan.init" den Wert "1" hat (siehe unten).
         // Wir speichern die Datei der Einfachheit halber im aktuellen Verzeichnis.
 
-        final File passportFile = new File(String.format("passport2-%s-%s.dat", contact.blzOrBic, contact.user));
+        final File passportFile = new File(String.format("passport2-%s-%s.dat", blzOrBic, user));
 
 
         System.out.println(String.format("passport-file = %s", passportFile.getAbsolutePath()));
@@ -384,12 +397,10 @@ public class BankConnection implements AutoCloseable {
         System.exit(1);
     }
 
-    private static class MyHBCICallback extends AbstractHBCICallback
+    private class MyHBCICallback extends AbstractHBCICallback
     {
-        BankContact contact;
-        MyHBCICallback(BankContact c)
+        MyHBCICallback()
         {
-            this.contact = c;
         }
         /**
          * @see org.kapott.hbci.callback.HBCICallback#log(String, int, Date, StackTraceElement)
@@ -418,28 +429,28 @@ public class BankConnection implements AutoCloseable {
                 // Die Ergebnis-Daten muessen in dem StringBuffer "retData" platziert werden.
                 case NEED_PASSPHRASE_LOAD:
                 case NEED_PASSPHRASE_SAVE:
-                    retData.replace(0,retData.length(),contact.bankPin);
+                    retData.replace(0,retData.length(),bankPin);
                     break;
 
                 // PIN wird benoetigt
                 case NEED_PT_PIN:
-                    retData.replace(0,retData.length(),contact.bankPin);
+                    retData.replace(0,retData.length(),bankPin);
                     break;
 
                 // BLZ wird benoetigt
                 case NEED_BLZ:
-                    retData.replace(0,retData.length(),contact.blzOrBic);
+                    retData.replace(0,retData.length(),blzOrBic);
                     break;
 
                 // Die Benutzerkennung
                 case NEED_USERID:
-                    retData.replace(0,retData.length(),contact.user);
+                    retData.replace(0,retData.length(),user);
                     break;
 
                 // Die Kundenkennung. Meist identisch mit der Benutzerkennung.
                 // Bei manchen Banken kann man die auch leer lassen
                 case NEED_CUSTOMERID:
-                    retData.replace(0,retData.length(),contact.user);
+                    retData.replace(0,retData.length(),user);
                     break;
 
                 ////////////////////////////////////////////////////////////////////////
@@ -467,7 +478,7 @@ public class BankConnection implements AutoCloseable {
                         // Der Stream enthaelt jetzt die Binaer-Daten des Bildes
                         byte[] image = code.getImage();
                         // InputStream stream = new ByteArrayInputStream();
-                        var dlg = new Dlg(contact.name,"TAN: ", msg, image);
+                        var dlg = new Dlg(name,"TAN: ", msg, image);
                         String tan = dlg.tan;
                         // .... Hier Dialog mit der Grafik anzeigen und User-Eingabe der TAN
                         // Die Variable "msg" aus der Methoden-Signatur enthaelt uebrigens
@@ -494,7 +505,7 @@ public class BankConnection implements AutoCloseable {
                         byte[] image = code.getImage();
 
 
-                        var dlg = new Dlg(contact.name, "TAN:", msg, image);
+                        var dlg = new Dlg(name, "TAN:", msg, image);
                         String tan = dlg.tan;
                         // Der Stream enthaelt jetzt die Binaer-Daten des Bildes
                         // InputStream stream = new ByteArrayInputStream(code.getImage());
@@ -535,7 +546,7 @@ public class BankConnection implements AutoCloseable {
                     // Optionen ausgewaehlte Verfahren eingetragen werden
 
                     try {
-                        var dlg = new Dlg(contact.name, "Medium Nr: ",
+                        var dlg = new Dlg(name, "Medium Nr: ",
                                 String.format("'%s'\n\nWerte:  '%s'", msg,retData.toString()), null);
 
                         String code = dlg.tan;
@@ -580,7 +591,7 @@ public class BankConnection implements AutoCloseable {
                         // Dialog zur TAN-Eingabe anzeigen mit dem Text aus "msg".
 
                         try {
-                            var dlg = new Dlg(contact.name, "TAN:", msg, null);
+                            var dlg = new Dlg(name, "TAN:", msg, null);
                             String tan = dlg.tan;
                             retData.replace(0, retData.length(), tan);
                         }
@@ -613,7 +624,7 @@ public class BankConnection implements AutoCloseable {
                     // bleiben
                     try {
                         /*
-                        var dlg = new Base.Dlg(contact.name, "TanMedium: ",
+                        var dlg = new Base.Dlg(name, "TanMedium: ",
                                 String.format("'%s'\n\nWerte:  '%s'", msg,retData.toString()), null);
 
                         String code = dlg.tan;
