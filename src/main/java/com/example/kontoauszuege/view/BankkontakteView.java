@@ -14,7 +14,6 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -48,7 +47,7 @@ public class BankkontakteView extends VerticalLayout {
     }
 
     private HorizontalLayout createToolbar() {
-        Button neuButton = new Button("+ Neu", VaadinIcon.PLUS.create(), e -> openNewContactDialog());
+        Button neuButton = new Button("Neu", VaadinIcon.PLUS.create(), e -> openNewContactDialog());
         neuButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button loeschenButton = new Button("Löschen", VaadinIcon.TRASH.create(), e -> deleteSelectedContact());
@@ -91,18 +90,28 @@ public class BankkontakteView extends VerticalLayout {
         dialog.setCloseOnEsc(true);
         dialog.setCloseOnOutsideClick(false);
         dialog.setWidth("33vw");
+        dialog.getElement().setAttribute("autocomplete", "off");
 
         TextField nameField = new TextField("Name");
         nameField.setWidthFull();
+        nameField.getElement().setAttribute("autocomplete", "off");
+        nameField.getElement().setAttribute("name", "bank-contact-name");
 
         TextField bicField = new TextField("BIC");
         bicField.setWidthFull();
+        bicField.getElement().setAttribute("autocomplete", "off");
+        bicField.getElement().setAttribute("name", "bank-contact-bic");
 
         TextField userField = new TextField("Benutzer");
         userField.setWidthFull();
+        userField.getElement().setAttribute("autocomplete", "off");
+        userField.getElement().setAttribute("name", "bank-contact-user");
 
-        PasswordField pinField = new PasswordField("Bank-PIN");
+        TextField pinField = new TextField("Bank-PIN");
         pinField.setWidthFull();
+        pinField.getElement().executeJs("this.inputElement.style.webkitTextSecurity = 'disc';");
+        pinField.getElement().setAttribute("autocomplete", "off");
+        pinField.getElement().setAttribute("name", "bank-contact-pin");
 
         FormLayout form = new FormLayout();
         form.setResponsiveSteps(
@@ -131,6 +140,7 @@ public class BankkontakteView extends VerticalLayout {
 
             try {
                 bankContactService.addBankContact(newContact);
+                pinField.clear();
                 dialog.close();
                 refreshGrid();
 
