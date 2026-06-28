@@ -34,3 +34,4 @@ pnpm-lock.yaml
 pnpmfile.cjs
 .pnpmfile.cjs
 src/main/frontend/generated/
+src/main/bundles/prod.bundle
