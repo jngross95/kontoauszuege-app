@@ -95,6 +95,19 @@ public class DataAccessService {
                 .toList();
     }
 
+    /**
+     * Löscht ein vorhandenes Fachobjekt anhand seines zugrundeliegenden Entities.
+     * Für ein sicheres Löschen muss das Objekt zuvor über {@link #insert} oder
+     * {@link #getAll} geladen worden sein.
+     */
+    @Transactional
+    public void delete(DataObject obj) {
+        Entity entity = obj.getEntity();
+        Assert.state(entity != null,
+                "delete benötigt ein zuvor geladenes oder eingefügtes Objekt mit Entity-Referenz");
+        repository.delete(entity);
+    }
+
     private String toJson(DataObject obj) {
         try {
             return objectMapper.writeValueAsString(obj);

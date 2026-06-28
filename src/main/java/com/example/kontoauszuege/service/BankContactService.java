@@ -32,4 +32,8 @@ public class BankContactService {
 		return dataAccessService.insert(bankContact);
 	}
 
+	public void deleteBankContact(BankContact bankContact) {
+		dataAccessService.delete(bankContact);
+	}
+
 }

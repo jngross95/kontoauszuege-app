@@ -4,15 +4,16 @@ import com.example.kontoauszuege.service.DataAccess.DataObject;
 
 public class BankContact extends DataObject {
 
+    private String name;
     private String bic;
     private String user;
     private String bankPin;
 
     public String getName() {
-        return this.getPk();
+        return name;
     }
     public void  setName(String str) {
-        this.setPk(str);
+        this.name = str;
     }
 
     public String getBic() {
