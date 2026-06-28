@@ -2,6 +2,7 @@ package com.example.kontoauszuege.view;
 
 import com.example.kontoauszuege.model.BankAccountDataObject;
 import com.example.kontoauszuege.service.BankAccountService;
+import com.example.kontoauszuege.service.BankStatementService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -27,12 +28,15 @@ public class BankkontenView extends VerticalLayout {
     private static final String AUTOCOMPLETE_ATTR = "autocomplete";
 
     private final transient BankAccountService bankAccountService;
+    private final transient BankStatementService bankStatementService;
 
     private final Grid<BankAccountDataObject> grid = new Grid<>(BankAccountDataObject.class, false);
     private transient BankAccountDataObject selected;
 
-    public BankkontenView(BankAccountService bankAccountService) {
+    public BankkontenView(BankAccountService bankAccountService,
+                          BankStatementService bankStatementService) {
         this.bankAccountService = bankAccountService;
+        this.bankStatementService = bankStatementService;
 
         setSizeFull();
         setPadding(true);
@@ -154,7 +158,7 @@ public class BankkontenView extends VerticalLayout {
             return;
         }
 
-        bankAccountService.deleteBankAccount(selected);
+        bankStatementService.deleteAccountAndStatements(selected);
         refreshGrid();
 
         Notification deleted = Notification.show("Bankkonto wurde gelöscht.",

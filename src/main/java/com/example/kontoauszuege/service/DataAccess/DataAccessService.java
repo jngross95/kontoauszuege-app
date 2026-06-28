@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -91,6 +92,7 @@ public class DataAccessService {
     @Transactional(readOnly = true)
     public <T extends DataObject> List<T> getAll(Class<T> type) {
         return repository.findByType(type.getName()).stream()
+                .sorted(Comparator.comparing(Entity::getId).reversed())
                 .map(entity -> fromEntity(entity, type))
                 .toList();
     }

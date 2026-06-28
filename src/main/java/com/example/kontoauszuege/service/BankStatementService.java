@@ -129,6 +129,26 @@ public class BankStatementService {
         return statement;
     }
 
+    public void deleteStatementsByIban(String iban) {
+        if (iban == null || iban.isBlank()) {
+            return;
+        }
+        String normalizedIban = normalize(iban);
+        List<BankStatementDataObject> allStatements = getAllStatements();
+        for (BankStatementDataObject statement : allStatements) {
+            if (normalizedIban.equals(normalize(statement.getIban()))) {
+                dataAccessService.delete(statement);
+            }
+        }
+    }
+
+    public void deleteAccountAndStatements(BankAccountDataObject bankAccountDataObject) {
+        if (bankAccountDataObject != null && bankAccountDataObject.getIban() != null) {
+            deleteStatementsByIban(bankAccountDataObject.getIban());
+        }
+        dataAccessService.delete(bankAccountDataObject);
+    }
+
     private String buildStatementKey(BankStatementDataObject statement) {
         return String.join("|",
                 normalize(statement.getIban()),
