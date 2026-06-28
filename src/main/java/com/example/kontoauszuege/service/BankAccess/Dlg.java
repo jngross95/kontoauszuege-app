@@ -12,6 +12,11 @@ public class Dlg extends JDialog  {
 
     public Dlg(String kontaktName, String inputFieldText, String message, byte[] image) throws Exception {
         super(new JFrame(), "BankingSrv: "+kontaktName, true);
+        
+        // Prüfen ob Grafikumgebung verfügbar ist
+        if (GraphicsEnvironment.isHeadless()) {
+            throw new IllegalStateException("Grafische Umgebung nicht verfügbar (Headless Mode)");
+        }
 
         //Message
         JPanel messagePane = new JPanel();

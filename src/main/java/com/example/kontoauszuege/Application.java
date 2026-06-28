@@ -1,5 +1,6 @@
 package com.example.kontoauszuege;
 
+import com.example.kontoauszuege.service.BankAccess.BankConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -11,6 +12,9 @@ import java.awt.Desktop;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @SpringBootApplication
 public class Application {
@@ -20,6 +24,7 @@ public class Application {
     public static void main(String[] args) {
         try{
             log.info("Starte Kontoauszüge App ...");
+            BankConnection.init();
             ensureDataDirectory();
             SpringApplication.run(Application.class, args);
         } catch (Exception e) {
@@ -53,13 +58,14 @@ public class Application {
             try {
                 log.info("Browser starten ... ");
                 if (!tryAppMode(url)) {
+                    /*
                     // Fallback: Standard-Browser
                     if (Desktop.isDesktopSupported()
                             && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                         Desktop.getDesktop().browse(new URI(url));
                     } else {
                         new ProcessBuilder("xdg-open", url).start();
-                    }
+                    }*/
                 }
             } catch (Exception e) {
                 log.error("Browser konnte nicht geöffnet werden: {}", e.getMessage(), e);
@@ -71,10 +77,13 @@ public class Application {
 
     /** Versucht, Chrome/Chromium im App-Modus zu starten (kein Tab, kein Adressfeld). */
     private static boolean tryAppMode(String url) {
-        String[] candidates = {"google-chrome", "google-chrome-stable", "chromium", "chromium-browser"};
+        String[] candidates = {"google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "brave-browser", "flatpak run com.brave.Browser"};
         for (String browser : candidates) {
             try {
-                new ProcessBuilder(browser, "--app=" + url).start();
+                String[] command = browser.split(" ");
+                List<String> commandList = new ArrayList<>(Arrays.asList(command));
+                commandList.add("--app=" + url);
+                new ProcessBuilder(commandList).start();
                 log.info("App-Modus gestartet mit: {}", browser);
                 return true;
             } catch (Exception ignored) {

@@ -83,9 +83,21 @@ public class BankConnection implements AutoCloseable {
         return cal.getTime();
     }
 
+
+    private static BankConnection currentConnection = null;
+
+    public static void init() {
+        Properties props = new Properties();
+        HBCIUtils.init(props, new MyHBCICallback());
+    }
+
     public void connect() throws Exception {
         if(isTestBank())
             return;
+
+        if(currentConnection != null)
+            throw new Exception("Parallele Bank-Connections sind nicht erlaubt.");
+        currentConnection = this;
 
         // Server-Adresse angeben. Koennen wir entweder manuell eintragen oder direkt von HBCI4Java ermitteln lassen
         var bi = HBCIUtils.searchBankInfo(bic);
@@ -107,9 +119,6 @@ public class BankConnection implements AutoCloseable {
 
 
         System.out.println(String.format("!connect:  name='%s' blz=%s user=%s", name, bic, user));
-
-        Properties props = new Properties();
-        HBCIUtils.init(props, new MyHBCICallback());
 
         // In der Passport-Datei speichert HBCI4Java die Daten des Bankzugangs (Bankparameterdaten, Benutzer-Parameter, etc.).
         // Die Datei kann problemlos geloescht werden. Sie wird beim naechsten mal automatisch neu erzeugt,
@@ -158,6 +167,7 @@ public class BankConnection implements AutoCloseable {
      */
     @Override
     public void close() {
+        currentConnection = null;
         if (handle != null) {
             try {
                 handle.close();
@@ -519,7 +529,7 @@ public class BankConnection implements AutoCloseable {
         System.exit(1);
     }
 
-    private class MyHBCICallback extends AbstractHBCICallback
+    private static class MyHBCICallback extends AbstractHBCICallback
     {
         MyHBCICallback()
         {
@@ -540,6 +550,8 @@ public class BankConnection implements AutoCloseable {
         @Override
         public void callback(HBCIPassport passport, int reason, String msg, int datatype, StringBuffer retData)
         {
+            var currentConnection= BankConnection.currentConnection;
+
             System.out.println(String.format("callback: reason=%d msg='%s' retData='%s'",reason,msg, retData.toString()));
 
             // Diese Funktion ist wichtig. Ueber die fragt HBCI4Java die benoetigten Daten von uns ab.
@@ -551,28 +563,28 @@ public class BankConnection implements AutoCloseable {
                 // Die Ergebnis-Daten muessen in dem StringBuffer "retData" platziert werden.
                 case NEED_PASSPHRASE_LOAD:
                 case NEED_PASSPHRASE_SAVE:
-                    retData.replace(0,retData.length(),bankPin);
+                    retData.replace(0,retData.length(),currentConnection.bankPin);
                     break;
 
                 // PIN wird benoetigt
                 case NEED_PT_PIN:
-                    retData.replace(0,retData.length(),bankPin);
+                    retData.replace(0,retData.length(),currentConnection.bankPin);
                     break;
 
                 // BLZ wird benoetigt
                 case NEED_BLZ:
-                    retData.replace(0,retData.length(), bic);
+                    retData.replace(0,retData.length(), currentConnection.info.getBlz());
                     break;
 
                 // Die Benutzerkennung
                 case NEED_USERID:
-                    retData.replace(0,retData.length(),user);
+                    retData.replace(0,retData.length(),currentConnection.user);
                     break;
 
                 // Die Kundenkennung. Meist identisch mit der Benutzerkennung.
                 // Bei manchen Banken kann man die auch leer lassen
                 case NEED_CUSTOMERID:
-                    retData.replace(0,retData.length(),user);
+                    retData.replace(0,retData.length(),currentConnection.user);
                     break;
 
                 ////////////////////////////////////////////////////////////////////////
@@ -600,7 +612,7 @@ public class BankConnection implements AutoCloseable {
                         // Der Stream enthaelt jetzt die Binaer-Daten des Bildes
                         byte[] image = code.getImage();
                         // InputStream stream = new ByteArrayInputStream();
-                        var dlg = new Dlg(name,"TAN: ", msg, image);
+                        var dlg = new Dlg(currentConnection.name,"TAN: ", msg, image);
                         String tan = dlg.tan;
                         // .... Hier Dialog mit der Grafik anzeigen und User-Eingabe der TAN
                         // Die Variable "msg" aus der Methoden-Signatur enthaelt uebrigens
@@ -627,7 +639,7 @@ public class BankConnection implements AutoCloseable {
                         byte[] image = code.getImage();
 
 
-                        var dlg = new Dlg(name, "TAN:", msg, image);
+                        var dlg = new Dlg(currentConnection.name, "TAN:", msg, image);
                         String tan = dlg.tan;
                         // Der Stream enthaelt jetzt die Binaer-Daten des Bildes
                         // InputStream stream = new ByteArrayInputStream(code.getImage());
@@ -668,7 +680,7 @@ public class BankConnection implements AutoCloseable {
                     // Optionen ausgewaehlte Verfahren eingetragen werden
 
                     try {
-                        var dlg = new Dlg(name, "Medium Nr: ",
+                        var dlg = new Dlg(currentConnection.name, "Medium Nr: ",
                                 String.format("'%s'\n\nWerte:  '%s'", msg,retData.toString()), null);
 
                         String code = dlg.tan;
@@ -713,7 +725,7 @@ public class BankConnection implements AutoCloseable {
                         // Dialog zur TAN-Eingabe anzeigen mit dem Text aus "msg".
 
                         try {
-                            var dlg = new Dlg(name, "TAN:", msg, null);
+                            var dlg = new Dlg(currentConnection.name, "TAN:", msg, null);
                             String tan = dlg.tan;
                             retData.replace(0, retData.length(), tan);
                         }
@@ -745,14 +757,12 @@ public class BankConnection implements AutoCloseable {
                     // Fall ist keine Auswahl noetig und "retData" kann unveraendert
                     // bleiben
                     try {
-                        /*
-                        var dlg = new Base.Dlg(name, "TanMedium: ",
+
+                        var dlg = new Dlg(currentConnection.name, "TanMedium: ",
                                 String.format("'%s'\n\nWerte:  '%s'", msg,retData.toString()), null);
 
                         String code = dlg.tan;
-                        */
 
-                        String code = "";
                         retData.replace(0, retData.length(), code);
                     }
                     catch(Exception e)
@@ -772,6 +782,9 @@ public class BankConnection implements AutoCloseable {
                     retData.replace(0,retData.length(),"DE");
                 case NEED_FILTER:
                     retData.replace(0,retData.length(),"Base64");
+                case NEED_HOST:
+                    retData.replace(0,retData.length(),currentConnection.info.getPinTanAddress());
+                    break;
                 default:
 
                     // Wir brauchen nicht alle der Callbacks
