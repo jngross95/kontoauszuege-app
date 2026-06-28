@@ -223,6 +223,7 @@ public class UeberweisungenView extends VerticalLayout {
 
     private void neueUeberweisung() {
         UeberweisungDataObject neu = new UeberweisungDataObject();
+        neu.setAusgewaehlt(true);
         service.add(neu);
         refreshGrid();
         grid.select(neu);

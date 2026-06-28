@@ -128,6 +128,7 @@ public class UeberweisungService {
 
                 for (UeberweisungDataObject ueberweisung : entry.getValue()) {
                     ueberweisung.setStatus(UeberweisungStatus.SENDING);
+                    ueberweisung.setAusgewaehlt(false);
                     dataAccessService.update(ueberweisung);
                     try {
                         ergebnisse.add(fuehreEinzelueberweisungAus(connection, ueberweisung));
