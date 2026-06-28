@@ -188,7 +188,7 @@ public class BankConnection implements AutoCloseable {
         return k;
     }
 
-    List<KontoBuchung> UmsaetzeAbholen(
+    public List<KontoBuchung> UmsaetzeAbholen(
             String iban,
             Date startdate) throws Exception {
         if (isTestBank()) {
@@ -335,7 +335,7 @@ public class BankConnection implements AutoCloseable {
     private List<KontoBuchung> getTestUmsaetze(String iban) {
         List<KontoBuchung> umsaetze = new ArrayList<>();
 
-        if ("iban1".equals(iban)) {
+        if ("IBAN1".equals(iban)) {
             umsaetze.add(testBuchung(
                     LocalDate.of(2026, 5, 1), "Stadtwerke Musterstadt",
                     "DE89 3704 0044 0532 0130 00",
@@ -353,7 +353,7 @@ public class BankConnection implements AutoCloseable {
                     "DE12 5001 0517 0648 4898 90",
                     "Einkauf REWE 05.05.2026",
                     new BigDecimal("-63.20"), new BigDecimal("5099.25")));
-        } else if ("iban2".equals(iban)) {
+        } else if ("IBAN2".equals(iban)) {
             umsaetze.add(testBuchung(
                     LocalDate.of(2026, 5, 8), "Vodafone GmbH",
                     "DE46 2007 0000 0660 7370 00",

@@ -10,6 +10,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -90,10 +92,24 @@ public class KontoauszuegeView extends VerticalLayout {
         Button alleHolenButton = new Button("Alle holen", VaadinIcon.DOWNLOAD.create());
         alleHolenButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         alleHolenButton.addClickListener(e -> {
-            suchfeld.clear();
-            kontoSelect.clear();
-            aktiveKontoIban = null;
-            ladeKontoauszuege("");
+            try {
+                service.receiveStmts();
+                suchfeld.clear();
+                kontoSelect.clear();
+                aktiveKontoIban = null;
+                ladeKontoauszuege("");
+
+                Notification success = Notification.show("Kontoauszüge wurden aktualisiert.",
+                        2500, Notification.Position.MIDDLE);
+                success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            } catch (Exception ex) {
+                Notification error = Notification.show(
+                        "Fehler beim Holen der Kontoauszüge: " + ex.getMessage(),
+                        5000,
+                        Notification.Position.MIDDLE
+                );
+                error.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
         });
 
         HorizontalLayout left = new HorizontalLayout(kontoSelect, holenButton, alleHolenButton);
