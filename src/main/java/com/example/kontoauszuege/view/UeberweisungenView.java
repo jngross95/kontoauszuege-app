@@ -120,6 +120,7 @@ public class UeberweisungenView extends VerticalLayout {
     private void configureGrid() {
         grid.addComponentColumn(u -> {
             Checkbox cb = new Checkbox(u.isAusgewaehlt());
+            cb.setEnabled(u.getStatus() != UeberweisungStatus.SENT);
             cb.addValueChangeListener(e -> u.setAusgewaehlt(e.getValue()));
             return cb;
         }).setHeader("Senden").setWidth("80px").setFlexGrow(0);
@@ -264,11 +265,13 @@ public class UeberweisungenView extends VerticalLayout {
         }
         try {
             service.ueberweisungenAusfuehren(zumSenden);
+            refreshGrid();
             Notification n = Notification.show(
                     zumSenden.size() + " Überweisung(en) wurden gesendet.",
                     4000, Notification.Position.MIDDLE);
             n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         } catch (Exception ex) {
+            refreshGrid();
             Notification n = Notification.show(ex.getMessage(), 5000, Notification.Position.MIDDLE);
             n.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
