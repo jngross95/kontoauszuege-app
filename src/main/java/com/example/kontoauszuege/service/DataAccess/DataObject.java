@@ -1,5 +1,6 @@
 package com.example.kontoauszuege.service.DataAccess;
 
+import com.example.kontoauszuege.model.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -10,21 +11,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class DataObject {
 
-    /** Technischer Schlüssel des zugrundeliegenden Entity (Autoincrement). */
-    @JsonIgnore
-    private Long id;
-
     /** Fachlicher Schlüssel (GUID) des zugrundeliegenden Entity. */
     @JsonIgnore
     private String pk;
 
-    public Long getId() {
-        return id;
-    }
+    /**
+     * Referenz auf das zugrundeliegende persistente {@link Entity}.
+     * <p>
+     * Wird beim Einfügen und Laden gesetzt, damit ein {@code update} den Datensatz
+     * direkt aktualisieren kann, ohne ihn erneut über {@code findByPk} zu laden.
+     */
+    @JsonIgnore
+    private Entity entity;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getPk() {
         return pk;
@@ -32,5 +31,13 @@ public class DataObject {
 
     public void setPk(String pk) {
         this.pk = pk;
+    }
+
+    public Entity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(Entity entity) {
+        this.entity = entity;
     }
 }

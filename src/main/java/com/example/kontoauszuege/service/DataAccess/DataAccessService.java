@@ -46,39 +46,38 @@ public class DataAccessService {
 
         Entity saved = repository.save(entity);
 
-        obj.setId(saved.getId());
         obj.setPk(saved.getPk());
+        obj.setEntity(saved);
         return obj;
     }
 
     /**
-     * Aktualisiert ein bereits vorhandenes Fachobjekt. Das Objekt muss über einen
-     * gültigen {@code pk} verfügen, der auf einen existierenden Datensatz verweist.
+     * Aktualisiert ein bereits vorhandenes Fachobjekt. Das Objekt muss zuvor über
+     * {@link #insert} oder {@link #getAll} geladen worden sein, damit es das
+     * zugehörige {@link Entity} kennt - dadurch ist kein erneutes {@code findByPk}
+     * nötig.
      *
-     * @return dasselbe (mit aktualisierter id/pk befüllte) Objekt
-     * @throws IllegalArgumentException wenn kein {@code pk} gesetzt ist
-     * @throws IllegalStateException    wenn zum {@code pk} kein Datensatz existiert
+     * @return dasselbe Objekt
+     * @throws IllegalStateException wenn kein zugrundeliegendes Entity vorhanden ist
+     *                               oder sich id/pk unerwartet ändern
      */
     @Transactional
     public <T extends DataObject> T update(T obj) {
-        if (obj.getPk() == null) {
-            throw new IllegalArgumentException(
-                    "update benötigt ein Objekt mit gesetztem pk - für neue Objekte bitte insert verwenden");
-        }
-
-        Entity entity = repository.findByPk(obj.getPk())
-                .orElseThrow(() -> new IllegalStateException(
-                        "Kein Datensatz mit pk=" + obj.getPk() + " gefunden"));
+        Entity entity = obj.getEntity();
+        Assert.state(entity != null,
+                "update benötigt ein zuvor geladenes oder eingefügtes Objekt - für neue Objekte bitte insert verwenden");
 
         entity.setType(obj.getClass().getName());
         entity.setData(toJson(obj));
 
+        var id = entity.getId();
         Entity saved = repository.save(entity);
 
-        Assert.state(Objects.equals(obj.getId(), saved.getId()),
+        Assert.state(Objects.equals(id, saved.getId()),
                 "id darf sich bei update nicht ändern");
         Assert.state(Objects.equals(obj.getPk(), saved.getPk()),
                 "pk darf sich bei update nicht ändern");
+        obj.setEntity(saved);
         return obj;
     }
 
@@ -108,8 +107,8 @@ public class DataAccessService {
     private <T extends DataObject> T fromEntity(Entity entity, Class<T> type) {
         try {
             T obj = objectMapper.readValue(entity.getData(), type);
-            obj.setId(entity.getId());
             obj.setPk(entity.getPk());
+            obj.setEntity(entity);
             return obj;
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(
