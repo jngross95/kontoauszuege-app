@@ -238,7 +238,7 @@ public class UeberweisungenView extends VerticalLayout {
         refreshGrid();
     }
 
-    private void senden() throws Exception {
+    private void senden() {
         List<UeberweisungDataObject> zumSenden = service.findAll().stream()
                 .filter(UeberweisungDataObject::isAusgewaehlt)
                 .collect(Collectors.toList());
@@ -247,12 +247,16 @@ public class UeberweisungenView extends VerticalLayout {
                     2500, Notification.Position.MIDDLE);
             return;
         }
-        service.ueberweisungenAusfuehren(zumSenden);
-
-        Notification n = Notification.show(
-                zumSenden.size() + " Überweisung(en) wurden gesendet.",
-                4000, Notification.Position.MIDDLE);
-        n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        try {
+            service.ueberweisungenAusfuehren(zumSenden);
+            Notification n = Notification.show(
+                    zumSenden.size() + " Überweisung(en) wurden gesendet.",
+                    4000, Notification.Position.MIDDLE);
+            n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        } catch (Exception ex) {
+            Notification n = Notification.show(ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
     }
 
     private void speichern() {
