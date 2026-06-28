@@ -126,6 +126,16 @@ public class UeberweisungService {
                 connection.connect();
 
                 for (UeberweisungDataObject ueberweisung : entry.getValue()) {
+
+                    connection.UeberweisungAusfuehren(
+                            normalize(ueberweisung.getSender()),
+                            ueberweisung.getEmpfaenger(),
+                            normalize(ueberweisung.getEmpfaengerBic()),
+                            normalize(ueberweisung.getEmpfaengerIban()),
+                            ueberweisung.getBetrag(),
+                            null,
+                            ueberweisung.getVerwendungszweck());
+
                     ergebnisse.add(fuehreEinzelueberweisungAus(connection, ueberweisung));
                 }
             }

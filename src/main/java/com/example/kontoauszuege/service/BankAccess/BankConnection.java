@@ -435,6 +435,9 @@ public class BankConnection implements AutoCloseable {
             String endToEndId,
             String usage) throws Exception {
 
+        if(isTestBank())
+            return "ok";
+
         var src = getKonto(iban);
 
         HBCIJob umsatzJob =  handle.newJob("UebSEPA");

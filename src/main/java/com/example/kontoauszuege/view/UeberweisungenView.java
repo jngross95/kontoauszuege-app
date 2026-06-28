@@ -44,6 +44,7 @@ public class UeberweisungenView extends VerticalLayout {
     private final ComboBox<String> empfaengerField    = new ComboBox<>("Empfänger");
     private final TextField        verwendungszweck   = new TextField("Verwendungszweck");
     private final TextField        empfaengerIbanField = new TextField("Empfänger-IBAN");
+    private final TextField        empfaengerBicField = new TextField("Empfänger-BIC");
     private final TextField        betragField        = new TextField("Betrag (€)");
 
     private List<String> senderItems = List.of();
@@ -126,6 +127,8 @@ public class UeberweisungenView extends VerticalLayout {
                 .setHeader("Sender").setResizable(true).setSortable(true).setAutoWidth(true);
         grid.addColumn(UeberweisungDataObject::getEmpfaenger)
                 .setHeader("Empfänger").setResizable(true).setSortable(true).setAutoWidth(true);
+        grid.addColumn(UeberweisungDataObject::getEmpfaengerBic)
+            .setHeader("Empfänger-BIC").setResizable(true).setSortable(true).setAutoWidth(true);
         grid.addColumn(UeberweisungDataObject::getEmpfaengerIban)
                 .setHeader("Empfänger-IBAN").setResizable(true).setSortable(true).setAutoWidth(true);
         grid.addColumn(UeberweisungDataObject::getVerwendungszweck)
@@ -170,6 +173,9 @@ public class UeberweisungenView extends VerticalLayout {
         form.setColspan(senderField, 4);
         form.add(empfaengerField);
         form.setColspan(empfaengerField, 4);
+        empfaengerBicField.setWidthFull();
+        form.add(empfaengerBicField);
+        form.setColspan(empfaengerBicField, 4);
         empfaengerIbanField.setWidthFull();
         form.add(empfaengerIbanField);
         form.setColspan(empfaengerIbanField, 4);
@@ -232,7 +238,7 @@ public class UeberweisungenView extends VerticalLayout {
         refreshGrid();
     }
 
-    private void senden() {
+    private void senden() throws Exception {
         List<UeberweisungDataObject> zumSenden = service.findAll().stream()
                 .filter(UeberweisungDataObject::isAusgewaehlt)
                 .collect(Collectors.toList());
@@ -241,6 +247,8 @@ public class UeberweisungenView extends VerticalLayout {
                     2500, Notification.Position.MIDDLE);
             return;
         }
+        service.ueberweisungenAusfuehren(zumSenden);
+
         Notification n = Notification.show(
                 zumSenden.size() + " Überweisung(en) wurden gesendet.",
                 4000, Notification.Position.MIDDLE);
@@ -251,6 +259,7 @@ public class UeberweisungenView extends VerticalLayout {
         if (selected == null) return;
         selected.setSender(senderField.getValue());
         selected.setEmpfaenger(empfaengerField.getValue());
+        selected.setEmpfaengerBic(empfaengerBicField.getValue());
         selected.setEmpfaengerIban(empfaengerIbanField.getValue());
         selected.setVerwendungszweck(verwendungszweck.getValue());
         String betragText = betragField.getValue().trim().replace(",", ".");
@@ -271,6 +280,7 @@ public class UeberweisungenView extends VerticalLayout {
         String sv = u.getSender();
         senderField.setValue(sv != null && senderItems.contains(sv) ? sv : null);
         empfaengerField.setValue(u.getEmpfaenger() != null ? u.getEmpfaenger() : "");
+        empfaengerBicField.setValue(u.getEmpfaengerBic() != null ? u.getEmpfaengerBic() : "");
         empfaengerIbanField.setValue(u.getEmpfaengerIban() != null ? u.getEmpfaengerIban() : "");
         verwendungszweck.setValue(u.getVerwendungszweck() != null ? u.getVerwendungszweck() : "");
         betragField.setValue(u.getBetrag() != null
@@ -280,6 +290,7 @@ public class UeberweisungenView extends VerticalLayout {
     private void clearFormular() {
         senderField.clear();
         empfaengerField.clear();
+        empfaengerBicField.clear();
         empfaengerIbanField.clear();
         verwendungszweck.clear();
         betragField.clear();
