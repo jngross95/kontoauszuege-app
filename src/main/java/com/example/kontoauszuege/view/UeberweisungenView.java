@@ -1,6 +1,7 @@
 package com.example.kontoauszuege.view;
 
 import com.example.kontoauszuege.model.UeberweisungDataObject;
+import com.example.kontoauszuege.model.UeberweisungStatus;
 import com.example.kontoauszuege.service.BankAccountService;
 import com.example.kontoauszuege.service.BankStatementService;
 import com.example.kontoauszuege.service.UeberweisungService;
@@ -140,6 +141,18 @@ public class UeberweisungenView extends VerticalLayout {
                 .setSortable(true)
                 .setComparator(UeberweisungDataObject::getBetrag)
                 .setAutoWidth(true);
+        grid.addComponentColumn(u -> {
+            com.vaadin.flow.component.html.Span badge = new com.vaadin.flow.component.html.Span(
+                    u.getStatus() != null ? u.getStatus().name() : UeberweisungStatus.NEW.name());
+            String theme = switch (u.getStatus() != null ? u.getStatus() : UeberweisungStatus.NEW) {
+                case NEW     -> "badge contrast";
+                case SENDING -> "badge";
+                case SENT    -> "badge success";
+                case ERROR   -> "badge error";
+            };
+            badge.getElement().setAttribute("theme", theme);
+            return badge;
+        }).setHeader("Status").setAutoWidth(true).setSortable(false);
 
         grid.setWidthFull();
         grid.addSelectionListener(e -> {

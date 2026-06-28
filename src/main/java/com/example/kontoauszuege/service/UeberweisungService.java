@@ -3,6 +3,7 @@ package com.example.kontoauszuege.service;
 import com.example.kontoauszuege.model.BankAccountDataObject;
 import com.example.kontoauszuege.model.BankContactDataObject;
 import com.example.kontoauszuege.model.UeberweisungDataObject;
+import com.example.kontoauszuege.model.UeberweisungStatus;
 import com.example.kontoauszuege.service.BankAccess.BankConnection;
 import com.example.kontoauszuege.service.DataAccess.DataAccessService;
 import org.springframework.stereotype.Service;
@@ -126,17 +127,17 @@ public class UeberweisungService {
                 connection.connect();
 
                 for (UeberweisungDataObject ueberweisung : entry.getValue()) {
-
-                    connection.UeberweisungAusfuehren(
-                            normalize(ueberweisung.getSender()),
-                            ueberweisung.getEmpfaenger(),
-                            normalize(ueberweisung.getEmpfaengerBic()),
-                            normalize(ueberweisung.getEmpfaengerIban()),
-                            ueberweisung.getBetrag(),
-                            null,
-                            ueberweisung.getVerwendungszweck());
-
-                    ergebnisse.add(fuehreEinzelueberweisungAus(connection, ueberweisung));
+                    ueberweisung.setStatus(UeberweisungStatus.SENDING);
+                    dataAccessService.update(ueberweisung);
+                    try {
+                        ergebnisse.add(fuehreEinzelueberweisungAus(connection, ueberweisung));
+                        ueberweisung.setStatus(UeberweisungStatus.SENT);
+                        dataAccessService.update(ueberweisung);
+                    } catch (Exception ex) {
+                        ueberweisung.setStatus(UeberweisungStatus.ERROR);
+                        dataAccessService.update(ueberweisung);
+                        throw ex;
+                    }
                 }
             }
         }
