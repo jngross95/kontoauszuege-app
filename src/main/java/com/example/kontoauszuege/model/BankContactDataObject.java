@@ -2,7 +2,7 @@ package com.example.kontoauszuege.model;
 
 import com.example.kontoauszuege.service.DataAccess.DataObject;
 
-public class BankContact extends DataObject {
+public class BankContactDataObject extends DataObject {
 
     private String name;
     private String bic;

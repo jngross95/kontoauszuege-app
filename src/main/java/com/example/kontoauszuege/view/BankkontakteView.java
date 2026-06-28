@@ -1,6 +1,6 @@
 package com.example.kontoauszuege.view;
 
-import com.example.kontoauszuege.model.BankContact;
+import com.example.kontoauszuege.model.BankContactDataObject;
 import com.example.kontoauszuege.service.BankContactService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -26,8 +26,8 @@ public class BankkontakteView extends VerticalLayout {
 
     private final BankContactService bankContactService;
 
-    private final Grid<BankContact> grid = new Grid<>(BankContact.class, false);
-    private BankContact selected;
+    private final Grid<BankContactDataObject> grid = new Grid<>(BankContactDataObject.class, false);
+    private BankContactDataObject selected;
 
     public BankkontakteView(BankContactService bankContactService) {
         this.bankContactService = bankContactService;
@@ -62,19 +62,19 @@ public class BankkontakteView extends VerticalLayout {
     }
 
     private void configureGrid() {
-        grid.addColumn(BankContact::getName)
+        grid.addColumn(BankContactDataObject::getName)
                 .setHeader("Name")
                 .setResizable(true)
                 .setSortable(true)
                 .setAutoWidth(true);
 
-        grid.addColumn(BankContact::getBic)
+        grid.addColumn(BankContactDataObject::getBic)
                 .setHeader("BIC")
                 .setResizable(true)
                 .setSortable(true)
                 .setAutoWidth(true);
 
-        grid.addColumn(BankContact::getUser)
+        grid.addColumn(BankContactDataObject::getUser)
                 .setHeader("Benutzer")
                 .setResizable(true)
                 .setSortable(true)
@@ -132,7 +132,7 @@ public class BankkontakteView extends VerticalLayout {
                 return;
             }
 
-            BankContact newContact = new BankContact();
+            BankContactDataObject newContact = new BankContactDataObject();
             newContact.setName(nameField.getValue());
             newContact.setBic(bicField.getValue());
             newContact.setUser(userField.getValue());
@@ -182,8 +182,8 @@ public class BankkontakteView extends VerticalLayout {
     }
 
     private void refreshGrid() {
-        List<BankContact> bankContacts = bankContactService.getAllBankContacts();
-        grid.setItems(bankContacts);
+        List<BankContactDataObject> bankContactDataObjects = bankContactService.getAllBankContacts();
+        grid.setItems(bankContactDataObjects);
         selected = null;
     }
 }

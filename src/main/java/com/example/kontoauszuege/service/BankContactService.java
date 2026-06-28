@@ -1,6 +1,6 @@
 package com.example.kontoauszuege.service;
 
-import com.example.kontoauszuege.model.BankContact;
+import com.example.kontoauszuege.model.BankContactDataObject;
 import com.example.kontoauszuege.service.BankAccess.BankConnection;
 import com.example.kontoauszuege.service.DataAccess.DataAccessService;
 import org.springframework.stereotype.Service;
@@ -16,24 +16,24 @@ public class BankContactService {
 		this.dataAccessService = dataAccessService;
 	}
 
-	public List<BankContact> getAllBankContacts() {
-		return dataAccessService.getAll(BankContact.class);
+	public List<BankContactDataObject> getAllBankContacts() {
+		return dataAccessService.getAll(BankContactDataObject.class);
 	}
 
-	public BankContact addBankContact(BankContact bankContact) throws Exception {
+	public BankContactDataObject addBankContact(BankContactDataObject bankContactDataObject) throws Exception {
 		try (BankConnection connection = new BankConnection(
-				bankContact.getName(),
-				bankContact.getBic(),
-				bankContact.getUser(),
-				bankContact.getBankPin())) {
+				bankContactDataObject.getName(),
+				bankContactDataObject.getBic(),
+				bankContactDataObject.getUser(),
+				bankContactDataObject.getBankPin())) {
 			connection.connect();
 		}
 
-		return dataAccessService.insert(bankContact);
+		return dataAccessService.insert(bankContactDataObject);
 	}
 
-	public void deleteBankContact(BankContact bankContact) {
-		dataAccessService.delete(bankContact);
+	public void deleteBankContact(BankContactDataObject bankContactDataObject) {
+		dataAccessService.delete(bankContactDataObject);
 	}
 
 }
