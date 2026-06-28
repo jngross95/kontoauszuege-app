@@ -151,9 +151,12 @@ public class BankConnection implements AutoCloseable {
     }
 
     List<BankAccount> getAccounts() throws Exception {
+        if(isTestBank()) {
+            return List.of(new BankAccount("iban1", "0"), new BankAccount("iban2", "0"));
+        }
         Konto[] konten = passport.getAccounts();
         //passport.getBPD().getProperty("TAN2StepParams");
-        return Arrays.stream(konten).map(x->new BankAccount(x.iban)).toList();
+        return Arrays.stream(konten).map(x->new BankAccount(x.iban, x.bic)).toList();
     }
 
     Konto getKonto(String iban) throws Exception {
