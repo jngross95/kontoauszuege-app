@@ -156,6 +156,12 @@ public class BankkontakteView extends VerticalLayout {
                         Notification success = Notification.show("Bankkontakt wurde angelegt.",
                                 2500, Notification.Position.MIDDLE);
                         success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+                        try {
+                            ui.push();
+                        } catch (Exception ignored) {
+                            // push might not be available in some environments
+                        }
                     });
                 } catch (Exception ex) {
                     ui.access(() -> {

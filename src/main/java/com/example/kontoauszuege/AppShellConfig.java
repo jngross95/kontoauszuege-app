@@ -2,9 +2,11 @@ package com.example.kontoauszuege;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.lumo.Lumo;
 
+@Push
 @PWA(
     name        = "Kontoauszüge App",
     shortName   = "Kontoauszüge",
