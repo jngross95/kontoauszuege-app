@@ -107,7 +107,7 @@ public class BankkontakteView extends VerticalLayout {
         userField.getElement().setAttribute("autocomplete", "off");
         userField.getElement().setAttribute("name", "bank-contact-user");
 
-        TextField pinField = new TextField("Bank-PIN");
+        final TextField pinField = new TextField("Bank-PIN");
         pinField.setWidthFull();
         pinField.getElement().executeJs("this.inputElement.style.webkitTextSecurity = 'disc';");
         pinField.getElement().setAttribute("autocomplete", "off");
@@ -132,29 +132,44 @@ public class BankkontakteView extends VerticalLayout {
                 return;
             }
 
-            BankContactDataObject newContact = new BankContactDataObject();
+            final BankContactDataObject newContact = new BankContactDataObject();
             newContact.setName(nameField.getValue());
             newContact.setBic(bicField.getValue());
             newContact.setUser(userField.getValue());
             newContact.setBankPin(pinField.getValue());
 
-            try {
-                bankContactService.addBankContact(newContact);
-                pinField.clear();
-                dialog.close();
-                refreshGrid();
+            // Capture UI to update it from background thread
+            final com.vaadin.flow.component.UI ui = com.vaadin.flow.component.UI.getCurrent();
 
-                Notification success = Notification.show("Bankkontakt wurde angelegt.",
-                        2500, Notification.Position.MIDDLE);
-                success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-            } catch (Exception ex) {
-                Notification error = Notification.show(
-                        "Bankzugang konnte nicht geprüft werden: " + ex.getMessage(),
-                        5000,
-                        Notification.Position.MIDDLE
-                );
-                error.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
+            var dlg = new DlgView(BankkontakteView.this);
+
+            Thread bg = new Thread(() -> {
+                try {
+                    bankContactService.addBankContact(newContact, dlg);
+
+                    // update UI in UI thread
+                    ui.access(() -> {
+                        pinField.clear();
+                        dialog.close();
+                        refreshGrid();
+
+                        Notification success = Notification.show("Bankkontakt wurde angelegt.",
+                                2500, Notification.Position.MIDDLE);
+                        success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                    });
+                } catch (Exception ex) {
+                    ui.access(() -> {
+                        Notification error = Notification.show(
+                                "Bankzugang konnte nicht geprüft werden: " + ex.getMessage(),
+                                5000,
+                                Notification.Position.MIDDLE
+                        );
+                        error.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    });
+                }
+            });
+            bg.setDaemon(true);
+            bg.start();
         });
         okButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 

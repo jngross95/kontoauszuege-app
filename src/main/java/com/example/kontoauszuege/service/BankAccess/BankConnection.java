@@ -24,18 +24,19 @@ public class BankConnection implements AutoCloseable {
     BankInfo info;
     HBCIHandler handle;
     HBCIPassport passport;
-
+    DlgCallback dlgCallback;
     // --- Zugangsdaten (zuvor in BankContact) ---
     final String name;       // Nur zu Logzwecken
     final String bic;
     final String user;
     final String bankPin;
 
-    public BankConnection(String name, String bic, String user, String bankPin) {
+    public BankConnection(String name, String bic, String user, String bankPin, DlgCallback callback) {
         this.name = name;
         this.bic = bic;
         this.user = user;
         this.bankPin = bankPin;
+        this.dlgCallback = callback;
     }
 
     private boolean isTestBank(){
@@ -612,8 +613,10 @@ public class BankConnection implements AutoCloseable {
                         // Der Stream enthaelt jetzt die Binaer-Daten des Bildes
                         byte[] image = code.getImage();
                         // InputStream stream = new ByteArrayInputStream();
-                        var dlg = new Dlg(currentConnection.name,"TAN: ", msg, image);
-                        String tan = dlg.tan;
+                        //var dlg = new Dlg(currentConnection.name,"TAN: ", msg, image);
+                        //String tan = dlg.tan;
+                        String tan = currentConnection.dlgCallback.dlg(currentConnection.name, "TAN: ", msg, image);
+
                         // .... Hier Dialog mit der Grafik anzeigen und User-Eingabe der TAN
                         // Die Variable "msg" aus der Methoden-Signatur enthaelt uebrigens
                         // den bankspezifischen Text mit den Instruktionen fuer den User.
@@ -639,8 +642,10 @@ public class BankConnection implements AutoCloseable {
                         byte[] image = code.getImage();
 
 
-                        var dlg = new Dlg(currentConnection.name, "TAN:", msg, image);
-                        String tan = dlg.tan;
+                        //var dlg = new Dlg(currentConnection.name, "TAN:", msg, image);
+                        //String tan = dlg.tan;
+                        String tan = currentConnection.dlgCallback.dlg(currentConnection.name, "TAN: ", msg, image);
+
                         // Der Stream enthaelt jetzt die Binaer-Daten des Bildes
                         // InputStream stream = new ByteArrayInputStream(code.getImage());
 
@@ -680,10 +685,14 @@ public class BankConnection implements AutoCloseable {
                     // Optionen ausgewaehlte Verfahren eingetragen werden
 
                     try {
-                        var dlg = new Dlg(currentConnection.name, "Medium Nr: ",
+                        //var dlg = new Dlg(currentConnection.name, "Medium Nr: ",
+                        //        String.format("'%s'\n\nWerte:  '%s'", msg,retData.toString()), null);
+
+
+                        //String code = dlg.tan;
+                        String code = currentConnection.dlgCallback.dlg(currentConnection.name, "Medium Nr: ",
                                 String.format("'%s'\n\nWerte:  '%s'", msg,retData.toString()), null);
 
-                        String code = dlg.tan;
                         retData.replace(0, retData.length(), code);
                     }
                     catch(Exception e)
@@ -725,8 +734,10 @@ public class BankConnection implements AutoCloseable {
                         // Dialog zur TAN-Eingabe anzeigen mit dem Text aus "msg".
 
                         try {
-                            var dlg = new Dlg(currentConnection.name, "TAN:", msg, null);
-                            String tan = dlg.tan;
+                            //var dlg = new Dlg(currentConnection.name, "TAN:", msg, null);
+                            //String tan = dlg.tan;
+
+                            String tan = currentConnection.dlgCallback.dlg(currentConnection.name, "TAN: ", msg, null);
                             retData.replace(0, retData.length(), tan);
                         }
                         catch(Exception e)
@@ -758,10 +769,13 @@ public class BankConnection implements AutoCloseable {
                     // bleiben
                     try {
 
-                        var dlg = new Dlg(currentConnection.name, "TanMedium: ",
-                                String.format("'%s'\n\nWerte:  '%s'", msg,retData.toString()), null);
+                        //var dlg = new Dlg(currentConnection.name, "TanMedium: ",
+                        //        String.format("'%s'\n\nWerte:  '%s'", msg,retData.toString()), null);
 
-                        String code = dlg.tan;
+                        //String code = dlg.tan;
+
+                        String code = currentConnection.dlgCallback.dlg(currentConnection.name, "TanMedium: ",
+                                String.format("'%s'\n\nWerte:  '%s'", msg,retData.toString()), null);
 
                         retData.replace(0, retData.length(), code);
                     }

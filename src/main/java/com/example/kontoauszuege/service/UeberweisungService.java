@@ -123,7 +123,7 @@ public class UeberweisungService {
                     kontakt.getName(),
                     kontakt.getBic(),
                     kontakt.getUser(),
-                    kontakt.getBankPin())) {
+                    kontakt.getBankPin(),null)) {
                 connection.connect();
 
                 for (UeberweisungDataObject ueberweisung : entry.getValue()) {

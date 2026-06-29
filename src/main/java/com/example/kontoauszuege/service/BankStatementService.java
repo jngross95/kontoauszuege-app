@@ -76,7 +76,7 @@ public class BankStatementService {
                     kontakt.getName(),
                     kontakt.getBic(),
                     kontakt.getUser(),
-                    kontakt.getBankPin())) {
+                    kontakt.getBankPin(),null)) {
                 connection.connect();
 
                 for (BankAccountDataObject konto : entry.getValue()) {

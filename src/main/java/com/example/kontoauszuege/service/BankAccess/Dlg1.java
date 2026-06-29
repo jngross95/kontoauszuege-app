@@ -6,11 +6,11 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 
-public class Dlg extends JDialog  {
+public class Dlg1 extends JDialog  {
 
     public String tan = null;
 
-    public Dlg(String kontaktName, String inputFieldText, String message, byte[] image) throws Exception {
+    public Dlg1(String kontaktName, String inputFieldText, String message, byte[] image) throws Exception {
         super(new JFrame(), "BankingSrv: "+kontaktName, true);
         
         // Prüfen ob Grafikumgebung verfügbar ist

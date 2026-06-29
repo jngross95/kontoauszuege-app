@@ -4,6 +4,7 @@ import com.example.kontoauszuege.model.BankAccountDataObject;
 import com.example.kontoauszuege.model.BankContactDataObject;
 import com.example.kontoauszuege.service.BankAccess.BankAccount;
 import com.example.kontoauszuege.service.BankAccess.BankConnection;
+import com.example.kontoauszuege.service.BankAccess.DlgCallback;
 import com.example.kontoauszuege.service.DataAccess.DataAccessService;
 import org.springframework.stereotype.Service;
 
@@ -25,13 +26,13 @@ public class BankContactService {
 		return dataAccessService.getAll(BankContactDataObject.class);
 	}
 
-	public BankContactDataObject addBankContact(BankContactDataObject bankContactDataObject) throws Exception {
+	public BankContactDataObject addBankContact(BankContactDataObject bankContactDataObject, DlgCallback callback) throws Exception {
 		List<BankAccount> kontenVonBank;
 		try (BankConnection connection = new BankConnection(
 				bankContactDataObject.getName(),
 				bankContactDataObject.getBic(),
 				bankContactDataObject.getUser(),
-				bankContactDataObject.getBankPin())) {
+				bankContactDataObject.getBankPin(),callback)) {
 			connection.connect();
 			kontenVonBank = connection.getAccounts();
 		}

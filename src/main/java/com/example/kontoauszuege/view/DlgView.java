@@ -12,9 +12,9 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.server.StreamResource;
+import java.util.Base64;
 
-import java.io.ByteArrayInputStream;
+
 
 import java.util.concurrent.CountDownLatch;
 
@@ -68,8 +68,9 @@ public class DlgView extends VerticalLayout implements DlgCallback {
             content.add(new Paragraph("Nachricht: " + (message == null ? "" : message)));
 
             if (image != null && image.length > 0) {
-                StreamResource resource = new StreamResource("kontakt-bild", () -> new ByteArrayInputStream(image));
-                Image img = new Image(resource, "Kontaktbild");
+                String base64 = Base64.getEncoder().encodeToString(image);
+                String src = "data:image/png;base64," + base64;
+                Image img = new Image(src, "Kontaktbild");
                 img.setMaxWidth("100%");
                 content.add(img);
             }
