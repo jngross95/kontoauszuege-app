@@ -104,11 +104,6 @@ public class DlgView extends VerticalLayout implements DlgCallback {
 
             parent.add(dialog);
             dialog.open();
-            try {
-                ui.push();
-            } catch (Exception ignored) {
-                // push might not be available in some environments
-            }
         });
 
         try {
