@@ -93,15 +93,43 @@ public class KontoauszuegeView extends VerticalLayout {
         alleHolenButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         alleHolenButton.addClickListener(e -> {
             try {
-                service.receiveStmts();
-                suchfeld.clear();
-                kontoSelect.clear();
-                aktiveKontoIban = null;
-                ladeKontoauszuege("");
+                var dlg = new DlgView(this);
 
-                Notification success = Notification.show("Kontoauszüge wurden aktualisiert.",
-                        2500, Notification.Position.MIDDLE);
-                success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+                // Capture UI to update it from background thread
+                final com.vaadin.flow.component.UI ui = com.vaadin.flow.component.UI.getCurrent();
+
+                Thread bg = new Thread(() -> {
+                    try {
+                        service.receiveStmts(dlg);
+
+                        // update UI in UI thread
+                        ui.access(() -> {
+                            suchfeld.clear();
+                            kontoSelect.clear();
+                            aktiveKontoIban = null;
+                            ladeKontoauszuege("");
+
+                            Notification success = Notification.show("Kontoauszüge wurden aktualisiert.",
+                                    2500, Notification.Position.MIDDLE);
+                            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                        });
+                    } catch (Exception ex) {
+                        ui.access(() -> {
+                            Notification error = Notification.show(
+                                    "Fehler beim Holen der Kontoauszüge:: " + ex.getMessage(),
+                                    5000,
+                                    Notification.Position.MIDDLE
+                            );
+                            error.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                        });
+                    }
+                });
+                bg.setDaemon(true);
+                bg.start();
+
+
+
             } catch (Exception ex) {
                 Notification error = Notification.show(
                         "Fehler beim Holen der Kontoauszüge: " + ex.getMessage(),

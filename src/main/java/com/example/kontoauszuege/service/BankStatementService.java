@@ -4,6 +4,7 @@ import com.example.kontoauszuege.model.BankAccountDataObject;
 import com.example.kontoauszuege.model.BankContactDataObject;
 import com.example.kontoauszuege.model.BankStatementDataObject;
 import com.example.kontoauszuege.service.BankAccess.BankConnection;
+import com.example.kontoauszuege.service.BankAccess.DlgCallback;
 import com.example.kontoauszuege.service.BankAccess.KontoBuchung;
 import com.example.kontoauszuege.service.DataAccess.DataAccessService;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class BankStatementService {
         return dataAccessService.insert(statement);
     }
 
-    public void receiveStmts() throws Exception {
+    public void receiveStmts(DlgCallback dlgCallback) throws Exception {
         List<BankStatementDataObject> bestehendeStatements = getAllStatements();
         List<BankAccountDataObject> konten = bankAccountService.getAllBankAccounts();
         List<BankContactDataObject> kontakte = bankContactService.getAllBankContacts();
@@ -76,7 +77,8 @@ public class BankStatementService {
                     kontakt.getName(),
                     kontakt.getBic(),
                     kontakt.getUser(),
-                    kontakt.getBankPin(),null)) {
+                    kontakt.getBankPin(),
+                    dlgCallback)) {
                 connection.connect();
 
                 for (BankAccountDataObject konto : entry.getValue()) {

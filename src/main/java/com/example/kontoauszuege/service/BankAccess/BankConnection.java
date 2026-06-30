@@ -15,8 +15,10 @@ import org.springframework.util.Assert;
 import java.io.File;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 
@@ -72,11 +74,11 @@ public class BankConnection implements AutoCloseable {
 
     private  static Date startOfDay(Date date)
     {
-        if (date == null)
-            return null;
+        //if (date == null)
+        //    return null;
 
         Calendar cal = Calendar.getInstance();
-        cal.setTime(date == null ? new Date() : date);
+        cal.setTime(date == null ? Date.from(Instant.now().minusSeconds(60*60*24*300)) : date);
         cal.set(Calendar.HOUR_OF_DAY,0);
         cal.set(Calendar.MINUTE,0);
         cal.set(Calendar.SECOND,0);
@@ -124,10 +126,17 @@ public class BankConnection implements AutoCloseable {
         // In der Passport-Datei speichert HBCI4Java die Daten des Bankzugangs (Bankparameterdaten, Benutzer-Parameter, etc.).
         // Die Datei kann problemlos geloescht werden. Sie wird beim naechsten mal automatisch neu erzeugt,
         // wenn der Parameter "client.passport.PinTan.init" den Wert "1" hat (siehe unten).
-        // Wir speichern die Datei der Einfachheit halber im aktuellen Verzeichnis.
+        // Standardmäßig im Benutzerverzeichnis unter ~/.jbanking ablegen.
 
-        final File passportFile = new File(String.format("passport2-%s-%s.dat", bic, user));
+        final File jbankingDir = new File(System.getProperty("user.home"), ".jbanking");
+        if (!jbankingDir.exists()) {
+            boolean ok = jbankingDir.mkdirs();
+            if (!ok) {
+                System.out.println("Warnung: Konnte Verzeichnis ~/.jbanking nicht anlegen: " + jbankingDir.getAbsolutePath());
+            }
+        }
 
+        final File passportFile = new File(jbankingDir, String.format("passport2-%s-%s.dat", bic, user));
 
         System.out.println(String.format("passport-file = %s", passportFile.getAbsolutePath()));
 
@@ -213,7 +222,7 @@ public class BankConnection implements AutoCloseable {
 
         for (int i = 0; i < konten.length; i++) {
             log(" Konto: " + konten[i].number);
-            if(konten[i].iban.equals(iban))
+            if(Objects.equals(konten[i].iban, iban))
             {
                 k = konten[i];
             }

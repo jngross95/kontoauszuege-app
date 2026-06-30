@@ -141,7 +141,7 @@ public class BankkontakteView extends VerticalLayout {
             // Capture UI to update it from background thread
             final com.vaadin.flow.component.UI ui = com.vaadin.flow.component.UI.getCurrent();
 
-            var dlg = new DlgView(BankkontakteView.this);
+            var dlg = new DlgView(this);
 
             Thread bg = new Thread(() -> {
                 try {
