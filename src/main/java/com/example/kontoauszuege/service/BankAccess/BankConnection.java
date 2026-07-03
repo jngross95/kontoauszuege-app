@@ -74,11 +74,14 @@ public class BankConnection implements AutoCloseable {
 
     private  static Date startOfDay(Date date)
     {
-        //if (date == null)
-        //    return null;
+        Date past = Date.from(
+                LocalDate.of(2024, 1, 1)
+                        .atStartOfDay(ZoneId.systemDefault())
+                        .toInstant()
+        );
 
         Calendar cal = Calendar.getInstance();
-        cal.setTime(date == null ? Date.from(Instant.now().minusSeconds(60*60*24*300)) : date);
+        cal.setTime(date == null ? past : date);
         cal.set(Calendar.HOUR_OF_DAY,0);
         cal.set(Calendar.MINUTE,0);
         cal.set(Calendar.SECOND,0);
