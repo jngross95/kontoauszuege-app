@@ -7,7 +7,6 @@ import com.example.kontoauszuege.service.BankStatementService;
 import com.example.kontoauszuege.service.UeberweisungService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.select.Select;
@@ -54,7 +53,9 @@ public class UeberweisungenView extends VerticalLayout {
     private UeberweisungDataObject selected = null;
     private Dialog editDialog;
     private GridListDataView<UeberweisungDataObject> gridDataView;
+    private Button bearbeitenBtn;
     private Button sendenBtn;
+    private Button loeschenBtn;
 
     public UeberweisungenView(UeberweisungService service,
                               BankAccountService bankAccountService,
@@ -102,14 +103,17 @@ public class UeberweisungenView extends VerticalLayout {
         Button neuBtn = new Button("Neu", VaadinIcon.PLUS.create(), e -> neueUeberweisung());
         neuBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        Button bearbeitenBtn = new Button("Bearbeiten", VaadinIcon.EDIT.create(), e -> bearbeiten());
+        bearbeitenBtn = new Button("Bearbeiten", VaadinIcon.EDIT.create(), e -> bearbeiten());
         bearbeitenBtn.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+        bearbeitenBtn.setEnabled(false);
 
-        Button loeschenBtn = new Button("Löschen", VaadinIcon.TRASH.create(), e -> loeschen());
+        loeschenBtn = new Button("Löschen", VaadinIcon.TRASH.create(), e -> loeschen());
         loeschenBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        loeschenBtn.setEnabled(false);
 
         sendenBtn = new Button("Senden", VaadinIcon.PAPERPLANE.create(), e -> senden());
         sendenBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
+        sendenBtn.setEnabled(false);
 
         HorizontalLayout toolbar = new HorizontalLayout(neuBtn, bearbeitenBtn, loeschenBtn, sendenBtn);
         toolbar.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -157,9 +161,7 @@ public class UeberweisungenView extends VerticalLayout {
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         grid.addSelectionListener(e -> {
             selected = e.getFirstSelectedItem().orElse(null);
-            if (sendenBtn != null) {
-                sendenBtn.setEnabled(selected == null || selected.getStatus() != UeberweisungStatus.SENT);
-            }
+            updateActionButtons();
         });
     }
 
@@ -334,8 +336,23 @@ public class UeberweisungenView extends VerticalLayout {
     private void refreshGrid() {
         List<UeberweisungDataObject> alle = service.findAll();
         gridDataView = grid.setItems(alle);
+        selected = null;
+        updateActionButtons();
+    }
+
+    private void updateActionButtons() {
+        boolean hasSelection = selected != null;
+        boolean selectableForEditAndSend =
+                hasSelection && selected.getStatus() != UeberweisungStatus.SENT;
+
+        if (bearbeitenBtn != null) {
+            bearbeitenBtn.setEnabled(selectableForEditAndSend);
+        }
         if (sendenBtn != null) {
-            sendenBtn.setEnabled(selected == null || selected.getStatus() != UeberweisungStatus.SENT);
+            sendenBtn.setEnabled(selectableForEditAndSend);
+        }
+        if (loeschenBtn != null) {
+            loeschenBtn.setEnabled(hasSelection);
         }
     }
 }
