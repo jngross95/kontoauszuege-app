@@ -18,6 +18,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -264,14 +265,29 @@ public class UeberweisungenView extends VerticalLayout {
             return;
         }
         try {
-            service.ueberweisungenAusfuehren(zumSenden);
-            refreshGrid();
-            Notification n = Notification.show(
-                    zumSenden.size() + " Überweisung(en) wurden gesendet.",
-                    4000, Notification.Position.MIDDLE);
-            n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            DlgView dlg = new DlgView(this);
+            UI ui = UI.getCurrent();
+            Thread bg = new Thread(() -> {
+                try {
+                    service.ueberweisungenAusfuehren(zumSenden, dlg);
+                    ui.access(() -> {
+                        refreshGrid();
+                        Notification n = Notification.show(
+                                zumSenden.size() + " Überweisung(en) wurden gesendet.",
+                                4000, Notification.Position.MIDDLE);
+                        n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                    });
+                } catch (Exception ex) {
+                    ui.access(() -> {
+                        refreshGrid();
+                        Notification n = Notification.show(ex.getMessage(), 5000, Notification.Position.MIDDLE);
+                        n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    });
+                }
+            });
+            bg.setDaemon(true);
+            bg.start();
         } catch (Exception ex) {
-            refreshGrid();
             Notification n = Notification.show(ex.getMessage(), 5000, Notification.Position.MIDDLE);
             n.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }

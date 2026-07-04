@@ -5,6 +5,7 @@ import com.example.kontoauszuege.model.BankContactDataObject;
 import com.example.kontoauszuege.model.UeberweisungDataObject;
 import com.example.kontoauszuege.model.UeberweisungStatus;
 import com.example.kontoauszuege.service.BankAccess.BankConnection;
+import com.example.kontoauszuege.service.BankAccess.DlgCallback;
 import com.example.kontoauszuege.service.DataAccess.DataAccessService;
 import org.springframework.stereotype.Service;
 
@@ -66,7 +67,7 @@ public class UeberweisungService {
      * @param ueberweisungen die auszuführenden Überweisungen
      * @return die Status-Rückmeldungen der Bank je ausgeführter Überweisung
      */
-    public List<String> ueberweisungenAusfuehren(List<UeberweisungDataObject> ueberweisungen) throws Exception {
+    public List<String> ueberweisungenAusfuehren(List<UeberweisungDataObject> ueberweisungen, DlgCallback dlgCallback) throws Exception {
         List<String> ergebnisse = new ArrayList<>();
         if (ueberweisungen == null || ueberweisungen.isEmpty()) {
             return ergebnisse;
@@ -123,7 +124,7 @@ public class UeberweisungService {
                     kontakt.getName(),
                     kontakt.getBic(),
                     kontakt.getUser(),
-                    kontakt.getBankPin(),null)) {
+                    kontakt.getBankPin(), dlgCallback)) {
                 connection.connect();
 
                 for (UeberweisungDataObject ueberweisung : entry.getValue()) {
