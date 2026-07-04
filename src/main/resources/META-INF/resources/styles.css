@@ -131,11 +131,7 @@ vaadin-grid::part(selected-row-cell) {
   background: rgba(99, 102, 241, 0.12) !important;
 }
 
-vaadin-grid::part(nonselectable-row-cell) {
-  opacity: 1;
-  color: var(--lumo-disabled-text-color);
-  pointer-events: none;
-}
+
 
 /* ============================================================
    BUTTONS

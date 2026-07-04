@@ -54,6 +54,7 @@ public class UeberweisungenView extends VerticalLayout {
     private UeberweisungDataObject selected = null;
     private Dialog editDialog;
     private GridListDataView<UeberweisungDataObject> gridDataView;
+    private Button sendenBtn;
 
     public UeberweisungenView(UeberweisungService service,
                               BankAccountService bankAccountService,
@@ -107,7 +108,7 @@ public class UeberweisungenView extends VerticalLayout {
         Button loeschenBtn = new Button("Löschen", VaadinIcon.TRASH.create(), e -> loeschen());
         loeschenBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-        Button sendenBtn = new Button("Senden", VaadinIcon.PAPERPLANE.create(), e -> senden());
+        sendenBtn = new Button("Senden", VaadinIcon.PAPERPLANE.create(), e -> senden());
         sendenBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
 
         HorizontalLayout toolbar = new HorizontalLayout(neuBtn, bearbeitenBtn, loeschenBtn, sendenBtn);
@@ -154,15 +155,11 @@ public class UeberweisungenView extends VerticalLayout {
 
         grid.setWidthFull();
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        grid.setItemSelectableProvider(u -> u.getStatus() != UeberweisungStatus.SENT);
         grid.addSelectionListener(e -> {
-            UeberweisungDataObject neuSelected = e.getFirstSelectedItem().orElse(null);
-            if (neuSelected != null && neuSelected.getStatus() == UeberweisungStatus.SENT) {
-                grid.deselect(neuSelected);
-                selected = null;
-                return;
+            selected = e.getFirstSelectedItem().orElse(null);
+            if (sendenBtn != null) {
+                sendenBtn.setEnabled(selected == null || selected.getStatus() != UeberweisungStatus.SENT);
             }
-            selected = neuSelected;
         });
     }
 
@@ -337,9 +334,8 @@ public class UeberweisungenView extends VerticalLayout {
     private void refreshGrid() {
         List<UeberweisungDataObject> alle = service.findAll();
         gridDataView = grid.setItems(alle);
-        if (selected != null && selected.getStatus() == UeberweisungStatus.SENT) {
-            selected = null;
-            grid.deselectAll();
+        if (sendenBtn != null) {
+            sendenBtn.setEnabled(selected == null || selected.getStatus() != UeberweisungStatus.SENT);
         }
     }
 }
