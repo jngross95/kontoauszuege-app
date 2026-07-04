@@ -23,6 +23,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -52,6 +53,7 @@ public class UeberweisungenView extends VerticalLayout {
     private List<String> senderItems = List.of();
     private UeberweisungDataObject selected = null;
     private Dialog editDialog;
+    private GridListDataView<UeberweisungDataObject> gridDataView;
 
     public UeberweisungenView(UeberweisungService service,
                               BankAccountService bankAccountService,
@@ -151,8 +153,16 @@ public class UeberweisungenView extends VerticalLayout {
                 .setAutoWidth(true);
 
         grid.setWidthFull();
+        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        grid.setItemSelectableProvider(u -> u.getStatus() != UeberweisungStatus.SENT);
         grid.addSelectionListener(e -> {
-            selected = e.getFirstSelectedItem().orElse(null);
+            UeberweisungDataObject neuSelected = e.getFirstSelectedItem().orElse(null);
+            if (neuSelected != null && neuSelected.getStatus() == UeberweisungStatus.SENT) {
+                grid.deselect(neuSelected);
+                selected = null;
+                return;
+            }
+            selected = neuSelected;
         });
     }
 
@@ -326,7 +336,10 @@ public class UeberweisungenView extends VerticalLayout {
 
     private void refreshGrid() {
         List<UeberweisungDataObject> alle = service.findAll();
-        grid.setItems(alle);
+        gridDataView = grid.setItems(alle);
+        if (selected != null && selected.getStatus() == UeberweisungStatus.SENT) {
+            selected = null;
+            grid.deselectAll();
+        }
     }
 }
-
