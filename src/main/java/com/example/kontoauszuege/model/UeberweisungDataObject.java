@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 
 public class UeberweisungDataObject extends DataObject {
 
-    private boolean ausgewaehlt = false;
     private UeberweisungStatus status = UeberweisungStatus.NEW;
     private String sender;
 
@@ -29,9 +28,6 @@ public class UeberweisungDataObject extends DataObject {
         this.verwendungszweck = verwendungszweck;
         this.betrag = betrag;
     }
-
-    public boolean isAusgewaehlt()                    { return ausgewaehlt; }
-    public void    setAusgewaehlt(boolean ausgewaehlt) { this.ausgewaehlt = ausgewaehlt; }
 
     public UeberweisungStatus getStatus()                    { return status; }
     public void               setStatus(UeberweisungStatus status) { this.status = status; }

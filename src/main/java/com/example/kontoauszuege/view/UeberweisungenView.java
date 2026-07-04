@@ -120,13 +120,6 @@ public class UeberweisungenView extends VerticalLayout {
 
     private void configureGrid() {
         grid.addComponentColumn(u -> {
-            Checkbox cb = new Checkbox(u.isAusgewaehlt());
-            cb.setEnabled(u.getStatus() != UeberweisungStatus.SENT);
-            cb.addValueChangeListener(e -> u.setAusgewaehlt(e.getValue()));
-            return cb;
-        }).setHeader("Senden").setWidth("80px").setFlexGrow(0);
-
-        grid.addComponentColumn(u -> {
             com.vaadin.flow.component.html.Span badge = new com.vaadin.flow.component.html.Span(
                     u.getStatus() != null ? u.getStatus().name() : UeberweisungStatus.NEW.name());
             String theme = switch (u.getStatus() != null ? u.getStatus() : UeberweisungStatus.NEW) {
@@ -225,7 +218,6 @@ public class UeberweisungenView extends VerticalLayout {
 
     private void neueUeberweisung() {
         UeberweisungDataObject neu = new UeberweisungDataObject();
-        neu.setAusgewaehlt(true);
         service.add(neu);
         refreshGrid();
         grid.select(neu);
@@ -256,14 +248,12 @@ public class UeberweisungenView extends VerticalLayout {
     }
 
     private void senden() {
-        List<UeberweisungDataObject> zumSenden = service.findAll().stream()
-                .filter(UeberweisungDataObject::isAusgewaehlt)
-                .collect(Collectors.toList());
-        if (zumSenden.isEmpty()) {
-            Notification.show("Keine Überweisung zum Senden markiert.",
+        if (selected == null) {
+            Notification.show("Bitte zuerst eine Überweisung auswählen.",
                     2500, Notification.Position.MIDDLE);
             return;
         }
+        List<UeberweisungDataObject> zumSenden = List.of(selected);
         try {
             DlgView dlg = new DlgView(this);
             UI ui = UI.getCurrent();
@@ -273,7 +263,7 @@ public class UeberweisungenView extends VerticalLayout {
                     ui.access(() -> {
                         refreshGrid();
                         Notification n = Notification.show(
-                                zumSenden.size() + " Überweisung(en) wurden gesendet.",
+                                "Überweisung wurde gesendet.",
                                 4000, Notification.Position.MIDDLE);
                         n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                     });

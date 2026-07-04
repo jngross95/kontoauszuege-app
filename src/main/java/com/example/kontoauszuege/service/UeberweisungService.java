@@ -93,13 +93,9 @@ public class UeberweisungService {
             }
         }
 
-        // Ausgewählte Überweisungen nach Kontakt-BIC gruppieren.
+        // Überweisungen nach Kontakt-BIC gruppieren.
         Map<String, List<UeberweisungDataObject>> nachKontaktBic = new HashMap<>();
         for (UeberweisungDataObject ueberweisung : ueberweisungen) {
-            if (!ueberweisung.isAusgewaehlt()) {
-                continue;
-            }
-
             String senderIban = normalize(ueberweisung.getSender());
             BankAccountDataObject konto = kontoNachIban.get(senderIban);
             if (konto == null) {
@@ -129,7 +125,6 @@ public class UeberweisungService {
 
                 for (UeberweisungDataObject ueberweisung : entry.getValue()) {
                     ueberweisung.setStatus(UeberweisungStatus.SENDING);
-                    ueberweisung.setAusgewaehlt(false);
                     dataAccessService.update(ueberweisung);
                     try {
                         ergebnisse.add(fuehreEinzelueberweisungAus(connection, ueberweisung));

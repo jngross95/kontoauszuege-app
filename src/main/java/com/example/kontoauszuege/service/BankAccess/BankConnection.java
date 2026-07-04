@@ -570,6 +570,10 @@ public class BankConnection implements AutoCloseable {
             // Diese Funktion ist wichtig. Ueber die fragt HBCI4Java die benoetigten Daten von uns ab.
             switch (reason)
             {
+                //callback: reason=37 msg='Ohne die Beachtung des Ergebnisses der Empfängerüberprüfung könnte der Betrag auf ein Konto gelangen, dessen Inhaber nicht dem eingegebenen Empfänger entspricht. In diesem Fall besteht kein Erstattungsanspruch gegen uns; eine Haftung der beteiligten Zahlungsdienstleister ist ausgeschlossen.' retData=''
+                case HAVE_VOP_RESULT:
+                    retData.replace(0,retData.length(),currentConnection.bankPin);
+                    break;
                 // Mit dem Passwort verschluesselt HBCI4Java die Passport-Datei.
                 // Wir nehmen hier der Einfachheit halber direkt die PIN. In der Praxis
                 // sollte hier aber ein staerkeres Passwort genutzt werden.
