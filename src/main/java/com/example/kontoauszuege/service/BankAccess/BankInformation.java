@@ -6,10 +6,12 @@ package com.example.kontoauszuege.service.BankAccess;
 public class BankInformation {
     private final String bic;
     private final String name;
+    private final String blz;
 
-    public BankInformation(String bic, String name) {
+    public BankInformation(String bic, String name, String blz) {
         this.bic = bic;
         this.name = name;
+        this.blz = blz;
     }
 
     public String getBic() {
@@ -20,11 +22,16 @@ public class BankInformation {
         return name;
     }
 
+    public String getBlz() {
+        return blz;
+    }
+
     @Override
     public String toString() {
         return "BankInformation{" +
                 "bic='" + bic + '\'' +
                 ", name='" + name + '\'' +
+                ", blz='" + blz + '\'' +
                 '}';
     }
 }
