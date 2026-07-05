@@ -4,6 +4,7 @@ import com.example.kontoauszuege.model.BankAccountDataObject;
 import com.example.kontoauszuege.service.DataAccess.DataAccessService;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -16,7 +17,10 @@ public class BankAccountService {
     }
 
     public List<BankAccountDataObject> getAllBankAccounts() {
-        return dataAccessService.getAll(BankAccountDataObject.class);
+        return dataAccessService.getAll(BankAccountDataObject.class).stream()
+                .sorted(Comparator.comparing(BankAccountDataObject::getName,
+                        Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+                .toList();
     }
 
     public BankAccountDataObject addBankAccount(BankAccountDataObject bankAccountDataObject) {
