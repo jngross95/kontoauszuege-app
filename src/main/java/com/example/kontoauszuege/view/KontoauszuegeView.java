@@ -124,7 +124,7 @@ public class KontoauszuegeView extends VerticalLayout {
         suchfeld.setValueChangeMode(ValueChangeMode.LAZY);
         suchfeld.addValueChangeListener(e -> ladeKontoauszuege(e.getValue()));
 
-        Button alleHolenButton = new Button("Alle holen", VaadinIcon.REFRESH.create());
+        Button alleHolenButton = new Button("Kontoauszüge Holen", VaadinIcon.REFRESH.create());
         alleHolenButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         alleHolenButton.addClickListener(e -> {
             try {
