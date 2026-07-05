@@ -95,6 +95,7 @@ public class KontoauszuegeView extends VerticalLayout {
         kontoSelect.addValueChangeListener(e -> {
             BankAccountDataObject konto = e.getValue();
             aktiveKontoIban = konto == null ? null : konto.getIban();
+            kontoSelect.setPrefixComponent(kontoIcon(konto));
             ladeKontoauszuege(suchfeld.getValue());
         });
 
@@ -286,6 +287,24 @@ public class KontoauszuegeView extends VerticalLayout {
                     .toList();
         }
         grid.setItems(liste);
+    }
+
+    private Image kontoIcon(BankAccountDataObject konto) {
+        if (konto == null) return null;
+        String bic = konto.getBic();
+        if (bic == null || bic.isBlank()) return null;
+        try {
+            String iconName = baseService.getIconFromBic(bic);
+            if (iconName != null && !iconName.isBlank()) {
+                Image img = new Image("icons/" + iconName, konto.getName() != null ? konto.getName() : "");
+                img.setHeight("20px");
+                img.getStyle().set("object-fit", "contain");
+                return img;
+            }
+        } catch (Exception ignored) {
+            // kein Icon verfügbar
+        }
+        return null;
     }
 
     private String normalisiereIban(String iban) {
