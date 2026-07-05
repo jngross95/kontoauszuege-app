@@ -152,7 +152,7 @@ public class UeberweisungenView extends VerticalLayout {
             };
             badge.getElement().setAttribute("theme", theme);
             return badge;
-        }).setHeader("Status").setAutoWidth(true).setSortable(false);
+        }).setHeader("Status").setWidth("80px").setFlexGrow(0).setSortable(false);
 
         grid.addColumn(new ComponentRenderer<>(u -> {
             HorizontalLayout layout = new HorizontalLayout();
@@ -176,13 +176,13 @@ public class UeberweisungenView extends VerticalLayout {
             }
             layout.add(textLayout);
             return layout;
-        })).setHeader("Sender").setResizable(true).setSortable(true).setAutoWidth(true);
+        })).setHeader("Sender").setResizable(true).setSortable(true).setWidth("200px").setFlexGrow(0);
         grid.addColumn(UeberweisungDataObject::getEmpfaenger)
-                .setHeader("Empfänger").setResizable(true).setSortable(true).setAutoWidth(true);
+                .setHeader("Empfänger").setResizable(true).setSortable(true).setWidth("240px").setFlexGrow(0);
         grid.addColumn(UeberweisungDataObject::getEmpfaengerBic)
-            .setHeader("Empfänger-BIC").setResizable(true).setSortable(true).setAutoWidth(true);
+            .setHeader("Empfänger-BIC").setResizable(true).setSortable(true).setWidth("150px").setFlexGrow(0);
         grid.addColumn(UeberweisungDataObject::getEmpfaengerIban)
-                .setHeader("Empfänger-IBAN").setResizable(true).setSortable(true).setAutoWidth(true);
+                .setHeader("Empfänger-IBAN").setResizable(true).setSortable(true).setWidth("240px").setFlexGrow(0);
         grid.addColumn(UeberweisungDataObject::getVerwendungszweck)
                 .setHeader("Verwendungszweck").setResizable(true).setSortable(true).setFlexGrow(1);
         grid.addColumn(new NumberRenderer<>(
