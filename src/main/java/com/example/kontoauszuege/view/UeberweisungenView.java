@@ -154,8 +154,18 @@ public class UeberweisungenView extends VerticalLayout {
             return badge;
         }).setHeader("Status").setAutoWidth(true).setSortable(false);
 
-        grid.addColumn(UeberweisungDataObject::getSender)
-                .setHeader("Sender").setResizable(true).setSortable(true).setAutoWidth(true);
+        grid.addColumn(new ComponentRenderer<>(u -> {
+            HorizontalLayout layout = new HorizontalLayout();
+            layout.setAlignItems(FlexComponent.Alignment.CENTER);
+            layout.setSpacing(true);
+            String senderName = u.getSender();
+            BankAccountDataObject konto = senderName == null ? null :
+                    senderItems.stream().filter(b -> Objects.equals(b.getName(), senderName)).findFirst().orElse(null);
+            Image icon = senderIcon(konto);
+            if (icon != null) layout.add(icon);
+            layout.add(new Span(senderName != null ? senderName : ""));
+            return layout;
+        })).setHeader("Sender").setResizable(true).setSortable(true).setAutoWidth(true);
         grid.addColumn(UeberweisungDataObject::getEmpfaenger)
                 .setHeader("Empfänger").setResizable(true).setSortable(true).setAutoWidth(true);
         grid.addColumn(UeberweisungDataObject::getEmpfaengerBic)
