@@ -163,7 +163,18 @@ public class UeberweisungenView extends VerticalLayout {
                     senderItems.stream().filter(b -> Objects.equals(b.getName(), senderName)).findFirst().orElse(null);
             Image icon = senderIcon(konto);
             if (icon != null) layout.add(icon);
-            layout.add(new Span(senderName != null ? senderName : ""));
+            com.vaadin.flow.component.orderedlayout.VerticalLayout textLayout = new com.vaadin.flow.component.orderedlayout.VerticalLayout();
+            textLayout.setPadding(false);
+            textLayout.setSpacing(false);
+            textLayout.add(new Span(senderName != null ? senderName : ""));
+            if (konto != null && konto.getIban() != null && !konto.getIban().isBlank()) {
+                Span ibanSpan = new Span(konto.getIban());
+                ibanSpan.getStyle().set("font-size", "var(--lumo-font-size-xxs)");
+                ibanSpan.getStyle().set("color", "var(--lumo-body-text-color)");
+                ibanSpan.getStyle().set("opacity", "0.7");
+                textLayout.add(ibanSpan);
+            }
+            layout.add(textLayout);
             return layout;
         })).setHeader("Sender").setResizable(true).setSortable(true).setAutoWidth(true);
         grid.addColumn(UeberweisungDataObject::getEmpfaenger)
