@@ -24,8 +24,38 @@ jobs:
       - name: Build (production mode)
         run: mvn clean package -Dvaadin.productionMode=true -Pproduction
 
-      - name: Upload artifact
+      - name: Create minimal JRE with jlink
+        run: |
+          MODULES="java.se,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.naming.dns,jdk.unsupported,jdk.zipfs,jdk.management,jdk.management.agent,jdk.attach,jdk.charsets,jdk.localedata"
+          jlink \
+            --add-modules "$MODULES" \
+            --strip-debug \
+            --no-man-pages \
+            --no-header-files \
+            --compress zip-6 \
+            --output jre-minimal
+
+      - name: Assemble Linux bundle
+        run: |
+          JAR=$(ls target/kontoauszuege-app-*.jar | grep -v '\.original$' | head -1)
+          BUNDLE=kontoauszuege-app-linux
+          mkdir -p "$BUNDLE/app"
+          cp "$JAR" "$BUNDLE/app/app.jar"
+          cp -r jre-minimal "$BUNDLE/jre"
+          cat > "$BUNDLE/start.sh" << 'EOF'
+          #!/bin/sh
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          cd "$DIR"
+          exec "$DIR/jre/bin/java" \
+            -XX:+UseSerialGC \
+            -Xss512k \
+            -jar "$DIR/app/app.jar" "$@"
+          EOF
+          chmod +x "$BUNDLE/start.sh"
+          tar -czf kontoauszuege-app-linux.tar.gz "$BUNDLE"
+
+      - name: Upload Linux bundle
         uses: actions/upload-artifact@v4
         with:
-          name: kontoauszuege-app
-          path: target/*.jar
+          name: kontoauszuege-app-linux
+          path: kontoauszuege-app-linux.tar.gz
