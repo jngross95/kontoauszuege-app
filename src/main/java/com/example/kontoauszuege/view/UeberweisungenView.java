@@ -26,7 +26,6 @@ import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import org.yaml.snakeyaml.util.Tuple;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -43,14 +42,14 @@ public class UeberweisungenView extends VerticalLayout {
 
     // Formularfelder
     private final Select<String>   senderField        = new Select<>();
-    private final ComboBox<Tuple<String,String>> empfaengerField = new ComboBox<>("Empfänger");
+    private final ComboBox<EmpfaengerInfo> empfaengerField = new ComboBox<>("Empfänger");
     private final TextField        verwendungszweck   = new TextField("Verwendungszweck");
     private final TextField        empfaengerIbanField = new TextField("Empfänger-IBAN");
     private final TextField        empfaengerBicField = new TextField("Empfänger-BIC");
     private final TextField        betragField        = new TextField("Betrag (€)");
 
     private List<String> senderItems = List.of();
-    private List<Tuple<String,String>> bekannteEmpfaenger = List.of();
+    private List<EmpfaengerInfo> bekannteEmpfaenger = List.of();
     private UeberweisungDataObject selected = null;
     private Dialog editDialog;
     private GridListDataView<UeberweisungDataObject> gridDataView;
@@ -87,14 +86,15 @@ public class UeberweisungenView extends VerticalLayout {
 
         // deduplizieren: jede IBAN/name nur einmal aufnehmen
         java.util.Set<String> nameIbansSet = new java.util.HashSet<>();
-        List<Tuple<String,String>> empfaengerList = new ArrayList<>();
+        List<EmpfaengerInfo> empfaengerList = new ArrayList<>();
 
         for (var entry : bankStatementService.getAllStatements()) {
             String iban = entry.getEmpfaengerKontoNr();
             String empfaenger = entry.getEmpfaenger();
+            String bic = entry.getEmpfaengerBLZ();
 
-            if (iban != null && empfaenger!= null && !iban.isBlank() && !empfaenger.isBlank() && !nameIbansSet.contains(empfaenger+iban)) {
-                empfaengerList.add(new Tuple<>(empfaenger, iban));
+            if (iban != null && empfaenger != null && !iban.isBlank() && !empfaenger.isBlank() && !nameIbansSet.contains(empfaenger+iban)) {
+                empfaengerList.add(new EmpfaengerInfo(empfaenger, iban, bic != null ? bic : ""));
                 nameIbansSet.add(empfaenger+iban);
             }
         }
@@ -176,22 +176,22 @@ public class UeberweisungenView extends VerticalLayout {
 
     // ── Dialog ────────────────────────────────────────────────────────────
 
-    private Dialog buildDialog(List<Tuple<String,String>> bekannteEmpfaenger) {
+    private Dialog buildDialog(List<EmpfaengerInfo> bekannteEmpfaenger) {
 
         senderField.setLabel("Sender");
         senderField.setItems(senderItems);
         senderField.setWidthFull();
 
         empfaengerField.setItems(bekannteEmpfaenger);
-        empfaengerField.setItemLabelGenerator(t -> t._1() != null ? t._1() : "");
+        empfaengerField.setItemLabelGenerator(ei -> ei.name() != null ? ei.name() : "");
         // renderer: show name and IBAN in smaller, muted text
-        empfaengerField.setRenderer(new com.vaadin.flow.data.renderer.ComponentRenderer<>(tuple -> {
+        empfaengerField.setRenderer(new com.vaadin.flow.data.renderer.ComponentRenderer<>(ei -> {
             com.vaadin.flow.component.orderedlayout.VerticalLayout v = new com.vaadin.flow.component.orderedlayout.VerticalLayout();
             v.setPadding(false);
             v.setSpacing(false);
             v.getStyle().set("min-width", "0");
-            com.vaadin.flow.component.html.Span nameSpan = new com.vaadin.flow.component.html.Span(tuple != null ? tuple._1() : "");
-            com.vaadin.flow.component.html.Span ibanSpan = new com.vaadin.flow.component.html.Span(tuple != null ? tuple._2() : "");
+            com.vaadin.flow.component.html.Span nameSpan = new com.vaadin.flow.component.html.Span(ei != null ? ei.name() : "");
+            com.vaadin.flow.component.html.Span ibanSpan = new com.vaadin.flow.component.html.Span(ei != null ? ei.iban() : "");
             ibanSpan.getStyle().set("font-size", "var(--lumo-font-size-xxs)");
             ibanSpan.getStyle().set("color", "var(--lumo-body-text-color)");
             ibanSpan.getStyle().set("opacity", "0.7");
@@ -199,11 +199,16 @@ public class UeberweisungenView extends VerticalLayout {
             return v;
         }));
         empfaengerField.setAllowCustomValue(true);
-        empfaengerField.addCustomValueSetListener(e -> empfaengerField.setValue(new Tuple<>(e.getDetail(), "")));
+        empfaengerField.addCustomValueSetListener(e -> empfaengerField.setValue(new EmpfaengerInfo(e.getDetail(), "", "")));
         empfaengerField.addValueChangeListener(e -> {
-            Tuple<String,String> t = e.getValue();
-            if (t != null && t._2() != null && !t._2().isBlank()) {
-                empfaengerIbanField.setValue(t._2());
+            EmpfaengerInfo ei = e.getValue();
+            if (ei != null) {
+                if (ei.iban() != null && !ei.iban().isBlank()) {
+                    empfaengerIbanField.setValue(ei.iban());
+                }
+                if (ei.bic() != null && !ei.bic().isBlank()) {
+                    empfaengerBicField.setValue(ei.bic());
+                }
             }
         });
         empfaengerField.setWidthFull();
@@ -326,8 +331,8 @@ public class UeberweisungenView extends VerticalLayout {
     private void speichern() {
         if (selected == null) return;
         selected.setSender(senderField.getValue());
-        Tuple<String,String> empfPair = empfaengerField.getValue();
-        selected.setEmpfaenger(empfPair != null ? empfPair._1() : "");
+        EmpfaengerInfo empfInfo = empfaengerField.getValue();
+        selected.setEmpfaenger(empfInfo != null ? empfInfo.name() : "");
         selected.setEmpfaengerBic(empfaengerBicField.getValue());
         selected.setEmpfaengerIban(empfaengerIbanField.getValue());
         selected.setVerwendungszweck(verwendungszweck.getValue());
@@ -348,11 +353,11 @@ public class UeberweisungenView extends VerticalLayout {
         selected = u;
         String sv = u.getSender();
         senderField.setValue(sv != null && senderItems.contains(sv) ? sv : null);
-        Tuple<String,String> empfPair = bekannteEmpfaenger.stream()
-                .filter(t -> Objects.equals(t._1(), u.getEmpfaenger()))
+        EmpfaengerInfo empfInfo = bekannteEmpfaenger.stream()
+                .filter(ei -> Objects.equals(ei.name(), u.getEmpfaenger()) && Objects.equals(ei.iban(), u.getEmpfaengerIban()))
                 .findFirst()
-                .orElse(new Tuple<>(u.getEmpfaenger() != null ? u.getEmpfaenger() : "", ""));
-        empfaengerField.setValue(empfPair);
+                .orElse(new EmpfaengerInfo(u.getEmpfaenger() != null ? u.getEmpfaenger() : "", "", ""));
+        empfaengerField.setValue(empfInfo);
         empfaengerBicField.setValue(u.getEmpfaengerBic() != null ? u.getEmpfaengerBic() : "");
         empfaengerIbanField.setValue(u.getEmpfaengerIban() != null ? u.getEmpfaengerIban() : "");
         verwendungszweck.setValue(u.getVerwendungszweck() != null ? u.getVerwendungszweck() : "");
