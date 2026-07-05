@@ -292,9 +292,11 @@ public class UeberweisungenView extends VerticalLayout {
         form.setColspan(hr, 4);
         form.add(empfaengerField);
         form.setColspan(empfaengerField, 4);
+        empfaengerIbanField.getElement().setAttribute("autocomplete", "off");
         empfaengerIbanField.setWidthFull();
         form.add(empfaengerIbanField);
         form.setColspan(empfaengerIbanField, 4);
+        empfaengerBicField.getElement().setAttribute("autocomplete", "off");
         empfaengerBicField.setWidthFull();
         form.add(empfaengerBicField);
         form.setColspan(empfaengerBicField, 4);
