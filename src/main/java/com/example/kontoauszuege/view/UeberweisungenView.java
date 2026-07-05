@@ -84,14 +84,16 @@ public class UeberweisungenView extends VerticalLayout {
                 .sorted()
                 .collect(Collectors.toList());
 
-        List<String> bekannteEmpfaenger = bankStatementService.getAllStatements().stream()
-                .map(b -> b.getEmpfaenger())
-                .filter(s -> s != null && !s.isBlank())
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
+        // build a map from recipient name -> example IBAN (first occurrence)
+        java.util.Map<String,String> bekannteEmpfaengerMap = bankStatementService.getAllStatements().stream()
+            .filter(b -> b.getEmpfaenger() != null && !b.getEmpfaenger().isBlank())
+            .collect(Collectors.toMap(
+                b -> b.getEmpfaenger(),
+                b -> b.getIban() != null ? b.getIban() : "",
+                (existing, replacement) -> existing
+            ));
 
-        editDialog = buildDialog(bekannteEmpfaenger);
+        editDialog = buildDialog(bekannteEmpfaengerMap);
         add(editDialog);
 
         refreshGrid();
@@ -167,12 +169,26 @@ public class UeberweisungenView extends VerticalLayout {
 
     // ── Dialog ────────────────────────────────────────────────────────────
 
-    private Dialog buildDialog(List<String> bekannteEmpfaenger) {
+    private Dialog buildDialog(java.util.Map<String,String> bekannteEmpfaengerMap) {
         senderField.setLabel("Sender");
         senderField.setItems(senderItems);
         senderField.setWidthFull();
 
-        empfaengerField.setItems(bekannteEmpfaenger);
+        empfaengerField.setItems(bekannteEmpfaengerMap.keySet());
+        // renderer: show name and IBAN in smaller, muted text
+        empfaengerField.setRenderer(new com.vaadin.flow.data.renderer.ComponentRenderer<>(name -> {
+            com.vaadin.flow.component.orderedlayout.VerticalLayout v = new com.vaadin.flow.component.orderedlayout.VerticalLayout();
+            v.setPadding(false);
+            v.setSpacing(false);
+            v.getStyle().set("min-width", "0");
+            com.vaadin.flow.component.html.Span nameSpan = new com.vaadin.flow.component.html.Span(name != null ? name : "");
+            com.vaadin.flow.component.html.Span ibanSpan = new com.vaadin.flow.component.html.Span(bekannteEmpfaengerMap.getOrDefault(name, ""));
+            ibanSpan.getStyle().set("font-size", "var(--lumo-font-size-xxs)");
+            ibanSpan.getStyle().set("color", "var(--lumo-body-text-color)");
+            ibanSpan.getStyle().set("opacity", "0.7");
+            v.add(nameSpan, ibanSpan);
+            return v;
+        }));
         empfaengerField.setAllowCustomValue(true);
         empfaengerField.addCustomValueSetListener(e -> empfaengerField.setValue(e.getDetail()));
         empfaengerField.setWidthFull();
