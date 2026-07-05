@@ -62,7 +62,10 @@ public class KontoauszuegeView extends VerticalLayout {
                 .sorted(java.util.Comparator.comparing(BankAccountDataObject::getName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
 
+  
         kontoSelect.setLabel("Konto");
+        kontoSelect.setMinWidth("250px");
+        
         kontoSelect.setItems(konten);
         kontoSelect.setItemLabelGenerator(konto -> {
             if (konto == null || konto.getName() == null || konto.getName().isBlank()) {
