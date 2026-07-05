@@ -7,7 +7,7 @@ mvn spring-boot:run
 
 
 # production build
-mvn clean package -DskipTests -Dvaadin.productionMode=true -Pproduction
+mvn clean package -Dvaadin.productionMode=true -Pproduction
 target/start.sh
 
 String dstName,
