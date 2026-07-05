@@ -63,7 +63,6 @@ public class KontoauszuegeView extends VerticalLayout {
                 .toList();
 
         kontoSelect.setLabel("Konto");
-        kontoSelect.setWidth("250px");
         kontoSelect.setItems(konten);
         kontoSelect.setItemLabelGenerator(konto -> {
             if (konto == null || konto.getName() == null || konto.getName().isBlank()) {
@@ -111,6 +110,14 @@ public class KontoauszuegeView extends VerticalLayout {
             BankAccountDataObject konto = e.getValue();
             aktiveKontoIban = konto == null ? null : konto.getIban();
             kontoSelect.setPrefixComponent(kontoIcon(konto));
+            if (konto != null && konto.getIban() != null && !konto.getIban().isBlank()) {
+                Span ibanSpan = new Span(konto.getIban());
+                ibanSpan.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+                ibanSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
+                kontoSelect.setHelperComponent(ibanSpan);
+            } else {
+                kontoSelect.setHelperComponent(null);
+            }
             VaadinSession.getCurrent().setAttribute("kontoauszuege.selectedIban", aktiveKontoIban);
             ladeKontoauszuege(suchfeld.getValue());
         });
@@ -164,10 +171,6 @@ public class KontoauszuegeView extends VerticalLayout {
                             } else {
                                 // keep aktiveKontoIban as it was
                                 aktiveKontoIban = selectedIban;
-                                // ensure prefix icon is updated for the selection
-                                // the value hasn't changed so explicitly set the prefix
-                                // find the selected BankAccountDataObject and set prefix
-                                kontoSelect.setPrefixComponent(kontoIcon(kontoSelect.getValue()));
                             }
                             ladeKontoauszuege("");
 
