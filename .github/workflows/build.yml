@@ -59,3 +59,59 @@ jobs:
         with:
           name: kontoauszuege-app-linux
           path: kontoauszuege-app-linux.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build (production mode)
+        run: mvn clean package -Dvaadin.productionMode=true -Pproduction
+
+      - name: Create minimal JRE with jlink
+        run: |
+          $MODULES = "java.se,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.naming.dns,jdk.unsupported,jdk.zipfs,jdk.management,jdk.management.agent,jdk.attach,jdk.charsets,jdk.localedata"
+          jlink `
+            --add-modules $MODULES `
+            --strip-debug `
+            --no-man-pages `
+            --no-header-files `
+            --compress zip-6 `
+            --output jre-minimal
+        shell: pwsh
+
+      - name: Assemble Windows bundle
+        run: |
+          $JAR = Get-ChildItem target\kontoauszuege-app-*.jar |
+                 Where-Object { $_.Name -notmatch '\.original$' } |
+                 Select-Object -First 1 -ExpandProperty FullName
+          $BUNDLE = "kontoauszuege-app-windows"
+          New-Item -ItemType Directory -Force -Path "$BUNDLE\app" | Out-Null
+          Copy-Item $JAR "$BUNDLE\app\app.jar"
+          Copy-Item -Recurse jre-minimal "$BUNDLE\jre"
+          @'
+          @echo off
+          setlocal
+          set DIR=%~dp0
+          "%DIR%jre\bin\java.exe" ^
+            -XX:+UseSerialGC ^
+            -Xss512k ^
+            -jar "%DIR%app\app.jar" %*
+          '@ | Set-Content -Encoding ascii "$BUNDLE\start.bat"
+          Compress-Archive -Path $BUNDLE -DestinationPath kontoauszuege-app-windows.zip
+        shell: pwsh
+
+      - name: Upload Windows bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: kontoauszuege-app-windows
+          path: kontoauszuege-app-windows.zip
