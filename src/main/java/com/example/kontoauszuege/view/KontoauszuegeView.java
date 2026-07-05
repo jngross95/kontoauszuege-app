@@ -45,6 +45,7 @@ public class KontoauszuegeView extends VerticalLayout {
     private final Select<BankAccountDataObject> kontoSelect = new Select<>();
     private String aktiveKontoIban = null;
     private final Map<String, String> ibanZuKontoname = new HashMap<>();
+    private final Map<String, String> ibanZuBic = new HashMap<>();
 
     private static final String DATE_FORMAT = "dd.MM.yyyy";
     private static final String WIDTH_150PX = "150px";
@@ -67,7 +68,11 @@ public class KontoauszuegeView extends VerticalLayout {
 
         for (BankAccountDataObject k : konten) {
             if (k.getIban() != null && !k.getIban().isBlank()) {
-                ibanZuKontoname.put(normalisiereIban(k.getIban()), k.getName());
+                String normIban = normalisiereIban(k.getIban());
+                ibanZuKontoname.put(normIban, k.getName());
+                if (k.getBic() != null && !k.getBic().isBlank()) {
+                    ibanZuBic.put(normIban, k.getBic());
+                }
             }
         }
 
@@ -235,20 +240,29 @@ public class KontoauszuegeView extends VerticalLayout {
         grid.addColumn(new ComponentRenderer<>(stmt -> {
             String normIban = normalisiereIban(stmt.getIban());
             String kontoName = ibanZuKontoname.getOrDefault(normIban, "");
+            String bic = ibanZuBic.get(normIban);
 
-            VerticalLayout layout = new VerticalLayout();
-            layout.setPadding(false);
-            layout.setSpacing(false);
-            layout.getStyle().set("min-width", "0");
+            HorizontalLayout layout = new HorizontalLayout();
+            layout.setAlignItems(FlexComponent.Alignment.CENTER);
+            layout.setSpacing(true);
+            layout.getStyle().set("padding", "2px 0");
+
+            if (bic != null && !bic.isBlank()) {
+                try {
+                    String iconName = baseService.getIconFromBic(bic);
+                    if (iconName != null && !iconName.isBlank()) {
+                        Image img = new Image("icons/" + iconName, kontoName);
+                        img.setHeight("20px");
+                        img.getStyle().set("object-fit", "contain");
+                        layout.add(img);
+                    }
+                } catch (Exception ignored) {
+                    // kein Icon verfügbar
+                }
+            }
 
             if (!kontoName.isBlank()) {
                 layout.add(new Span(kontoName));
-            }
-            if (stmt.getIban() != null && !stmt.getIban().isBlank()) {
-                Span ibanSpan = new Span(stmt.getIban());
-                ibanSpan.getStyle().set("font-size", "var(--lumo-font-size-xxs)");
-                ibanSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
-                layout.add(ibanSpan);
             }
             return layout;
         }))
