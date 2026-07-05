@@ -27,8 +27,10 @@ import com.vaadin.flow.server.VaadinSession;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -42,6 +44,7 @@ public class KontoauszuegeView extends VerticalLayout {
     private final TextField suchfeld = new TextField();
     private final Select<BankAccountDataObject> kontoSelect = new Select<>();
     private String aktiveKontoIban = null;
+    private final Map<String, String> ibanZuKontoname = new HashMap<>();
 
     private static final String DATE_FORMAT = "dd.MM.yyyy";
     private static final String WIDTH_150PX = "150px";
@@ -61,6 +64,12 @@ public class KontoauszuegeView extends VerticalLayout {
                 .distinct()
                 .sorted(java.util.Comparator.comparing(BankAccountDataObject::getName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
+
+        for (BankAccountDataObject k : konten) {
+            if (k.getIban() != null && !k.getIban().isBlank()) {
+                ibanZuKontoname.put(normalisiereIban(k.getIban()), k.getName());
+            }
+        }
 
   
         kontoSelect.setLabel("Konto");
@@ -222,6 +231,39 @@ public class KontoauszuegeView extends VerticalLayout {
         grid.setMultiSort(true);
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS,
                 GridVariant.LUMO_WRAP_CELL_CONTENT);
+
+        grid.addColumn(new ComponentRenderer<>(stmt -> {
+            String normIban = normalisiereIban(stmt.getIban());
+            String kontoName = ibanZuKontoname.getOrDefault(normIban, "");
+
+            VerticalLayout layout = new VerticalLayout();
+            layout.setPadding(false);
+            layout.setSpacing(false);
+            layout.getStyle().set("min-width", "0");
+
+            if (!kontoName.isBlank()) {
+                layout.add(new Span(kontoName));
+            }
+            if (stmt.getIban() != null && !stmt.getIban().isBlank()) {
+                Span ibanSpan = new Span(stmt.getIban());
+                ibanSpan.getStyle().set("font-size", "var(--lumo-font-size-xxs)");
+                ibanSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
+                layout.add(ibanSpan);
+            }
+            return layout;
+        }))
+                .setHeader("Konto")
+                .setSortable(true)
+                .setComparator((s1, s2) -> {
+                    String n1 = ibanZuKontoname.getOrDefault(normalisiereIban(s1.getIban()),
+                            s1.getIban() != null ? s1.getIban() : "");
+                    String n2 = ibanZuKontoname.getOrDefault(normalisiereIban(s2.getIban()),
+                            s2.getIban() != null ? s2.getIban() : "");
+                    return n1.compareToIgnoreCase(n2);
+                })
+                .setResizable(true)
+                .setWidth("200px")
+                .setFlexGrow(0);
 
         grid.addColumn(new ComponentRenderer<>(stmt -> {
             var dateStr = stmt.getBuchungsdatum() != null ? new java.text.SimpleDateFormat(DATE_FORMAT).format(stmt.getBuchungsdatum()) : "";
