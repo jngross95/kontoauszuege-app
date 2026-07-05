@@ -32,3 +32,15 @@ spring:
 vaadin:
   launch-browser: true
   allowed-packages: com.example.kontoauszuege
+
+
+bank-icons:
+  - target: "sparkasse|Sparkasse"
+    icon: "sparkasse-favicon2x.ico"
+  - target: "VR-Bank|Volksbank|Raiffeisenbank"
+    icon: "VRFavicon48x48.png"  
+  - target: "paypal|PayPal"
+    icon: "paypal-mark-color_new.svg" 
+  - target: "UniCredit|Unicredit|HypoVereinsbank|HVB"
+    icon: "hvb-favicon-32x32.png"
+  

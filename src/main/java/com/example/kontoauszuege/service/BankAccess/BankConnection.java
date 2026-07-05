@@ -72,6 +72,19 @@ public class BankConnection implements AutoCloseable {
         return info.getBic();
     }
 
+    /**
+     * Liefert Bank-Informationen (BIC, Name) zur angegebenen BIC.
+     * Gibt {@code null} zurück, wenn keine passende Bank gefunden wurde.
+     */
+    public static BankInformation GetBankInfos(String bic) {
+        if (bic == null) return null;
+        var list = HBCIUtils.searchBankInfo(bic);
+        if (list == null || list.size() == 0) return null;
+        BankInfo info = list.getFirst();
+        if (info == null) return null;
+        return new BankInformation(info.getBic(), info.getName());
+    }
+
     private  static Date startOfDay(Date date)
     {
         Date past = Date.from(
