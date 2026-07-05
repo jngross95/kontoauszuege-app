@@ -63,6 +63,7 @@ public class KontoauszuegeView extends VerticalLayout {
                 .toList();
 
         kontoSelect.setLabel("Konto");
+        kontoSelect.setWidth("250px");
         kontoSelect.setItems(konten);
         kontoSelect.setItemLabelGenerator(konto -> {
             if (konto == null || konto.getName() == null || konto.getName().isBlank()) {
