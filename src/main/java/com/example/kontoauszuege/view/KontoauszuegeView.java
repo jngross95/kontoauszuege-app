@@ -23,12 +23,14 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("Kontoauszüge")
@@ -96,13 +98,22 @@ public class KontoauszuegeView extends VerticalLayout {
             BankAccountDataObject konto = e.getValue();
             aktiveKontoIban = konto == null ? null : konto.getIban();
             kontoSelect.setPrefixComponent(kontoIcon(konto));
+            VaadinSession.getCurrent().setAttribute("kontoauszuege.selectedIban", aktiveKontoIban);
             ladeKontoauszuege(suchfeld.getValue());
         });
 
         add(createToolbar());
         add(createGrid());
 
-        ladeKontoauszuege("");
+        // Zuletzt ausgewähltes Konto aus der Session wiederherstellen
+        String savedIban = (String) VaadinSession.getCurrent().getAttribute("kontoauszuege.selectedIban");
+        Optional<BankAccountDataObject> savedKonto = savedIban == null ? Optional.empty()
+                : konten.stream().filter(k -> savedIban.equals(k.getIban())).findFirst();
+        if (savedKonto.isPresent()) {
+            kontoSelect.setValue(savedKonto.get()); // löst Listener aus → setzt Prefix + lädt gefiltert
+        } else {
+            ladeKontoauszuege("");
+        }
     }
 
     private HorizontalLayout createToolbar() {
