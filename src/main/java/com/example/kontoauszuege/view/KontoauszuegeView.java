@@ -3,13 +3,16 @@ package com.example.kontoauszuege.view;
 import com.example.kontoauszuege.model.BankAccountDataObject;
 import com.example.kontoauszuege.model.BankStatementDataObject;
 import com.example.kontoauszuege.service.BankAccountService;
+import com.example.kontoauszuege.service.BaseService;
 import com.example.kontoauszuege.service.BankStatementService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -32,6 +35,7 @@ import java.util.Objects;
 public class KontoauszuegeView extends VerticalLayout {
 
     private final transient BankStatementService service;
+    private final transient BaseService baseService;
     private final Grid<BankStatementDataObject> grid = new Grid<>(BankStatementDataObject.class, false);
     private final TextField suchfeld = new TextField();
     private final Select<BankAccountDataObject> kontoSelect = new Select<>();
@@ -41,8 +45,9 @@ public class KontoauszuegeView extends VerticalLayout {
     private static final String WIDTH_150PX = "150px";
     private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
-    public KontoauszuegeView(BankStatementService service, BankAccountService bankAccountService) {
+    public KontoauszuegeView(BankStatementService service, BankAccountService bankAccountService, BaseService baseService) {
         this.service = service;
+        this.baseService = baseService;
 
         setSizeFull();
         setPadding(true);
@@ -63,6 +68,28 @@ public class KontoauszuegeView extends VerticalLayout {
             }
             return konto.getName();
         });
+        kontoSelect.setRenderer(new ComponentRenderer<>(konto -> {
+            HorizontalLayout layout = new HorizontalLayout();
+            layout.setAlignItems(FlexComponent.Alignment.CENTER);
+            layout.setSpacing(true);
+            layout.getStyle().set("padding", "2px 0");
+            String bic = konto.getBic();
+            if (bic != null && !bic.isBlank()) {
+                try {
+                    String iconName = baseService.getIconFromBic(bic);
+                    if (iconName != null && !iconName.isBlank()) {
+                        Image img = new Image("icons/" + iconName, konto.getName() != null ? konto.getName() : "");
+                        img.setHeight("20px");
+                        img.getStyle().set("object-fit", "contain");
+                        layout.add(img);
+                    }
+                } catch (Exception ignored) {
+                    // kein Icon verfügbar
+                }
+            }
+            layout.add(new Span(konto.getName() != null ? konto.getName() : ""));
+            return layout;
+        }));
         kontoSelect.setEmptySelectionAllowed(true);
         kontoSelect.setEmptySelectionCaption("– alle –");
         kontoSelect.addValueChangeListener(e -> {
