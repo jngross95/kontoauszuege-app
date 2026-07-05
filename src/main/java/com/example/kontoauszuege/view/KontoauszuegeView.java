@@ -133,16 +133,29 @@ public class KontoauszuegeView extends VerticalLayout {
 
                 // Capture UI to update it from background thread
                 final com.vaadin.flow.component.UI ui = com.vaadin.flow.component.UI.getCurrent();
+                // capture current selection to decide whether to fetch all or single account
+                final String selectedIban = aktiveKontoIban;
 
                 Thread bg = new Thread(() -> {
                     try {
-                        service.receiveStmts(dlg);
+                                // delegate to service; it handles null -> all, non-null -> single IBAN
+                                service.receiveStmts(dlg, selectedIban);
 
                         // update UI in UI thread
                         ui.access(() -> {
                             suchfeld.clear();
-                            kontoSelect.clear();
-                            aktiveKontoIban = null;
+                            // If we fetched all accounts, clear selection; otherwise keep the selected account
+                            if (selectedIban == null || selectedIban.isBlank()) {
+                                kontoSelect.clear();
+                                aktiveKontoIban = null;
+                            } else {
+                                // keep aktiveKontoIban as it was
+                                aktiveKontoIban = selectedIban;
+                                // ensure prefix icon is updated for the selection
+                                // the value hasn't changed so explicitly set the prefix
+                                // find the selected BankAccountDataObject and set prefix
+                                kontoSelect.setPrefixComponent(kontoIcon(kontoSelect.getValue()));
+                            }
                             ladeKontoauszuege("");
 
                             Notification success = Notification.show("Kontoauszüge wurden aktualisiert.",

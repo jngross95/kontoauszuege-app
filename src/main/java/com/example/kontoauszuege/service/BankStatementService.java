@@ -44,10 +44,19 @@ public class BankStatementService {
         return dataAccessService.insert(statement);
     }
 
-    public void receiveStmts(DlgCallback dlgCallback) throws Exception {
+    public void receiveStmts(DlgCallback dlgCallback, String targetIban) throws Exception {
+        String normTarget = (targetIban == null || targetIban.isBlank()) ? null : normalize(targetIban);
+
         List<BankStatementDataObject> bestehendeStatements = getAllStatements();
         List<BankAccountDataObject> konten = bankAccountService.getAllBankAccounts();
         List<BankContactDataObject> kontakte = bankContactService.getAllBankContacts();
+
+        // If a specific IBAN was provided, only consider that account
+        if (normTarget != null) {
+            konten = konten.stream()
+                    .filter(konto -> normTarget.equals(normalize(konto.getIban())))
+                    .collect(java.util.stream.Collectors.toList());
+        }
 
         Set<String> vorhandeneKeys = new HashSet<>();
         for (BankStatementDataObject statement : bestehendeStatements) {
@@ -115,6 +124,8 @@ public class BankStatementService {
             }
         }
     }
+
+    
 
     private BankStatementDataObject toDataObject(String iban, KontoBuchung buchung) {
         BankStatementDataObject statement = new BankStatementDataObject();
