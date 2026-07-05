@@ -76,6 +76,7 @@ jobs:
 
       - name: Build (production mode)
         run: mvn clean package -Dvaadin.productionMode=true -Pproduction
+        shell: cmd
 
       - name: Create minimal JRE with jlink
         run: |
