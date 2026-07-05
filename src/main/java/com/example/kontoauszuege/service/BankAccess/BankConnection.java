@@ -76,12 +76,12 @@ public class BankConnection implements AutoCloseable {
      * Liefert Bank-Informationen (BIC, Name, BLZ) zur angegebenen BIC.
      * Wirft eine Exception, wenn nicht genau ein Eintrag gefunden wurde.
      */
-    public static BankInformation GetBankInfos(String bic) throws Exception {
-        if (bic == null) throw new IllegalArgumentException("bic darf nicht null sein");
-        var list = HBCIUtils.searchBankInfo(bic);
+    public static BankInformation GetBankInfos(String bicOrBlz) throws Exception {
+        if (bicOrBlz == null) throw new IllegalArgumentException("bicOrBlz darf nicht null sein");
+        var list = HBCIUtils.searchBankInfo(bicOrBlz);
         if (list == null) throw new Exception("Keine Bankliste verfügbar (searchBankInfo returned null)");
         if (list.size() != 1) {
-            throw new Exception(String.format("Erwartet genau einen Treffer für BIC '%s', gefunden: %d", bic, list.size()));
+            throw new Exception(String.format("Erwartet genau einen Treffer für BIC '%s', gefunden: %d", bicOrBlz, list.size()));
         }
         BankInfo info = list.getFirst();
         if (info == null) throw new Exception("BankInfo ist null");
