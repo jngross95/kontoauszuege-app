@@ -96,11 +96,11 @@ public class UeberweisungService {
         // Überweisungen nach Kontakt-BIC gruppieren.
         Map<String, List<UeberweisungDataObject>> nachKontaktBic = new HashMap<>();
         for (UeberweisungDataObject ueberweisung : ueberweisungen) {
-            String senderIban = normalize(ueberweisung.getSender());
+            String senderIban = normalize(ueberweisung.getSenderIban());
             BankAccountDataObject konto = kontoNachIban.get(senderIban);
             if (konto == null) {
                 throw new Exception(String.format(
-                        "Kein Konto für die Sender-IBAN '%s' gefunden.", ueberweisung.getSender()));
+                        "Kein Konto für die Sender-IBAN '%s' gefunden.", ueberweisung.getSenderIban()));
             }
 
             String bic = normalize(konto.getBic());
@@ -170,7 +170,7 @@ public class UeberweisungService {
         }
 
         return connection.UeberweisungAusfuehren(
-                normalize(ueberweisung.getSender()),
+                normalize(ueberweisung.getSenderIban()),
                 ueberweisung.getEmpfaenger(),
                 empfaengerBic,
                 empfaengerIban,

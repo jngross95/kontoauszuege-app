@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 public class UeberweisungDataObject extends DataObject {
 
     private UeberweisungStatus status = UeberweisungStatus.NEW;
-    private String sender;
+    private String senderIban;
 
     private String empfaenger;
     private String empfaengerIban;
@@ -18,10 +18,10 @@ public class UeberweisungDataObject extends DataObject {
     public UeberweisungDataObject() {
     }
 
-    public UeberweisungDataObject(String sender, String empfaenger, String empfaengerIban,
+    public UeberweisungDataObject(String senderIban, String empfaenger, String empfaengerIban,
                                   String empfaengerBic, String verwendungszweck, BigDecimal betrag) {
         this();
-        this.sender = sender;
+        this.senderIban = senderIban;
         this.empfaenger = empfaenger;
         this.empfaengerIban = empfaengerIban;
         this.empfaengerBic = empfaengerBic;
@@ -32,8 +32,8 @@ public class UeberweisungDataObject extends DataObject {
     public UeberweisungStatus getStatus()                    { return status; }
     public void               setStatus(UeberweisungStatus status) { this.status = status; }
 
-    public String getSender()                     { return sender; }
-    public void   setSender(String sender)        { this.sender = sender; }
+    public String getSenderIban()                        { return senderIban; }
+    public void   setSenderIban(String senderIban)        { this.senderIban = senderIban; }
 
     public String getEmpfaenger()                        { return empfaenger; }
     public void   setEmpfaenger(String empfaenger)       { this.empfaenger = empfaenger; }

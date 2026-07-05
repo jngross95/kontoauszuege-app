@@ -158,9 +158,10 @@ public class UeberweisungenView extends VerticalLayout {
             HorizontalLayout layout = new HorizontalLayout();
             layout.setAlignItems(FlexComponent.Alignment.CENTER);
             layout.setSpacing(true);
-            String senderName = u.getSender();
-            BankAccountDataObject konto = senderName == null ? null :
-                    senderItems.stream().filter(b -> Objects.equals(b.getName(), senderName)).findFirst().orElse(null);
+            String senderIban = u.getSenderIban();
+            BankAccountDataObject konto = senderIban == null ? null :
+                    senderItems.stream().filter(b -> Objects.equals(b.getIban(), senderIban)).findFirst().orElse(null);
+            String senderName = konto != null ? konto.getName() : (senderIban != null ? senderIban : "");
             Image icon = senderIcon(konto);
             if (icon != null) layout.add(icon);
             com.vaadin.flow.component.orderedlayout.VerticalLayout textLayout = new com.vaadin.flow.component.orderedlayout.VerticalLayout();
@@ -409,7 +410,7 @@ public class UeberweisungenView extends VerticalLayout {
     private void speichern() {
         if (selected == null) return;
         BankAccountDataObject senderVal = senderField.getValue();
-        selected.setSender(senderVal != null ? senderVal.getName() : "");
+        selected.setSenderIban(senderVal != null ? senderVal.getIban() : "");
         EmpfaengerInfo empfInfo = empfaengerField.getValue();
         selected.setEmpfaenger(empfInfo != null ? empfInfo.name() : "");
         selected.setEmpfaengerBic(empfaengerBicField.getValue());
@@ -430,9 +431,9 @@ public class UeberweisungenView extends VerticalLayout {
 
     private void ladeFormular(UeberweisungDataObject u) {
         selected = u;
-        String sv = u.getSender();
+        String sv = u.getSenderIban();
         BankAccountDataObject senderKonto = sv == null ? null :
-                senderItems.stream().filter(b -> Objects.equals(b.getName(), sv)).findFirst().orElse(null);
+                senderItems.stream().filter(b -> Objects.equals(b.getIban(), sv)).findFirst().orElse(null);
         senderField.setValue(senderKonto);
         EmpfaengerInfo empfInfo = bekannteEmpfaenger.stream()
                 .filter(ei -> Objects.equals(ei.name(), u.getEmpfaenger()) && Objects.equals(ei.iban(), u.getEmpfaengerIban()))
