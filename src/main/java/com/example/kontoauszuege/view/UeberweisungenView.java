@@ -191,7 +191,8 @@ public class UeberweisungenView extends VerticalLayout {
                 .setHeader("Betrag")
                 .setSortable(true)
                 .setComparator(UeberweisungDataObject::getBetrag)
-                .setAutoWidth(true);
+                .setAutoWidth(true)
+                .setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
 
         grid.setWidthFull();
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
