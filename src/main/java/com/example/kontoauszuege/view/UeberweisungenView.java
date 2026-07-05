@@ -216,7 +216,17 @@ public class UeberweisungenView extends VerticalLayout {
                     // kein Icon verfügbar
                 }
             }
-            layout.add(new Span(b.getName() != null ? b.getName() : ""));
+            com.vaadin.flow.component.orderedlayout.VerticalLayout textLayout = new com.vaadin.flow.component.orderedlayout.VerticalLayout();
+            textLayout.setPadding(false);
+            textLayout.setSpacing(false);
+            textLayout.getStyle().set("min-width", "0");
+            textLayout.add(new Span(b.getName() != null ? b.getName() : ""));
+            Span ibanSpan = new Span(b.getIban() != null ? b.getIban() : "");
+            ibanSpan.getStyle().set("font-size", "var(--lumo-font-size-xxs)");
+            ibanSpan.getStyle().set("color", "var(--lumo-body-text-color)");
+            ibanSpan.getStyle().set("opacity", "0.7");
+            textLayout.add(ibanSpan);
+            layout.add(textLayout);
             return layout;
         }));
         senderField.addValueChangeListener(e -> senderField.setPrefixComponent(senderIcon(e.getValue())));
