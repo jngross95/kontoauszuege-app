@@ -176,7 +176,7 @@ public class UeberweisungenView extends VerticalLayout {
             }
             layout.add(textLayout);
             return layout;
-        })).setHeader("Sender").setResizable(true).setSortable(true).setWidth("200px").setFlexGrow(0);
+        })).setHeader("Sender").setResizable(true).setSortable(true).setWidth("210px").setFlexGrow(0);
         grid.addColumn(UeberweisungDataObject::getEmpfaenger)
                 .setHeader("Empfänger").setResizable(true).setSortable(true).setWidth("240px").setFlexGrow(0);
         grid.addColumn(UeberweisungDataObject::getEmpfaengerBic)
