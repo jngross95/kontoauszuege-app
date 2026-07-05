@@ -316,12 +316,6 @@ public class KontoauszuegeView extends VerticalLayout {
                 .setResizable(true)
                 .setFlexGrow(1);
 
-        grid.addColumn(BankStatementDataObject::getIban)
-                .setHeader("IBAN")
-                .setResizable(true)
-                .setWidth("220px")
-                .setFlexGrow(0);
-
         grid.addColumn(new ComponentRenderer<>(statement -> {
             Span betragSpan = new Span(CURRENCY_FORMAT.format(statement.getBetrag()));
             betragSpan.getStyle().set("font-weight", "bold");
