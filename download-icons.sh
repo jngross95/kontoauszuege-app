@@ -16,8 +16,6 @@ URL_LIST=$(cat <<'URLS'
 https://www.sparkasse-erlangen.de/content/dam/myif/sksk-erlangen/work/bilder/icons/favicon2x.ico|sparkasse-favicon2x.ico
 #VR-Bank
 https://atruvia.scene7.com/is/image/atruvia/VRFavicon48x48|VRFavicon48x48.png
-#HVB
-https://my.hypovereinsbank.de/etc/designs/hypovereinsbank/img/favicon/favicon-32x32.png|hvb-favicon-32x32.png
 #Paypal
 https://www.paypalobjects.com/marketing/web/logos/paypal-mark-color_new.svg|paypal-mark-color_new.svg
 ##
@@ -56,6 +54,14 @@ while IFS='|' read -r url filename; do
   if [[ -z "$filename" ]]; then
     echo "Warnung: kein Dateiname für URL: $url. Überspringe." >&2
     failures+=("$url (no filename)")
+    continue
+  fi
+
+  # Skip download if file already exists
+  out="$DEST_DIR/$filename"
+  if [ -f "$out" ]; then
+    echo "Datei existiert bereits, überspringe: $out"
+    successes+=("$filename (exists)")
     continue
   fi
 
