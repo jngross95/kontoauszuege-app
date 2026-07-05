@@ -241,7 +241,18 @@ public class UeberweisungenView extends VerticalLayout {
             layout.add(textLayout);
             return layout;
         }));
-        senderField.addValueChangeListener(e -> senderField.setPrefixComponent(senderIcon(e.getValue())));
+        senderField.addValueChangeListener(e -> {
+            BankAccountDataObject konto = e.getValue();
+            senderField.setPrefixComponent(senderIcon(konto));
+            if (konto != null && konto.getIban() != null && !konto.getIban().isBlank()) {
+                Span ibanSpan = new Span(konto.getIban());
+                ibanSpan.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+                ibanSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
+                senderField.setHelperComponent(ibanSpan);
+            } else {
+                senderField.setHelperComponent(null);
+            }
+        });
         senderField.setWidthFull();
 
         empfaengerField.setItems(bekannteEmpfaenger);
