@@ -200,6 +200,12 @@ public class UeberweisungenView extends VerticalLayout {
         }));
         empfaengerField.setAllowCustomValue(true);
         empfaengerField.addCustomValueSetListener(e -> empfaengerField.setValue(new Tuple<>(e.getDetail(), "")));
+        empfaengerField.addValueChangeListener(e -> {
+            Tuple<String,String> t = e.getValue();
+            if (t != null && t._2() != null && !t._2().isBlank()) {
+                empfaengerIbanField.setValue(t._2());
+            }
+        });
         empfaengerField.setWidthFull();
 
         betragField.setPrefixComponent(new Span("€"));
