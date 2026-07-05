@@ -23,6 +23,10 @@ public class BankAccountService {
         return dataAccessService.insert(bankAccountDataObject);
     }
 
+    public BankAccountDataObject updateBankAccount(BankAccountDataObject bankAccountDataObject) {
+        return dataAccessService.update(bankAccountDataObject);
+    }
+
     public void deleteBankAccount(BankAccountDataObject bankAccountDataObject) {
         dataAccessService.delete(bankAccountDataObject);
     }

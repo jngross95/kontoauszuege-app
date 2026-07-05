@@ -60,13 +60,16 @@ public class BankkontenView extends VerticalLayout {
     }
 
     private HorizontalLayout createToolbar() {
-        Button newButton = new Button("New", VaadinIcon.PLUS.create(), e -> openNewAccountDialog());
+        Button newButton = new Button("Neu", VaadinIcon.PLUS.create(), e -> openNewAccountDialog());
         newButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        Button deleteButton = new Button("Delete", VaadinIcon.TRASH.create(), e -> deleteSelectedAccount());
+        Button editButton = new Button("Bearbeiten", VaadinIcon.EDIT.create(), e -> openEditAccountDialog());
+        editButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+
+        Button deleteButton = new Button("Löschen", VaadinIcon.TRASH.create(), e -> deleteSelectedAccount());
         deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-        HorizontalLayout toolbar = new HorizontalLayout(newButton, deleteButton);
+        HorizontalLayout toolbar = new HorizontalLayout(newButton, editButton, deleteButton);
         toolbar.setAlignItems(FlexComponent.Alignment.CENTER);
         toolbar.setPadding(false);
         toolbar.setSpacing(true);
@@ -119,6 +122,69 @@ public class BankkontenView extends VerticalLayout {
 
         grid.setWidthFull();
         grid.addSelectionListener(e -> selected = e.getFirstSelectedItem().orElse(null));
+    }
+
+    private void openEditAccountDialog() {
+        if (selected == null) {
+            Notification.show("Bitte zuerst ein Konto auswählen.",
+                    2500, Notification.Position.MIDDLE);
+            return;
+        }
+
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Bankkonto bearbeiten");
+        dialog.setCloseOnEsc(true);
+        dialog.setCloseOnOutsideClick(false);
+        dialog.setWidth("33vw");
+
+        TextField nameField = new TextField("Name");
+        nameField.setWidthFull();
+        nameField.setValue(selected.getName() != null ? selected.getName() : "");
+        nameField.getElement().setAttribute(AUTOCOMPLETE_ATTR, "off");
+
+        TextField bicField = new TextField("BIC");
+        bicField.setWidthFull();
+        bicField.setValue(selected.getBic() != null ? selected.getBic() : "");
+        bicField.setReadOnly(true);
+
+        TextField ibanField = new TextField("IBAN");
+        ibanField.setWidthFull();
+        ibanField.setValue(selected.getIban() != null ? selected.getIban() : "");
+        ibanField.setReadOnly(true);
+
+        FormLayout form = new FormLayout();
+        form.setResponsiveSteps(
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("500px", 2)
+        );
+        form.add(nameField, 2);
+        form.add(bicField, 2);
+        form.add(ibanField, 2);
+        dialog.add(form);
+
+        Button okButton = new Button("Speichern", VaadinIcon.CHECK.create(), e -> {
+            if (nameField.isEmpty()) {
+                Notification.show("Bitte einen Namen eingeben.",
+                        3000, Notification.Position.MIDDLE);
+                return;
+            }
+            selected.setName(nameField.getValue());
+            bankAccountService.updateBankAccount(selected);
+            dialog.close();
+            refreshGrid();
+
+            Notification success = Notification.show("Bankkonto wurde gespeichert.",
+                    2500, Notification.Position.MIDDLE);
+            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        });
+        okButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
+        cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+        dialog.getFooter().add(cancelButton, okButton);
+        add(dialog);
+        dialog.open();
     }
 
     private void openNewAccountDialog() {
