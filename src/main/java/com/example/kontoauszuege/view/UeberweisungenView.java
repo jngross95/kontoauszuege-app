@@ -191,12 +191,12 @@ public class UeberweisungenView extends VerticalLayout {
         form.setColspan(senderField, 4);
         form.add(empfaengerField);
         form.setColspan(empfaengerField, 4);
-        empfaengerBicField.setWidthFull();
-        form.add(empfaengerBicField);
-        form.setColspan(empfaengerBicField, 4);
         empfaengerIbanField.setWidthFull();
         form.add(empfaengerIbanField);
         form.setColspan(empfaengerIbanField, 4);
+        empfaengerBicField.setWidthFull();
+        form.add(empfaengerBicField);
+        form.setColspan(empfaengerBicField, 4);
         form.add(verwendungszweck);
         form.setColspan(verwendungszweck, 4);
         form.add(betragField);
