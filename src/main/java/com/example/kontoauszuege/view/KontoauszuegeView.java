@@ -66,7 +66,7 @@ public class KontoauszuegeView extends VerticalLayout {
         kontoSelect.setItems(konten);
         kontoSelect.setItemLabelGenerator(konto -> {
             if (konto == null || konto.getName() == null || konto.getName().isBlank()) {
-                return "";
+                return "Alle Konten";
             }
             return konto.getName();
         });
@@ -128,7 +128,7 @@ public class KontoauszuegeView extends VerticalLayout {
         holenButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         holenButton.addClickListener(e -> ladeKontoauszuege(suchfeld.getValue()));
 
-        Button alleHolenButton = new Button("Alle holen", VaadinIcon.DOWNLOAD.create());
+        Button alleHolenButton = new Button("Alle holen", VaadinIcon.REFRESH.create());
         alleHolenButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         alleHolenButton.addClickListener(e -> {
             try {
