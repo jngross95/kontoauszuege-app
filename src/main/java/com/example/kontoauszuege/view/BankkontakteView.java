@@ -2,12 +2,15 @@ package com.example.kontoauszuege.view;
 
 import com.example.kontoauszuege.model.BankContactDataObject;
 import com.example.kontoauszuege.service.BankContactService;
+import com.example.kontoauszuege.service.BaseService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -15,6 +18,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -25,12 +29,14 @@ import java.util.List;
 public class BankkontakteView extends VerticalLayout {
 
     private final BankContactService bankContactService;
+    private final transient BaseService baseService;
 
     private final Grid<BankContactDataObject> grid = new Grid<>(BankContactDataObject.class, false);
     private BankContactDataObject selected;
 
-    public BankkontakteView(BankContactService bankContactService) {
+    public BankkontakteView(BankContactService bankContactService, BaseService baseService) {
         this.bankContactService = bankContactService;
+        this.baseService = baseService;
 
         setSizeFull();
         setPadding(true);
@@ -62,10 +68,34 @@ public class BankkontakteView extends VerticalLayout {
     }
 
     private void configureGrid() {
-        grid.addColumn(BankContactDataObject::getName)
+        grid.addColumn(new ComponentRenderer<>(contact -> {
+            HorizontalLayout layout = new HorizontalLayout();
+            layout.setAlignItems(FlexComponent.Alignment.CENTER);
+            layout.setSpacing(true);
+
+            String bic = contact.getBic();
+            if (bic != null && !bic.isBlank()) {
+                try {
+                    String iconName = baseService.getIconFromBic(bic);
+                    if (iconName != null && !iconName.isBlank()) {
+                        Image img = new Image("icons/" + iconName, contact.getName());
+                        img.setHeight("20px");
+                        img.getStyle().set("object-fit", "contain");
+                        layout.add(img);
+                    }
+                } catch (Exception ignored) {
+                    // kein Icon verfügbar
+                }
+            }
+            layout.add(new Span(contact.getName() != null ? contact.getName() : ""));
+            return layout;
+        }))
                 .setHeader("Name")
                 .setResizable(true)
                 .setSortable(true)
+                .setComparator(java.util.Comparator.comparing(
+                        c -> c.getName() != null ? c.getName() : "",
+                        String.CASE_INSENSITIVE_ORDER))
                 .setAutoWidth(true);
 
         grid.addColumn(BankContactDataObject::getBic)
