@@ -28,4 +28,11 @@ public class BaseServiceTest {
         String icon = baseService.getIconFromBic(bic);
         assertEquals("sparkasse-favicon2x.ico", icon);
     }
+
+    @Test
+    void getIconFromBic_matchesVR() throws Exception {
+        String bic = "GENODEF1NEA";
+        String icon = baseService.getIconFromBic(bic);
+        assertEquals("VRFavicon48x48.png", icon);
+    }
 }

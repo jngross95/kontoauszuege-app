@@ -42,7 +42,7 @@ public class BaseService {
 
             for (BankIcon entry : icons) {
                 if (entry.getTarget() == null) continue;
-                String[] parts = entry.getTarget().split("\\\\|");
+                String[] parts = entry.getTarget().split("\\|");
                 for (String p : parts) {
                     if (p == null) continue;
                     String t = p.trim();

@@ -37,7 +37,7 @@ vaadin:
 bank-icons:
   - target: "sparkasse|Sparkasse"
     icon: "sparkasse-favicon2x.ico"
-  - target: "VR-Bank|Volksbank|Raiffeisenbank"
+  - target: "VR meine Bank|VR-Bank|Volksbank|Raiffeisenbank"
     icon: "VRFavicon48x48.png"  
   - target: "paypal|PayPal"
     icon: "paypal-mark-color_new.svg" 

@@ -2,6 +2,7 @@ package com.example.kontoauszuege.view;
 
 import com.example.kontoauszuege.model.BankAccountDataObject;
 import com.example.kontoauszuege.service.BankAccountService;
+import com.example.kontoauszuege.service.BaseService;
 import com.example.kontoauszuege.service.BankStatementService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -9,6 +10,8 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -16,6 +19,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -29,14 +33,17 @@ public class BankkontenView extends VerticalLayout {
 
     private final transient BankAccountService bankAccountService;
     private final transient BankStatementService bankStatementService;
+    private final transient BaseService baseService;
 
     private final Grid<BankAccountDataObject> grid = new Grid<>(BankAccountDataObject.class, false);
     private transient BankAccountDataObject selected;
 
     public BankkontenView(BankAccountService bankAccountService,
-                          BankStatementService bankStatementService) {
+                          BankStatementService bankStatementService,
+                          BaseService baseService) {
         this.bankAccountService = bankAccountService;
         this.bankStatementService = bankStatementService;
+        this.baseService = baseService;
 
         setSizeFull();
         setPadding(true);
@@ -68,10 +75,34 @@ public class BankkontenView extends VerticalLayout {
     }
 
     private void configureGrid() {
-        grid.addColumn(BankAccountDataObject::getName)
+        grid.addColumn(new ComponentRenderer<>(account -> {
+            HorizontalLayout layout = new HorizontalLayout();
+            layout.setAlignItems(FlexComponent.Alignment.CENTER);
+            layout.setSpacing(true);
+
+            String bic = account.getBic();
+            if (bic != null && !bic.isBlank()) {
+                try {
+                    String iconName = baseService.getIconFromBic(bic);
+                    if (iconName != null && !iconName.isBlank()) {
+                        Image img = new Image("icons/" + iconName, account.getName());
+                        img.setHeight("20px");
+                        img.getStyle().set("object-fit", "contain");
+                        layout.add(img);
+                    }
+                } catch (Exception ignored) {
+                    // kein Icon verfügbar
+                }
+            }
+            layout.add(new Span(account.getName() != null ? account.getName() : ""));
+            return layout;
+        }))
                 .setHeader("Name")
                 .setResizable(true)
                 .setSortable(true)
+                .setComparator(java.util.Comparator.comparing(
+                        a -> a.getName() != null ? a.getName() : "",
+                        String.CASE_INSENSITIVE_ORDER))
                 .setAutoWidth(true);
 
         grid.addColumn(BankAccountDataObject::getBic)
