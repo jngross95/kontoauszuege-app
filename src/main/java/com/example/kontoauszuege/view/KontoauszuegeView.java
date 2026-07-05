@@ -124,10 +124,6 @@ public class KontoauszuegeView extends VerticalLayout {
         suchfeld.setValueChangeMode(ValueChangeMode.LAZY);
         suchfeld.addValueChangeListener(e -> ladeKontoauszuege(e.getValue()));
 
-        Button holenButton = new Button("Holen", VaadinIcon.REFRESH.create());
-        holenButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        holenButton.addClickListener(e -> ladeKontoauszuege(suchfeld.getValue()));
-
         Button alleHolenButton = new Button("Alle holen", VaadinIcon.REFRESH.create());
         alleHolenButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         alleHolenButton.addClickListener(e -> {
@@ -179,7 +175,7 @@ public class KontoauszuegeView extends VerticalLayout {
             }
         });
 
-        HorizontalLayout left = new HorizontalLayout(kontoSelect, holenButton, alleHolenButton);
+        HorizontalLayout left = new HorizontalLayout(kontoSelect, alleHolenButton);
         left.setAlignItems(Alignment.BASELINE);
 
         HorizontalLayout toolbar = new HorizontalLayout(left, suchfeld);
