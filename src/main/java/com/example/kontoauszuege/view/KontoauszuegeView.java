@@ -314,9 +314,29 @@ public class KontoauszuegeView extends VerticalLayout {
                 .setWidth("200px")
                 .setFlexGrow(0);
 
-        grid.addColumn(BankStatementDataObject::getEmpfaenger)
+        grid.addColumn(new ComponentRenderer<>(stmt -> {
+            VerticalLayout layout = new VerticalLayout();
+            layout.setPadding(false);
+            layout.setSpacing(false);
+            layout.getStyle().set("min-width", "0");
+            if (stmt.getEmpfaenger() != null && !stmt.getEmpfaenger().isBlank()) {
+                layout.add(new Span(stmt.getEmpfaenger()));
+            }
+            if (stmt.getEmpfaengerKontoNr() != null && !stmt.getEmpfaengerKontoNr().isBlank()) {
+                Span ibanSpan = new Span(stmt.getEmpfaengerKontoNr());
+                ibanSpan.getStyle().set("font-size", "var(--lumo-font-size-xxs)");
+                ibanSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
+                layout.add(ibanSpan);
+            }
+            return layout;
+        }))
                 .setHeader("Empfänger")
                 .setSortable(true)
+                .setComparator((s1, s2) -> {
+                    String n1 = s1.getEmpfaenger() != null ? s1.getEmpfaenger() : "";
+                    String n2 = s2.getEmpfaenger() != null ? s2.getEmpfaenger() : "";
+                    return n1.compareToIgnoreCase(n2);
+                })
                 .setResizable(true)
                 .setWidth("200px")
                 .setFlexGrow(0);
