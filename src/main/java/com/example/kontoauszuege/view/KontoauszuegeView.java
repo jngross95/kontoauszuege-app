@@ -77,7 +77,6 @@ public class KontoauszuegeView extends VerticalLayout {
         }
 
   
-        kontoSelect.setLabel("Konto");
         kontoSelect.setMinWidth("250px");
         
         kontoSelect.setItems(konten);
@@ -122,7 +121,7 @@ public class KontoauszuegeView extends VerticalLayout {
             return layout;
         }));
         kontoSelect.setEmptySelectionAllowed(true);
-        kontoSelect.setEmptySelectionCaption("– alle –");
+        kontoSelect.setEmptySelectionCaption("Alle Konten");
         kontoSelect.addValueChangeListener(e -> {
             BankAccountDataObject konto = e.getValue();
             aktiveKontoIban = konto == null ? null : konto.getIban();
