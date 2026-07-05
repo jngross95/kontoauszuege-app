@@ -27,6 +27,11 @@ import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import com.example.kontoauszuege.model.BankAccountDataObject;
+import com.example.kontoauszuege.service.BaseService;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.*;
@@ -37,18 +42,19 @@ import java.util.stream.Collectors;
 public class UeberweisungenView extends VerticalLayout {
 
     private final UeberweisungService service;
+    private final BaseService baseService;
 
     private final Grid<UeberweisungDataObject> grid = new Grid<>(UeberweisungDataObject.class, false);
 
     // Formularfelder
-    private final Select<String>   senderField        = new Select<>();
+    private final Select<BankAccountDataObject> senderField = new Select<>();
     private final ComboBox<EmpfaengerInfo> empfaengerField = new ComboBox<>("Empfänger");
     private final TextField        verwendungszweck   = new TextField("Verwendungszweck");
     private final TextField        empfaengerIbanField = new TextField("Empfänger-IBAN");
     private final TextField        empfaengerBicField = new TextField("Empfänger-BIC");
     private final TextField        betragField        = new TextField("Betrag (€)");
 
-    private List<String> senderItems = List.of();
+    private List<BankAccountDataObject> senderItems = List.of();
     private List<EmpfaengerInfo> bekannteEmpfaenger = List.of();
     private UeberweisungDataObject selected = null;
     private Dialog editDialog;
@@ -59,8 +65,10 @@ public class UeberweisungenView extends VerticalLayout {
 
     public UeberweisungenView(UeberweisungService service,
                               BankAccountService bankAccountService,
-                              BankStatementService bankStatementService) {
+                              BankStatementService bankStatementService,
+                              BaseService baseService) {
         this.service = service;
+        this.baseService = baseService;
 
         setSizeFull();
         setPadding(true);
@@ -78,10 +86,8 @@ public class UeberweisungenView extends VerticalLayout {
 
         // ── Teil 3: Dialog vorbereiten ────────────────────────────────────
         senderItems = bankAccountService.getAllBankAccounts().stream()
-            .map(b -> b.getName())
-                .filter(s -> s != null && !s.isBlank())
-                .distinct()
-                .sorted()
+                .filter(b -> b.getName() != null && !b.getName().isBlank())
+                .sorted(java.util.Comparator.comparing(BankAccountDataObject::getName, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
 
         // deduplizieren: jede IBAN/name nur einmal aufnehmen
@@ -180,6 +186,30 @@ public class UeberweisungenView extends VerticalLayout {
 
         senderField.setLabel("Sender");
         senderField.setItems(senderItems);
+        senderField.setItemLabelGenerator(b -> b.getName() != null ? b.getName() : "");
+        senderField.setRenderer(new ComponentRenderer<>(b -> {
+            HorizontalLayout layout = new HorizontalLayout();
+            layout.setAlignItems(FlexComponent.Alignment.CENTER);
+            layout.setSpacing(true);
+            layout.getStyle().set("padding", "2px 0");
+            String bic = b.getBic();
+            if (bic != null && !bic.isBlank()) {
+                try {
+                    String iconName = baseService.getIconFromBic(bic);
+                    if (iconName != null && !iconName.isBlank()) {
+                        Image img = new Image("icons/" + iconName, b.getName() != null ? b.getName() : "");
+                        img.setHeight("20px");
+                        img.getStyle().set("object-fit", "contain");
+                        layout.add(img);
+                    }
+                } catch (Exception ignored) {
+                    // kein Icon verfügbar
+                }
+            }
+            layout.add(new Span(b.getName() != null ? b.getName() : ""));
+            return layout;
+        }));
+        senderField.addValueChangeListener(e -> senderField.setPrefixComponent(senderIcon(e.getValue())));
         senderField.setWidthFull();
 
         empfaengerField.setItems(bekannteEmpfaenger);
@@ -225,6 +255,9 @@ public class UeberweisungenView extends VerticalLayout {
                 new FormLayout.ResponsiveStep("500px", 4));
         form.add(senderField);
         form.setColspan(senderField, 4);
+        Hr hr = new Hr();
+        form.add(hr);
+        form.setColspan(hr, 4);
         form.add(empfaengerField);
         form.setColspan(empfaengerField, 4);
         empfaengerIbanField.setWidthFull();
@@ -330,7 +363,8 @@ public class UeberweisungenView extends VerticalLayout {
 
     private void speichern() {
         if (selected == null) return;
-        selected.setSender(senderField.getValue());
+        BankAccountDataObject senderVal = senderField.getValue();
+        selected.setSender(senderVal != null ? senderVal.getName() : "");
         EmpfaengerInfo empfInfo = empfaengerField.getValue();
         selected.setEmpfaenger(empfInfo != null ? empfInfo.name() : "");
         selected.setEmpfaengerBic(empfaengerBicField.getValue());
@@ -352,7 +386,9 @@ public class UeberweisungenView extends VerticalLayout {
     private void ladeFormular(UeberweisungDataObject u) {
         selected = u;
         String sv = u.getSender();
-        senderField.setValue(sv != null && senderItems.contains(sv) ? sv : null);
+        BankAccountDataObject senderKonto = sv == null ? null :
+                senderItems.stream().filter(b -> Objects.equals(b.getName(), sv)).findFirst().orElse(null);
+        senderField.setValue(senderKonto);
         EmpfaengerInfo empfInfo = bekannteEmpfaenger.stream()
                 .filter(ei -> Objects.equals(ei.name(), u.getEmpfaenger()) && Objects.equals(ei.iban(), u.getEmpfaengerIban()))
                 .findFirst()
@@ -372,6 +408,24 @@ public class UeberweisungenView extends VerticalLayout {
         empfaengerIbanField.clear();
         verwendungszweck.clear();
         betragField.clear();
+    }
+
+    private Image senderIcon(BankAccountDataObject konto) {
+        if (konto == null) return null;
+        String bic = konto.getBic();
+        if (bic == null || bic.isBlank()) return null;
+        try {
+            String iconName = baseService.getIconFromBic(bic);
+            if (iconName != null && !iconName.isBlank()) {
+                Image img = new Image("icons/" + iconName, konto.getName() != null ? konto.getName() : "");
+                img.setHeight("20px");
+                img.getStyle().set("object-fit", "contain");
+                return img;
+            }
+        } catch (Exception ignored) {
+            // kein Icon verfügbar
+        }
+        return null;
     }
 
     private void refreshGrid() {
