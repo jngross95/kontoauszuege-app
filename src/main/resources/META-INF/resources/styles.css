@@ -13,6 +13,15 @@ html {
 }
 
 /* ============================================================
+   CONTEXT MENU — Fokus-Ring unterdrücken
+   (Vaadin setzt [focus-ring] auf das erste Item beim Öffnen)
+   ============================================================ */
+vaadin-context-menu-item[focus-ring] {
+  --vaadin-focus-ring-color: transparent;
+  box-shadow: none;
+}
+
+/* ============================================================
    NAVBAR — Gradient
    ============================================================ */
 vaadin-app-layout::part(navbar) {

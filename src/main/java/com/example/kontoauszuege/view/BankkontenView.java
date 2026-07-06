@@ -8,6 +8,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
@@ -122,6 +123,32 @@ public class BankkontenView extends VerticalLayout {
 
         grid.setWidthFull();
         grid.addSelectionListener(e -> selected = e.getFirstSelectedItem().orElse(null));
+
+        // Rechtsklick selektiert die Zeile (JS-seitig, synct zurück zum Server)
+        grid.getElement().executeJs("""
+                this.addEventListener('contextmenu', e => {
+                    const ctx = this.getEventContext(e);
+                    if (ctx && ctx.item != null) {
+                        this.selectedItems = [ctx.item];
+                    }
+                }, true);
+                """);
+
+        ContextMenu contextMenu = new ContextMenu(grid);
+
+        contextMenu.addItem("Menü1", e ->
+                Notification.show("Menü1", 2000, Notification.Position.BOTTOM_START));
+
+        contextMenu.addItem("Menü2", e ->
+                Notification.show("Menü2", 2000, Notification.Position.BOTTOM_START));
+
+        var separator = contextMenu.addItem(new Hr());
+        separator.setEnabled(false);
+        separator.getStyle().set("padding", "0").set("min-height", "0");
+        contextMenu.addItem("Browser-Menü", e ->
+                Notification.show(
+                        "Tipp: Umschalt + Rechtsklick öffnet das native Browser-Menü.",
+                        4000, Notification.Position.BOTTOM_START));
     }
 
     private void openEditAccountDialog() {
