@@ -180,3 +180,23 @@ vaadin-text-field[focused]::part(input-field) {
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
 }
+
+/* ============================================================
+   INACTIVE SENT ROW/CELL STYLING
+   Make SENT transfers appear visually inactive (muted)
+   ============================================================ */
+vaadin-grid::part(cell).inactive-cell {
+  opacity: 0.62;
+  color: var(--lumo-disabled-text-color);
+}
+
+vaadin-grid::part(cell).inactive-cell * {
+  opacity: 0.62;
+}
+
+/* Also support row-level class names applied by Grid.setClassNameGenerator */
+vaadin-grid::part(row).inactive-row > vaadin-grid-cell,
+vaadin-grid::part(row).inactive-row > vaadin-grid-cell * {
+  opacity: 0.62;
+  color: var(--lumo-disabled-text-color);
+}

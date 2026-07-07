@@ -151,6 +151,12 @@ public class UeberweisungenView extends VerticalLayout {
                 case ERROR   -> "badge error";
             };
             badge.getElement().setAttribute("theme", theme);
+            if (u.getStatus() == UeberweisungStatus.SENT) {
+                badge.getStyle().set("opacity", "0.62");
+                badge.getStyle().set("color", "var(--lumo-disabled-text-color)");
+                badge.getStyle().set("text-decoration", "line-through");
+                badge.getStyle().set("font-style", "italic");
+            }
             return badge;
         }).setHeader("Status").setWidth("90px").setFlexGrow(0).setSortable(false);
 
@@ -176,27 +182,77 @@ public class UeberweisungenView extends VerticalLayout {
                 textLayout.add(ibanSpan);
             }
             layout.add(textLayout);
+            if (u.getStatus() == UeberweisungStatus.SENT) {
+                layout.getStyle().set("opacity", "0.62");
+                layout.getStyle().set("color", "var(--lumo-disabled-text-color)");
+                layout.getStyle().set("text-decoration", "line-through");
+                layout.getStyle().set("font-style", "italic");
+            }
             return layout;
         })).setHeader("Sender").setResizable(true).setSortable(true).setWidth("210px").setFlexGrow(0);
-        grid.addColumn(UeberweisungDataObject::getEmpfaenger)
-                .setHeader("Empfänger").setResizable(true).setSortable(true).setWidth("240px").setFlexGrow(0);
-        grid.addColumn(UeberweisungDataObject::getEmpfaengerBic)
-            .setHeader("Empfänger-BIC").setResizable(true).setSortable(true).setWidth("150px").setFlexGrow(0);
-        grid.addColumn(UeberweisungDataObject::getEmpfaengerIban)
-                .setHeader("Empfänger-IBAN").setResizable(true).setSortable(true).setWidth("240px").setFlexGrow(0);
-        grid.addColumn(UeberweisungDataObject::getVerwendungszweck)
-                .setHeader("Verwendungszweck").setResizable(true).setSortable(true).setFlexGrow(1);
-        grid.addColumn(new NumberRenderer<>(
-                        UeberweisungDataObject::getBetrag,
-                        NumberFormat.getCurrencyInstance(Locale.GERMANY)))
-                .setHeader("Betrag")
-                .setSortable(true)
-                .setComparator(UeberweisungDataObject::getBetrag)
-                .setAutoWidth(true)
+        grid.addColumn(new ComponentRenderer<>(u -> {
+            Span s = new Span(u.getEmpfaenger() != null ? u.getEmpfaenger() : "");
+            if (u.getStatus() == UeberweisungStatus.SENT) {
+                s.getStyle().set("opacity", "0.62");
+                s.getStyle().set("color", "var(--lumo-disabled-text-color)");
+                s.getStyle().set("text-decoration", "line-through");
+                s.getStyle().set("font-style", "italic");
+            }
+            return s;
+        })).setHeader("Empfänger").setResizable(true).setSortable(true).setWidth("240px").setFlexGrow(0);
+
+        grid.addColumn(new ComponentRenderer<>(u -> {
+            Span s = new Span(u.getEmpfaengerBic() != null ? u.getEmpfaengerBic() : "");
+            if (u.getStatus() == UeberweisungStatus.SENT) {
+                s.getStyle().set("opacity", "0.62");
+                s.getStyle().set("color", "var(--lumo-disabled-text-color)");
+                s.getStyle().set("text-decoration", "line-through");
+                s.getStyle().set("font-style", "italic");
+            }
+            return s;
+        })).setHeader("Empfänger-BIC").setResizable(true).setSortable(true).setWidth("150px").setFlexGrow(0);
+
+        grid.addColumn(new ComponentRenderer<>(u -> {
+            Span s = new Span(u.getEmpfaengerIban() != null ? u.getEmpfaengerIban() : "");
+            if (u.getStatus() == UeberweisungStatus.SENT) {
+                s.getStyle().set("opacity", "0.62");
+                s.getStyle().set("color", "var(--lumo-disabled-text-color)");
+                s.getStyle().set("text-decoration", "line-through");
+                s.getStyle().set("font-style", "italic");
+            }
+            return s;
+        })).setHeader("Empfänger-IBAN").setResizable(true).setSortable(true).setWidth("240px").setFlexGrow(0);
+
+        grid.addColumn(new ComponentRenderer<>(u -> {
+            Span s = new Span(u.getVerwendungszweck() != null ? u.getVerwendungszweck() : "");
+            if (u.getStatus() == UeberweisungStatus.SENT) {
+                s.getStyle().set("opacity", "0.62");
+                s.getStyle().set("color", "var(--lumo-disabled-text-color)");
+                s.getStyle().set("text-decoration", "line-through");
+                s.getStyle().set("font-style", "italic");
+            }
+            return s;
+        })).setHeader("Verwendungszweck").setResizable(true).setSortable(true).setFlexGrow(1);
+
+        grid.addColumn(new ComponentRenderer<>(u -> {
+            String text = "";
+            if (u.getBetrag() != null) {
+                text = NumberFormat.getCurrencyInstance(Locale.GERMANY).format(u.getBetrag());
+            }
+            Span s = new Span(text);
+            if (u.getStatus() == UeberweisungStatus.SENT) {
+                s.getStyle().set("opacity", "0.62");
+                s.getStyle().set("color", "var(--lumo-disabled-text-color)");
+            }
+            s.getStyle().set("text-align", "right");
+            return s;
+        })).setHeader("Betrag").setSortable(true).setComparator(UeberweisungDataObject::getBetrag).setAutoWidth(true)
                 .setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
 
         grid.setWidthFull();
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        // Note: per-item row class API not available in this Vaadin version — apply
+        // visual dimming in each column's renderer instead.
         grid.addSelectionListener(e -> {
             selected = e.getFirstSelectedItem().orElse(null);
             updateActionButtons();
