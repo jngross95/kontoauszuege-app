@@ -152,9 +152,7 @@ public class UeberweisungenView extends VerticalLayout {
             };
             badge.getElement().setAttribute("theme", theme);
             if (u.getStatus() == UeberweisungStatus.SENT) {
-                badge.getStyle().set("opacity", "0.62");
                 badge.getStyle().set("color", "var(--lumo-disabled-text-color)");
-                badge.getStyle().set("text-decoration", "line-through");
                 badge.getStyle().set("font-style", "italic");
             }
             return badge;
@@ -183,9 +181,7 @@ public class UeberweisungenView extends VerticalLayout {
             }
             layout.add(textLayout);
             if (u.getStatus() == UeberweisungStatus.SENT) {
-                layout.getStyle().set("opacity", "0.62");
                 layout.getStyle().set("color", "var(--lumo-disabled-text-color)");
-                layout.getStyle().set("text-decoration", "line-through");
                 layout.getStyle().set("font-style", "italic");
             }
             return layout;
@@ -193,9 +189,8 @@ public class UeberweisungenView extends VerticalLayout {
         grid.addColumn(new ComponentRenderer<>(u -> {
             Span s = new Span(u.getEmpfaenger() != null ? u.getEmpfaenger() : "");
             if (u.getStatus() == UeberweisungStatus.SENT) {
-                s.getStyle().set("opacity", "0.62");
+                
                 s.getStyle().set("color", "var(--lumo-disabled-text-color)");
-                s.getStyle().set("text-decoration", "line-through");
                 s.getStyle().set("font-style", "italic");
             }
             return s;
@@ -204,9 +199,8 @@ public class UeberweisungenView extends VerticalLayout {
         grid.addColumn(new ComponentRenderer<>(u -> {
             Span s = new Span(u.getEmpfaengerBic() != null ? u.getEmpfaengerBic() : "");
             if (u.getStatus() == UeberweisungStatus.SENT) {
-                s.getStyle().set("opacity", "0.62");
+                
                 s.getStyle().set("color", "var(--lumo-disabled-text-color)");
-                s.getStyle().set("text-decoration", "line-through");
                 s.getStyle().set("font-style", "italic");
             }
             return s;
@@ -215,9 +209,8 @@ public class UeberweisungenView extends VerticalLayout {
         grid.addColumn(new ComponentRenderer<>(u -> {
             Span s = new Span(u.getEmpfaengerIban() != null ? u.getEmpfaengerIban() : "");
             if (u.getStatus() == UeberweisungStatus.SENT) {
-                s.getStyle().set("opacity", "0.62");
+               
                 s.getStyle().set("color", "var(--lumo-disabled-text-color)");
-                s.getStyle().set("text-decoration", "line-through");
                 s.getStyle().set("font-style", "italic");
             }
             return s;
@@ -226,9 +219,8 @@ public class UeberweisungenView extends VerticalLayout {
         grid.addColumn(new ComponentRenderer<>(u -> {
             Span s = new Span(u.getVerwendungszweck() != null ? u.getVerwendungszweck() : "");
             if (u.getStatus() == UeberweisungStatus.SENT) {
-                s.getStyle().set("opacity", "0.62");
+               
                 s.getStyle().set("color", "var(--lumo-disabled-text-color)");
-                s.getStyle().set("text-decoration", "line-through");
                 s.getStyle().set("font-style", "italic");
             }
             return s;
@@ -241,8 +233,9 @@ public class UeberweisungenView extends VerticalLayout {
             }
             Span s = new Span(text);
             if (u.getStatus() == UeberweisungStatus.SENT) {
-                s.getStyle().set("opacity", "0.62");
+           
                 s.getStyle().set("color", "var(--lumo-disabled-text-color)");
+                s.getStyle().set("font-style", "italic");
             }
             s.getStyle().set("text-align", "right");
             return s;
