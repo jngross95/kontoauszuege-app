@@ -291,7 +291,7 @@ public class KontoauszuegeView extends VerticalLayout {
                 .setResizable(true)
                 .setWidth(WIDTH_150PX)
                 .setFlexGrow(0)
-                .setVisible(false);
+                .setVisible(true);
 
         grid.addColumn(new ComponentRenderer<>(stmt -> {
             var dateStr = stmt.getWertstellungsdatum() != null ? new java.text.SimpleDateFormat(DATE_FORMAT).format(stmt.getWertstellungsdatum()) : "";
@@ -305,7 +305,8 @@ public class KontoauszuegeView extends VerticalLayout {
                 })
                 .setResizable(true)
                 .setWidth(WIDTH_150PX)
-                .setFlexGrow(0);
+                .setFlexGrow(0)
+                .setVisible(false);
 
         grid.addColumn(BankStatementDataObject::getGeschaeftsvorfall)
                 .setHeader("Geschäftsvorfall")

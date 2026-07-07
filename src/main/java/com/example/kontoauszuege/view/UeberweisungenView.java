@@ -152,7 +152,7 @@ public class UeberweisungenView extends VerticalLayout {
             };
             badge.getElement().setAttribute("theme", theme);
             return badge;
-        }).setHeader("Status").setWidth("80px").setFlexGrow(0).setSortable(false);
+        }).setHeader("Status").setWidth("90px").setFlexGrow(0).setSortable(false);
 
         grid.addColumn(new ComponentRenderer<>(u -> {
             HorizontalLayout layout = new HorizontalLayout();
