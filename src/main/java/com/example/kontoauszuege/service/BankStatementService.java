@@ -13,6 +13,8 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +39,14 @@ public class BankStatementService {
     }
 
     public List<BankStatementDataObject> getAllStatements() {
-        return dataAccessService.getAll(BankStatementDataObject.class);
+        List<BankStatementDataObject> all = dataAccessService.getAll(BankStatementDataObject.class);
+        if (all == null) return List.of();
+        List<BankStatementDataObject> mutable = new ArrayList<>(all);
+        mutable.sort(Comparator
+            .comparing(BankStatementDataObject::getBuchungsdatum, Comparator.nullsFirst(Date::compareTo))
+            .thenComparing(s -> s.getEntity().getId(), Comparator.nullsFirst(Comparator.naturalOrder()))
+            .reversed());
+        return mutable;
     }
 
     public BankStatementDataObject addStatement(BankStatementDataObject statement) {
