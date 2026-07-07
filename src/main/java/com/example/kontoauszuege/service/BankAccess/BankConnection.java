@@ -165,8 +165,6 @@ public class BankConnection implements AutoCloseable {
 
         // Wir setzen die Kernel-Parameter zur Laufzeit. Wir koennten sie alternativ
         // auch oben in "props" setzen.
-        // Registrierung/Produktkennung für HBCI4Java setzen
-        HBCIUtils.setParam("client.product.name", "2955BDAE0301F8FFB6C78C101");
         HBCIUtils.setParam("client.passport.default", "PinTan"); // Legt als Verfahren PIN/TAN fest.
         HBCIUtils.setParam("client.passport.PinTan.filename", passportFile.getAbsolutePath());
         HBCIUtils.setParam("client.passport.PinTan.init", "1");
