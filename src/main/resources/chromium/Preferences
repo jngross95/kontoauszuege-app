@@ -8,5 +8,23 @@
     "profile_enabled": false,
     "credit_card_enabled": false
   },
-  "autofill_enabled": false
+  "autofill_enabled": false,
+  "browser": {
+    "has_seen_welcome_page": true
+  },
+  "brave": {
+    "p3a": {
+      "notice_acknowledged": true,
+      "enabled": false
+    },
+    "stats": {
+      "reporting_enabled": false
+    },
+    "today": {
+      "should_show_brave_today_onboarding": false
+    },
+    "new_tab_page": {
+      "shows_background_image": false
+    }
+  }
 }

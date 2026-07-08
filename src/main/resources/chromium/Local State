@@ -1,0 +1,18 @@
+{
+  "user_experience_metrics": {
+    "reporting_enabled": false
+  },
+  "p3a": {
+    "notice_acknowledged": true,
+    "enabled": false
+  },
+  "brave": {
+    "p3a": {
+      "notice_acknowledged": true,
+      "enabled": false
+    },
+    "stats": {
+      "reporting_enabled": false
+    }
+  }
+}

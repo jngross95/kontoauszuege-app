@@ -67,17 +67,9 @@ public class Application {
                     // Preferences ins Default-Profil kopieren (Brave/Chrome lesen Default/Preferences)
                     Path defaultProfile = braveUserData.resolve("Default");
                     Files.createDirectories(defaultProfile);
-                    try (InputStream prefStream = Application.class.getResourceAsStream("/chromium/Preferences")) {
-                        if (prefStream != null) {
-                            Path prefFile = defaultProfile.resolve("Preferences");
-                            Files.copy(prefStream, prefFile, StandardCopyOption.REPLACE_EXISTING);
-                            log.info("Brave Preferences geschrieben: {}", prefFile.toAbsolutePath());
-                        } else {
-                            log.warn("Resource '/chromium/Preferences' nicht gefunden; Preferences werden nicht gesetzt.");
-                        }
-                    } catch (Exception ex) {
-                        log.warn("Konnte Preferences nicht kopieren: {}", ex.getMessage());
-                    }
+                    copyResource("/chromium/Preferences", defaultProfile.resolve("Preferences"));
+                    // Local State ins user-data-root kopieren (globale Einstellungen, z.B. P3A-Analyse-Dialog)
+                    copyResource("/chromium/Local State", braveUserData.resolve("Local State"));
 
                 } catch (Exception e) {
                     log.warn("Konnte Brave user-data dir nicht anlegen: {}", e.getMessage());
@@ -173,5 +165,18 @@ public class Application {
             }
         }
         return false;
+    }
+
+    private static void copyResource(String resourcePath, Path target) {
+        try (InputStream in = Application.class.getResourceAsStream(resourcePath)) {
+            if (in != null) {
+                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+                log.info("Ressource '{}' geschrieben nach: {}", resourcePath, target.toAbsolutePath());
+            } else {
+                log.warn("Ressource '{}' nicht gefunden.", resourcePath);
+            }
+        } catch (Exception ex) {
+            log.warn("Konnte '{}' nicht kopieren: {}", resourcePath, ex.getMessage());
+        }
     }
 }
