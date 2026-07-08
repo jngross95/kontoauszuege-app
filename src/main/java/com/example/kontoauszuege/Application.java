@@ -67,13 +67,13 @@ public class Application {
                     // Preferences ins Default-Profil kopieren (Brave/Chrome lesen Default/Preferences)
                     Path defaultProfile = braveUserData.resolve("Default");
                     Files.createDirectories(defaultProfile);
-                    try (InputStream prefStream = Application.class.getResourceAsStream("/brave/Preferences")) {
+                    try (InputStream prefStream = Application.class.getResourceAsStream("/chromium/Preferences")) {
                         if (prefStream != null) {
                             Path prefFile = defaultProfile.resolve("Preferences");
                             Files.copy(prefStream, prefFile, StandardCopyOption.REPLACE_EXISTING);
                             log.info("Brave Preferences geschrieben: {}", prefFile.toAbsolutePath());
                         } else {
-                            log.warn("Resource '/brave/Preferences' nicht gefunden; Preferences werden nicht gesetzt.");
+                            log.warn("Resource '/chromium/Preferences' nicht gefunden; Preferences werden nicht gesetzt.");
                         }
                     } catch (Exception ex) {
                         log.warn("Konnte Preferences nicht kopieren: {}", ex.getMessage());
