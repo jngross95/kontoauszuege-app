@@ -22,6 +22,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import org.kapott.hbci.manager.HBCIUtils;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.PageTitle;
@@ -360,14 +361,31 @@ public class UeberweisungenView extends VerticalLayout {
         form.setColspan(empfaengerIbanField, 4);
         // Wenn die IBAN eingegeben/verlässt, versuchen wir die BIC automatisch zu ermitteln
         empfaengerIbanField.addBlurListener(e -> {
+            String iban = empfaengerIbanField.getValue();
+            // normalize: remove spaces
+            String norm = iban == null ? "" : iban.trim().replace(" ", "");
+            boolean valid = false;
             try {
-                String iban = empfaengerIbanField.getValue();
-                String bic = BankConnection.bicAusIban(iban);
-                if (bic != null && !bic.isBlank()) {
-                    empfaengerBicField.setValue(bic);
+                if (!norm.isEmpty()) {
+                    valid = HBCIUtils.checkIBANCRC(norm);
                 }
             } catch (Exception ex) {
-                // Ignoriere Fehler bei der BIC-Ermittlung
+                valid = false;
+            }
+            if (!valid && !norm.isEmpty()) {
+                empfaengerIbanField.setInvalid(true);
+                empfaengerIbanField.setErrorMessage("Ungültige IBAN");
+            } else {
+                empfaengerIbanField.setInvalid(false);
+                empfaengerIbanField.setErrorMessage("");
+                try {
+                    String bic = BankConnection.bicAusIban(norm);
+                    if (bic != null && !bic.isBlank()) {
+                        empfaengerBicField.setValue(bic);
+                    }
+                } catch (Exception ex) {
+                    // Ignoriere Fehler bei der BIC-Ermittlung
+                }
             }
         });
         empfaengerBicField.getElement().setAttribute("autocomplete", "off");
@@ -486,6 +504,21 @@ public class UeberweisungenView extends VerticalLayout {
 
     private void speichern() {
         if (selected == null) return;
+        // Validierung: IBAN prüfen
+        String ibanToCheck = empfaengerIbanField.getValue();
+        String norm = ibanToCheck == null ? "" : ibanToCheck.trim().replace(" ", "");
+        boolean ibanValid = true;
+        try {
+            if (!norm.isEmpty()) ibanValid = HBCIUtils.checkIBANCRC(norm);
+        } catch (Exception ex) {
+            ibanValid = false;
+        }
+        if (!ibanValid) {
+            empfaengerIbanField.setInvalid(true);
+            empfaengerIbanField.setErrorMessage("Ungültige IBAN");
+            Notification.show("Bitte eine gültige IBAN eingeben.", 3000, Notification.Position.MIDDLE);
+            return;
+        }
         BankAccountDataObject senderVal = senderField.getValue();
         selected.setSenderIban(senderVal != null ? senderVal.getIban() : "");
         EmpfaengerInfo empfInfo = empfaengerField.getValue();
