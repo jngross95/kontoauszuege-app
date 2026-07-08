@@ -59,7 +59,7 @@ public class Application {
                 log.info("Browser starten ... ");
                 // Stelle sicher, dass das Verzeichnis existiert, in dem auch die H2-Datei liegt
                 Path dbDir = Path.of(System.getProperty("user.home"), ".jbanking");
-                Path braveUserData = dbDir.resolve("brave-user-data");
+                Path braveUserData = dbDir.resolve("chromium-user-data");
                 try {
                     Files.createDirectories(braveUserData);
                     log.info("Brave user-data dir: {}", braveUserData.toAbsolutePath());
