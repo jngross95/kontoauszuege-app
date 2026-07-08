@@ -8,8 +8,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.server.servlet.context.ServletWebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
 
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,8 +57,34 @@ public class Application {
         Thread browserThread = new Thread(() -> {
             try {
                 log.info("Browser starten ... ");
+                // Stelle sicher, dass das Verzeichnis existiert, in dem auch die H2-Datei liegt
+                Path dbDir = Path.of(System.getProperty("user.home"), ".jbanking");
+                Path braveUserData = dbDir.resolve("brave-user-data");
+                try {
+                    Files.createDirectories(braveUserData);
+                    log.info("Brave user-data dir: {}", braveUserData.toAbsolutePath());
+
+                    // Preferences ins Default-Profil kopieren (Brave/Chrome lesen Default/Preferences)
+                    Path defaultProfile = braveUserData.resolve("Default");
+                    Files.createDirectories(defaultProfile);
+                    try (InputStream prefStream = Application.class.getResourceAsStream("/brave/Preferences")) {
+                        if (prefStream != null) {
+                            Path prefFile = defaultProfile.resolve("Preferences");
+                            Files.copy(prefStream, prefFile, StandardCopyOption.REPLACE_EXISTING);
+                            log.info("Brave Preferences geschrieben: {}", prefFile.toAbsolutePath());
+                        } else {
+                            log.warn("Resource '/brave/Preferences' nicht gefunden; Preferences werden nicht gesetzt.");
+                        }
+                    } catch (Exception ex) {
+                        log.warn("Konnte Preferences nicht kopieren: {}", ex.getMessage());
+                    }
+
+                } catch (Exception e) {
+                    log.warn("Konnte Brave user-data dir nicht anlegen: {}", e.getMessage());
+                }
+
                 boolean isWindows = System.getProperty("os.name", "").toLowerCase().contains("win");
-                boolean opened = isWindows ? tryAppModeWin(url) : tryAppMode(url);
+                boolean opened = isWindows ? tryAppModeWin(url, braveUserData.toString()) : tryAppMode(url, braveUserData.toString());
                 if (!opened) {
                     log.warn("Kein unterstützter Browser gefunden – bitte {} manuell öffnen.", url);
                 }
@@ -69,12 +97,19 @@ public class Application {
     }
 
     /** Versucht, Chrome/Chromium im App-Modus zu starten (kein Tab, kein Adressfeld). */
-    private static boolean tryAppMode(String url) {
+    private static boolean tryAppMode(String url, String userDataDir) {
         String[] candidates = {"google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "brave-browser", "flatpak run com.brave.Browser"};
         for (String browser : candidates) {
             try {
                 String[] command = browser.split(" ");
                 List<String> commandList = new ArrayList<>(Arrays.asList(command));
+                if (userDataDir != null && !userDataDir.isBlank()) {
+                    commandList.add("--user-data-dir=" + userDataDir);
+                }
+                // Autofill/Password-Dialoge unterdrücken (funktioniert für alle Chromium-basierten Browser)
+                commandList.add("--disable-save-password-bubble");
+                commandList.add("--disable-features=AutofillCreditCardUpload,AutofillSaveCardBubble,AutofillEnableAccountWalletStorage");
+                commandList.add("--no-first-run");
                 commandList.add("--app=" + url);
                 new ProcessBuilder(commandList).start();
                 log.info("App-Modus gestartet mit: {}", browser);
@@ -90,7 +125,7 @@ public class Application {
      * Windows-Variante: versucht zuerst Edge, dann Chrome über ihre typischen
      * Installationspfade, da diese Browser unter Windows nicht im PATH liegen.
      */
-    private static boolean tryAppModeWin(String url) {
+    private static boolean tryAppModeWin(String url, String userDataDir) {
         String localApp  = System.getenv("LOCALAPPDATA");
         String programFiles   = System.getenv("ProgramFiles");
         String programFilesX86 = System.getenv("ProgramFiles(x86)");
@@ -121,7 +156,16 @@ public class Application {
 
         for (String exe : candidates) {
             try {
-                new ProcessBuilder(exe, "--app=" + url).start();
+                List<String> cmd = new ArrayList<>();
+                cmd.add(exe);
+                if (userDataDir != null && !userDataDir.isBlank()) {
+                    cmd.add("--user-data-dir=" + userDataDir);
+                }
+                cmd.add("--disable-save-password-bubble");
+                cmd.add("--disable-features=AutofillCreditCardUpload,AutofillSaveCardBubble,AutofillEnableAccountWalletStorage");
+                cmd.add("--no-first-run");
+                cmd.add("--app=" + url);
+                new ProcessBuilder(cmd).start();
                 log.info("App-Modus (Windows) gestartet mit: {}", exe);
                 return true;
             } catch (Exception ignored) {

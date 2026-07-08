@@ -1,0 +1,12 @@
+{
+  "credentials_enable_service": false,
+  "profile": {
+    "password_manager_enabled": false
+  },
+  "offer_to_save_passwords": false,
+  "autofill": {
+    "profile_enabled": false,
+    "credit_card_enabled": false
+  },
+  "autofill_enabled": false
+}
