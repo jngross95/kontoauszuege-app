@@ -29,6 +29,7 @@ import com.vaadin.flow.router.Route;
 
 import com.example.kontoauszuege.model.BankAccountDataObject;
 import com.example.kontoauszuege.service.BaseService;
+import com.example.kontoauszuege.service.BankAccess.BankConnection;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 
@@ -357,6 +358,18 @@ public class UeberweisungenView extends VerticalLayout {
         empfaengerIbanField.setWidthFull();
         form.add(empfaengerIbanField);
         form.setColspan(empfaengerIbanField, 4);
+        // Wenn die IBAN eingegeben/verlässt, versuchen wir die BIC automatisch zu ermitteln
+        empfaengerIbanField.addBlurListener(e -> {
+            try {
+                String iban = empfaengerIbanField.getValue();
+                String bic = BankConnection.bicAusIban(iban);
+                if (bic != null && !bic.isBlank()) {
+                    empfaengerBicField.setValue(bic);
+                }
+            } catch (Exception ex) {
+                // Ignoriere Fehler bei der BIC-Ermittlung
+            }
+        });
         empfaengerBicField.getElement().setAttribute("autocomplete", "off");
         empfaengerBicField.setWidthFull();
         form.add(empfaengerBicField);
