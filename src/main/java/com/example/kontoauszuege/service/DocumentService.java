@@ -15,6 +15,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,8 +34,10 @@ public class DocumentService {
     @Transactional(readOnly = true)
     public List<DocumentDataObject> getAllNewDocuments() {
         return dataAccessService.getAll(DocumentDataObject.class).stream()
-                .filter(d -> d.getState() == DocumentState.NEW)
-                .collect(Collectors.toList());
+            .filter(d -> d.getState() == DocumentState.NEW)
+            .sorted(Comparator.comparing(DocumentDataObject::getFileModifyDate,
+                Comparator.nullsLast(Comparator.naturalOrder())))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -44,32 +48,75 @@ public class DocumentService {
      */
     @Transactional
     public int ImportInbox() {
+        
         Path inbox = Paths.get(System.getProperty("user.home"), ".jbanking", "inbox");
         if (!Files.exists(inbox)) {
             LOG.info("Inbox-Verzeichnis existiert nicht: {}", inbox);
             return 0;
         }
 
+        // collect existing filenames of NEW documents to avoid duplicate imports
+        List<DocumentDataObject> existing = getAllNewDocuments();
+        Set<String> existingNames = existing.stream()
+                .map(DocumentDataObject::getFileName)
+                .filter(n -> n != null)
+                .collect(Collectors.toSet());
+
+        // Prüfe vorhandene DB-Einträge: wenn die referenzierte Datei nicht mehr existiert,
+        // lösche den DB-Eintrag (deleteDocument) und entferne den Namen aus existingNames
+        for (DocumentDataObject d : existing) {
+            try {
+                Map<String, Object> attrs = d.getAttributes();
+                if (attrs == null) continue;
+                Object p = attrs.get("path");
+                if (!(p instanceof String)) continue;
+                Path path = Paths.get((String) p);
+                if (!Files.exists(path)) {
+                    String pk = d.getPk();
+                    if (pk != null) {
+                        boolean ok = deleteDocument(pk);
+                        if (ok) {
+                            // ensure we don't treat the filename as existing
+                            if (d.getFileName() != null) existingNames.remove(d.getFileName());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LOG.warn("Fehler beim Prüfen vorhandener Datei für {}: {}", d, e.toString());
+            }
+        }
+
+
+                
         try (Stream<Path> stream = Files.walk(inbox)) {
             List<Path> pdfs = stream
                     .filter(p -> Files.isRegularFile(p) && p.toString().toLowerCase().endsWith(".pdf"))
                     .collect(Collectors.toList());
 
+
             int count = 0;
             for (Path p : pdfs) {
                 try {
+                    String fname = p.getFileName().toString();
+                    if (existingNames.contains(fname)) {
+                        // skip files already present as NEW
+                        continue;
+                    }
+
                     DocumentDataObject doc = new DocumentDataObject();
-                    doc.setFileName(p.getFileName().toString());
+                    doc.setFileName(fname);
                     doc.setState(DocumentState.NEW);
 
                     Map<String, Object> attrs = new HashMap<>();
                     attrs.put("path", p.toAbsolutePath().toString());
                     attrs.put("size", Files.size(p));
-                    attrs.put("lastModifiedMillis", Files.getLastModifiedTime(p).toMillis());
                     doc.setAttributes(attrs);
+                    doc.setFileModifyDate(Files.getLastModifiedTime(p).toInstant());
 
                     dataAccessService.insert(doc);
                     count++;
+                    // add to set so duplicates in the same run are ignored
+                    existingNames.add(fname);
                 } catch (Exception e) {
                     LOG.warn("Fehler beim Importieren von {}: {}", p, e.toString());
                 }
@@ -91,5 +138,55 @@ public class DocumentService {
             LOG.warn("Fehler beim Archivieren von {}: {}", doc, e.toString());
             throw e;
         }
+    }
+
+    
+    /**
+     * Löscht ein Dokument anhand seines fachlichen Schlüssels (pk).
+     * @return true wenn gelöscht wurde, false wenn nicht gefunden oder Fehler
+     */
+    @Transactional
+    public boolean deleteDocument(String pk) {
+        if (pk == null) return false;
+        List<DocumentDataObject> all = getAllNewDocuments();
+        for (DocumentDataObject d : all) {
+            if (pk.equals(d.getPk())) {
+                try {
+                    dataAccessService.delete(d);
+                    return true;
+                } catch (Exception e) {
+                    LOG.warn("Fehler beim Löschen von pk={}: {}", pk, e.toString());
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Löscht alle NEW-Dokumente aus der DB, deren Datei nicht mehr auf der Platte existiert.
+     * Erwartet, dass der Pfad in den Attributes unter dem Schlüssel "path" gespeichert ist.
+     * Liefert die Anzahl gelöschter Einträge zurück.
+     */
+    @Transactional
+    public int deleteMissingNewDocuments() {
+        List<DocumentDataObject> docs = getAllNewDocuments();
+        int deleted = 0;
+        for (DocumentDataObject d : docs) {
+            try {
+                Map<String, Object> attrs = d.getAttributes();
+                if (attrs == null) continue;
+                Object p = attrs.get("path");
+                if (!(p instanceof String)) continue;
+                Path path = Paths.get((String) p);
+                if (!Files.exists(path)) {
+                    dataAccessService.delete(d);
+                    deleted++;
+                }
+            } catch (Exception e) {
+                LOG.warn("Fehler beim Prüfen/Löschen von {}: {}", d, e.toString());
+            }
+        }
+        return deleted;
     }
 }

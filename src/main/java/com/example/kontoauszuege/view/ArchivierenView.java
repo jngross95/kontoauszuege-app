@@ -8,6 +8,9 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.html.Paragraph;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -32,6 +35,7 @@ public class ArchivierenView extends VerticalLayout {
     private final Button leftBtn = new Button(VaadinIcon.ARROW_LEFT.create());
     private final Button rightBtn = new Button(VaadinIcon.ARROW_RIGHT.create());
     private final Button archiveBtn = new Button("Archivieren");
+    private final Span indexLabel = new Span("0 / 0");
 
     // title removed per UI request
     private final IFrame pdfFrame = new IFrame();
@@ -45,7 +49,7 @@ public class ArchivierenView extends VerticalLayout {
         setPadding(true);
         addClassName("archivieren-view");
 
-        HorizontalLayout toolbar = new HorizontalLayout(leftBtn, rightBtn, archiveBtn);
+        HorizontalLayout toolbar = new HorizontalLayout(leftBtn, indexLabel, rightBtn, archiveBtn);
         toolbar.setSpacing(true);
 
         // Icon-only style and accessibility
@@ -103,6 +107,7 @@ public class ArchivierenView extends VerticalLayout {
             leftBtn.setEnabled(false);
             rightBtn.setEnabled(false);
             archiveBtn.setEnabled(false);
+            indexLabel.setText("0 / 0");
             return;
         }
 
@@ -115,11 +120,18 @@ public class ArchivierenView extends VerticalLayout {
         attributesPanel.removeAll();
         Paragraph p = new Paragraph("Datei: " + (current.getFileName() != null ? current.getFileName() : ""));
         attributesPanel.add(p);
+        // show file modification date if available
+        if (current.getFileModifyDate() != null) {
+            ZonedDateTime zdt = ZonedDateTime.ofInstant(current.getFileModifyDate(), ZoneId.systemDefault());
+            String fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(zdt);
+            Paragraph mod = new Paragraph("Geändert: " + fmt);
+            attributesPanel.add(mod);
+        }
         // set pdf viewer src to our pdf.js wrapper
         String viewer = "pdfjs/viewer.html?filepk=" + current.getPk();
         pdfFrame.setSrc(viewer);
 
-        attributesPanel.removeAll();
+        //attributesPanel.removeAll();
         Map<String, Object> attrs = current.getAttributes();
         if (attrs != null) {
             for (Map.Entry<String, Object> entry : attrs.entrySet()) {
@@ -134,6 +146,8 @@ public class ArchivierenView extends VerticalLayout {
         leftBtn.setEnabled(currentIndex > 0);
         rightBtn.setEnabled(currentIndex < documents.size() - 1);
         archiveBtn.setEnabled(true);
+        // show 1-based index and total count
+        indexLabel.setText((currentIndex + 1) + " / " + documents.size());
     }
 
     private void showPrevious() {

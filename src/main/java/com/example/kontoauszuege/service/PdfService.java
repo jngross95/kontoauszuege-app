@@ -24,7 +24,7 @@ public class PdfService {
         this.pdfBytes = Arrays.copyOf(pdfBytes, pdfBytes.length);
     }
 
-    public String extractText(double xFrom, double xTo, double yFrom, double yTo) {
+    public String extractText(int pageNum, double xFrom, double xTo, double yFrom, double yTo) {
         validateCoordinates(xFrom, xTo, yFrom, yTo);
 
         byte[] bytes = this.pdfBytes;
@@ -37,8 +37,11 @@ public class PdfService {
                 return "";
             }
 
-            PDPage firstPage = document.getPage(0);
-            PDRectangle box = firstPage.getCropBox() != null ? firstPage.getCropBox() : firstPage.getMediaBox();
+            // clamp pageNum to valid range
+            int total = document.getNumberOfPages();
+            int usePage = Math.max(1, Math.min(pageNum, total));
+            PDPage page = document.getPage(usePage - 1);
+            PDRectangle box = page.getCropBox() != null ? page.getCropBox() : page.getMediaBox();
             if (box == null) {
                 throw new IllegalStateException("Die PDF-Seite enthält keine gültige Seitengeometrie.");
             }
@@ -61,7 +64,7 @@ public class PdfService {
             PDFTextStripperByArea stripper = new PDFTextStripperByArea();
             stripper.setSortByPosition(true);
             stripper.addRegion(REGION_NAME, region);
-            stripper.extractRegions(firstPage);
+            stripper.extractRegions(page);
 
             return stripper.getTextForRegion(REGION_NAME).trim();
         } catch (IOException e) {
