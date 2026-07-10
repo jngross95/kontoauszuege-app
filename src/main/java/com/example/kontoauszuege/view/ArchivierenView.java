@@ -7,7 +7,6 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.IFrame;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -34,7 +33,7 @@ public class ArchivierenView extends VerticalLayout {
     private final Button rightBtn = new Button(VaadinIcon.ARROW_RIGHT.create());
     private final Button archiveBtn = new Button("Archivieren");
 
-    private final H3 title = new H3("");
+    // title removed per UI request
     private final IFrame pdfFrame = new IFrame();
     private final Div attributesPanel = new Div();
 
@@ -58,8 +57,6 @@ public class ArchivierenView extends VerticalLayout {
         rightBtn.getElement().setAttribute("aria-label", "Rechts");
 
         add(toolbar);
-
-        add(title);
 
         // Main split: left = PDF viewer (pdf.js), right = attributes
         pdfFrame.setWidth("65%");
@@ -93,7 +90,7 @@ public class ArchivierenView extends VerticalLayout {
 
     private void updateView() {
         if (documents == null || documents.isEmpty()) {
-            title.setText("Keine neuen Dokumente");
+            // no documents
             pdfFrame.setSrc("");
             attributesPanel.removeAll();
             leftBtn.setEnabled(false);
@@ -106,13 +103,11 @@ public class ArchivierenView extends VerticalLayout {
         if (currentIndex >= documents.size()) currentIndex = documents.size() - 1;
 
         DocumentDataObject current = documents.get(currentIndex);
-        title.setText((currentIndex + 1) + " / " + documents.size() + " — " + (current.getFileName() != null ? current.getFileName() : "(kein Dateiname)"));
+        // no heading; show filename in attributes panel
 
         attributesPanel.removeAll();
         Paragraph p = new Paragraph("Datei: " + (current.getFileName() != null ? current.getFileName() : ""));
         attributesPanel.add(p);
-
-
         // set pdf viewer src to our pdf.js wrapper
         String viewer = "pdfjs/viewer.html?filepk=" + current.getPk();
         pdfFrame.setSrc(viewer);

@@ -12,14 +12,13 @@
 </head>
 <body>
   <div id="viewer">Lade PDF…</div>
-  <!-- Use cdnjs build which exposes the pdfjsLib global reliably -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script>
     (function(){
       const urlParams = new URLSearchParams(window.location.search);
       const pk = urlParams.get('filepk');
       if (!pk) { document.getElementById('viewer').textContent = 'Kein Dokument angegeben'; return; }
-      const pdfUrl = '/documents/pdf/' + encodeURIComponent(pk);
+      // Request the PDF stream and hide toolbar/navpanes where supported
+      const pdfUrl = '/documents/pdf/' + encodeURIComponent(pk) ;
 
       // Embed the PDF using the browser's native PDF viewer so text can be selected
       const container = document.getElementById('viewer');
