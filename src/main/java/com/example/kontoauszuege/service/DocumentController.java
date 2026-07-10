@@ -8,6 +8,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,10 +24,12 @@ public class DocumentController {
 
     private final EntityRepository repository;
     private final ObjectMapper objectMapper;
+    private final PdfService pdfService;
 
-    public DocumentController(EntityRepository repository, ObjectMapper objectMapper) {
+    public DocumentController(EntityRepository repository, ObjectMapper objectMapper, PdfService pdfService) {
         this.repository = repository;
         this.objectMapper = objectMapper;
+        this.pdfService = pdfService;
     }
 
     @GetMapping(value = "/pdf/{pk}")
@@ -53,5 +56,34 @@ public class DocumentController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .contentLength(Files.size(file))
                 .body(resource);
+    }
+
+    @GetMapping(value = "/pdf/{pk}/extract")
+    public ResponseEntity<String> extractTextFromPdf(@PathVariable String pk,
+                                                     @RequestParam("xFrom") double xFrom,
+                                                     @RequestParam("xTo") double xTo,
+                                                     @RequestParam("yFrom") double yFrom,
+                                                     @RequestParam("yTo") double yTo) throws IOException {
+        Entity entity = repository.findByPk(pk).orElse(null);
+        if (entity == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        JsonNode root = objectMapper.readTree(entity.getData());
+        JsonNode attrs = root.path("attributes");
+        String path = attrs.path("path").asText(null);
+        if (path == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Path file = Paths.get(path);
+        if (!Files.exists(file) || !Files.isRegularFile(file)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        byte[] bytes = Files.readAllBytes(file);
+        pdfService.setPdf(bytes);
+        String text = pdfService.extractText(xFrom, xTo, yFrom, yTo);
+        return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(text == null ? "" : text);
     }
 }

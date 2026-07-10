@@ -11,7 +11,8 @@
     .thumb{cursor:pointer;border:1px solid transparent;padding:4px;background:#fff}
     .thumb.selected{border-color:#06c}
     .thumb canvas{display:block;max-width:100%;height:auto}
-    #viewerContainer{flex:1;overflow:auto;background:#999;padding:8px;box-sizing:border-box}
+    #viewerContainer{position:relative;flex:1;overflow:auto;background:#999;padding:8px;box-sizing:border-box}
+    .selectionRect{position:absolute;border:2px solid red;background:rgba(255,0,0,0.06);pointer-events:none;display:none;z-index:9999}
     .pageCanvas{display:block;margin:8px auto;background:#fff;box-shadow:0 0 4px rgba(0,0,0,0.2)}
     #toolbar{display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #ddd;background:#fafafa}
     #toolbar select, #toolbar button{padding:4px}
@@ -76,7 +77,7 @@
       }
 
       function renderAllPages() {
-        if (!pdfDoc) return;
+        if (!pdfDoc) return Promise.resolve();
         viewerContainer.innerHTML = '';
         const promises = [];
         for (let i=1;i<=pdfDoc.numPages;i++) {
@@ -86,7 +87,108 @@
             pageCanvases[i] = canvas;
           })));
         }
-        return Promise.all(promises);
+        return Promise.all(promises).then(()=>setupSelection());
+      }
+
+      function setupSelection() {
+        // remove existing selectionRect if any
+        let sel = document.getElementById('selectionRect');
+        if (sel) sel.remove();
+        sel = document.createElement('div');
+        sel.id = 'selectionRect';
+        sel.className = 'selectionRect';
+        viewerContainer.appendChild(sel);
+
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let currentCanvas = null;
+
+        function toViewerCoords(clientX, clientY, canvas) {
+          const canvasRect = canvas.getBoundingClientRect();
+          const vx = clientX - canvasRect.left;
+          const vy = clientY - canvasRect.top;
+          return {x: vx, y: vy, canvasRect};
+        }
+
+        viewerContainer.addEventListener('mousedown', (e) => {
+          const canvas = e.target.closest('.pageCanvas');
+          if (!canvas) return;
+          e.preventDefault();
+          isDragging = true;
+          currentCanvas = canvas;
+          const coords = toViewerCoords(e.clientX, e.clientY, canvas);
+          startX = coords.x;
+          startY = coords.y;
+          // position sel relative to viewerContainer
+          const parentRect = viewerContainer.getBoundingClientRect();
+          const left = canvas.offsetLeft + startX;
+          const top = canvas.offsetTop + startY;
+          sel.style.left = left + 'px';
+          sel.style.top = top + 'px';
+          sel.style.width = '0px';
+          sel.style.height = '0px';
+          sel.style.display = 'block';
+          document.body.style.userSelect = 'none';
+        });
+
+        viewerContainer.addEventListener('mousemove', (e) => {
+          if (!isDragging || !currentCanvas) return;
+          const coords = toViewerCoords(e.clientX, e.clientY, currentCanvas);
+          const cx = coords.x;
+          const cy = coords.y;
+          const left = Math.min(startX, cx);
+          const top = Math.min(startY, cy);
+          const width = Math.abs(cx - startX);
+          const height = Math.abs(cy - startY);
+          sel.style.left = (currentCanvas.offsetLeft + left) + 'px';
+          sel.style.top = (currentCanvas.offsetTop + top) + 'px';
+          sel.style.width = width + 'px';
+          sel.style.height = height + 'px';
+        });
+
+        viewerContainer.addEventListener('mouseup', (e) => {
+          if (!isDragging || !currentCanvas) return;
+          isDragging = false;
+          document.body.style.userSelect = '';
+          const coords = toViewerCoords(e.clientX, e.clientY, currentCanvas);
+          const endX = coords.x;
+          const endY = coords.y;
+          const left = Math.min(startX, endX);
+          const top = Math.min(startY, endY);
+          const width = Math.abs(endX - startX);
+          const height = Math.abs(endY - startY);
+          sel.style.left = (currentCanvas.offsetLeft + left) + 'px';
+          sel.style.top = (currentCanvas.offsetTop + top) + 'px';
+          sel.style.width = width + 'px';
+          sel.style.height = height + 'px';
+
+          // compute percentages relative to canvas size
+          const canvasW = currentCanvas.clientWidth || currentCanvas.width;
+          const canvasH = currentCanvas.clientHeight || currentCanvas.height;
+          const xFrom = (left / canvasW) * 100;
+          const xTo = ((left + width) / canvasW) * 100;
+          const yFrom = (top / canvasH) * 100;
+          const yTo = ((top + height) / canvasH) * 100;
+
+          // call backend extract API
+          fetch(`/documents/pdf/${encodeURIComponent(pk)}/extract?xFrom=${encodeURIComponent(xFrom)}&xTo=${encodeURIComponent(xTo)}&yFrom=${encodeURIComponent(yFrom)}&yTo=${encodeURIComponent(yTo)}`)
+            .then(r => {
+              if (!r.ok) throw new Error('Server error ' + r.status);
+              return r.text();
+            })
+            .then(text => {
+              if (!text) text = '(Keine Textausgabe)';
+              // simple feedback — replace with nicer UI later
+              alert('Ausgewählter Text:\n\n' + text);
+            }).catch(err => {
+              console.error('Extraction failed', err);
+              alert('Fehler bei der Textextraktion: ' + err.message);
+            })
+            .finally(() => {
+              // hide selection after a short delay
+              setTimeout(() => { sel.style.display = 'none'; }, 800);
+            });
+        });
       }
 
       pdfjsLib.getDocument({ url: pdfUrl }).promise.then(doc => {
