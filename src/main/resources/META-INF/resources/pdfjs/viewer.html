@@ -143,20 +143,30 @@
           return {x: vx, y: vy, canvasRect};
         }
 
-        viewerContainer.addEventListener('mousedown', (e) => {
+        // Use Pointer Events for snappy response and pointer capture
+        let activePointerId = null;
+        let cachedViewerRect = null;
+        let cachedCanvasRect = null;
+
+        viewerContainer.addEventListener('pointerdown', (e) => {
           const canvas = e.target.closest('.pageCanvas');
           if (!canvas) return;
           e.preventDefault();
           isDragging = true;
           currentCanvas = canvas;
-            const coords = toViewerCoords(e.clientX, e.clientY, canvas);
-            startX = coords.x;
-            startY = coords.y;
-            // position sel relative to viewerContainer using bounding rects
-            const viewerRect = viewerContainer.getBoundingClientRect();
-            const canvasRect = coords.canvasRect;
-            const left = (canvasRect.left - viewerRect.left) + startX;
-            const top = (canvasRect.top - viewerRect.top) + startY;
+          activePointerId = e.pointerId;
+          // capture pointer to continue receiving events
+          try { canvas.setPointerCapture(activePointerId); } catch (err) {}
+
+          // cache rects to avoid reflow costs during move
+          cachedViewerRect = viewerContainer.getBoundingClientRect();
+          cachedCanvasRect = canvas.getBoundingClientRect();
+
+          startX = e.clientX - cachedCanvasRect.left;
+          startY = e.clientY - cachedCanvasRect.top;
+
+          const left = (cachedCanvasRect.left - cachedViewerRect.left) + startX;
+          const top = (cachedCanvasRect.top - cachedViewerRect.top) + startY;
           sel.style.left = left + 'px';
           sel.style.top = top + 'px';
           sel.style.width = '0px';
@@ -165,43 +175,44 @@
           document.body.style.userSelect = 'none';
         });
 
-        viewerContainer.addEventListener('mousemove', (e) => {
-          if (!isDragging || !currentCanvas) return;
-          const coords = toViewerCoords(e.clientX, e.clientY, currentCanvas);
-          const cx = coords.x;
-          const cy = coords.y;
+        viewerContainer.addEventListener('pointermove', (e) => {
+          if (!isDragging || !currentCanvas || e.pointerId !== activePointerId) return;
+          // use cached rects for faster response
+          const cx = e.clientX - cachedCanvasRect.left;
+          const cy = e.clientY - cachedCanvasRect.top;
           const left = Math.min(startX, cx);
           const top = Math.min(startY, cy);
           const width = Math.abs(cx - startX);
           const height = Math.abs(cy - startY);
-          const viewerRect = viewerContainer.getBoundingClientRect();
-          const canvasRect = currentCanvas.getBoundingClientRect();
-          sel.style.left = (canvasRect.left - viewerRect.left + left) + 'px';
-          sel.style.top = (canvasRect.top - viewerRect.top + top) + 'px';
+          sel.style.left = (cachedCanvasRect.left - cachedViewerRect.left + left) + 'px';
+          sel.style.top = (cachedCanvasRect.top - cachedViewerRect.top + top) + 'px';
           sel.style.width = width + 'px';
           sel.style.height = height + 'px';
         });
 
-        viewerContainer.addEventListener('mouseup', (e) => {
+        function finishSelection(e) {
           if (!isDragging || !currentCanvas) return;
           isDragging = false;
           document.body.style.userSelect = '';
-          const coords = toViewerCoords(e.clientX, e.clientY, currentCanvas);
-          const endX = coords.x;
-          const endY = coords.y;
+          // release pointer capture
+          try { currentCanvas.releasePointerCapture(activePointerId); } catch (err) {}
+          activePointerId = null;
+
+          // get final coords using cached rects (safe)
+          const endX = (e && e.clientX ? e.clientX : (cachedCanvasRect.left + startX)) - cachedCanvasRect.left;
+          const endY = (e && e.clientY ? e.clientY : (cachedCanvasRect.top + startY)) - cachedCanvasRect.top;
           const left = Math.min(startX, endX);
           const top = Math.min(startY, endY);
           const width = Math.abs(endX - startX);
           const height = Math.abs(endY - startY);
-          sel.style.left = (currentCanvas.offsetLeft + left) + 'px';
-          sel.style.top = (currentCanvas.offsetTop + top) + 'px';
+          sel.style.left = (cachedCanvasRect.left - cachedViewerRect.left + left) + 'px';
+          sel.style.top = (cachedCanvasRect.top - cachedViewerRect.top + top) + 'px';
           sel.style.width = width + 'px';
           sel.style.height = height + 'px';
 
-          // compute percentages relative to canvas size
-          const canvasRectFinal = currentCanvas.getBoundingClientRect();
-          const canvasW = canvasRectFinal.width;
-          const canvasH = canvasRectFinal.height;
+          // compute percentages relative to canvas displayed size
+          const canvasW = cachedCanvasRect.width;
+          const canvasH = cachedCanvasRect.height;
           const xFrom = (left / canvasW) * 100;
           const xTo = ((left + width) / canvasW) * 100;
           const yFrom = (top / canvasH) * 100;
@@ -210,25 +221,18 @@
           // call backend extract API
           const pageNum = currentCanvas && currentCanvas.dataset ? currentCanvas.dataset.pageNumber : '1';
           fetch(`/documents/pdf/${encodeURIComponent(pk)}/extract?xFrom=${encodeURIComponent(xFrom)}&xTo=${encodeURIComponent(xTo)}&yFrom=${encodeURIComponent(yFrom)}&yTo=${encodeURIComponent(yTo)}&page=${encodeURIComponent(pageNum)}`)
-            .then(r => {
-              if (!r.ok) throw new Error('Server error ' + r.status);
-              return r.text();
-            })
+            .then(r => { if (!r.ok) throw new Error('Server error ' + r.status); return r.text(); })
             .then(text => {
-                if (!text) text = '(Keine Textausgabe)';
-                const pageNum = currentCanvas && currentCanvas.dataset ? currentCanvas.dataset.pageNumber : '?';
-                const coordStr = `xFrom=${xFrom.toFixed(2)}%, xTo=${xTo.toFixed(2)}%, yFrom=${yFrom.toFixed(2)}%, yTo=${yTo.toFixed(2)}%`;
-                // simple feedback — replace with nicer UI later
-                alert('Seite: ' + pageNum + '\nKoordinaten: ' + coordStr + '\n\nAusgewählter Text:\n\n' + text);
-              }).catch(err => {
-              console.error('Extraction failed', err);
-              alert('Fehler bei der Textextraktion: ' + err.message);
-            })
-            .finally(() => {
-              // hide selection after a short delay
-              setTimeout(() => { sel.style.display = 'none'; }, 800);
-            });
-        });
+              if (!text) text = '(Keine Textausgabe)';
+              const pageNum = currentCanvas && currentCanvas.dataset ? currentCanvas.dataset.pageNumber : '?';
+              const coordStr = `xFrom=${xFrom.toFixed(2)}%, xTo=${xTo.toFixed(2)}%, yFrom=${yFrom.toFixed(2)}%, yTo=${yTo.toFixed(2)}%`;
+              alert('Seite: ' + pageNum + '\nKoordinaten: ' + coordStr + '\n\nAusgewählter Text:\n\n' + text);
+            }).catch(err => { console.error('Extraction failed', err); alert('Fehler bei der Textextraktion: ' + err.message); })
+            .finally(() => { setTimeout(() => { sel.style.display = 'none'; }, 800); });
+        }
+
+        viewerContainer.addEventListener('pointerup', finishSelection);
+        viewerContainer.addEventListener('pointercancel', finishSelection);
       }
 
       pdfjsLib.getDocument({ url: pdfUrl }).promise.then(doc => {
