@@ -147,6 +147,7 @@
         let activePointerId = null;
         let cachedViewerRect = null;
         let cachedCanvasRect = null;
+        let cachedViewerScrollTop = 0;
 
         viewerContainer.addEventListener('pointerdown', (e) => {
           const canvas = e.target.closest('.pageCanvas');
@@ -161,12 +162,15 @@
           // cache rects to avoid reflow costs during move
           cachedViewerRect = viewerContainer.getBoundingClientRect();
           cachedCanvasRect = canvas.getBoundingClientRect();
+          // record current vertical scroll position of the viewer
+          cachedViewerScrollTop = viewerContainer.scrollTop;
 
           startX = e.clientX - cachedCanvasRect.left;
           startY = e.clientY - cachedCanvasRect.top;
 
           const left = (cachedCanvasRect.left - cachedViewerRect.left) + startX;
-          const top = (cachedCanvasRect.top - cachedViewerRect.top) + startY;
+          // include scrollTop so sel is positioned relative to the viewer's content
+          const top = (cachedCanvasRect.top - cachedViewerRect.top) + startY + cachedViewerScrollTop;
           sel.style.left = left + 'px';
           sel.style.top = top + 'px';
           sel.style.width = '0px';
@@ -185,7 +189,7 @@
           const width = Math.abs(cx - startX);
           const height = Math.abs(cy - startY);
           sel.style.left = (cachedCanvasRect.left - cachedViewerRect.left + left) + 'px';
-          sel.style.top = (cachedCanvasRect.top - cachedViewerRect.top + top) + 'px';
+          sel.style.top = (cachedCanvasRect.top - cachedViewerRect.top + top + cachedViewerScrollTop) + 'px';
           sel.style.width = width + 'px';
           sel.style.height = height + 'px';
         });
@@ -206,7 +210,7 @@
           const width = Math.abs(endX - startX);
           const height = Math.abs(endY - startY);
           sel.style.left = (cachedCanvasRect.left - cachedViewerRect.left + left) + 'px';
-          sel.style.top = (cachedCanvasRect.top - cachedViewerRect.top + top) + 'px';
+          sel.style.top = (cachedCanvasRect.top - cachedViewerRect.top + top + cachedViewerScrollTop) + 'px';
           sel.style.width = width + 'px';
           sel.style.height = height + 'px';
 
