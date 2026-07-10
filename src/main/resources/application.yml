@@ -43,4 +43,44 @@ bank-icons:
     icon: "paypal-mark-color_new.svg" 
   - target: "UniCredit|Unicredit|HypoVereinsbank|HVB"
     icon: "hvb-favicon-32x32.png"
-  
+
+doc:
+  keys:
+    "Ordner":
+      type: "enum"
+      values:
+        - "kg/schwalbennest"
+        - "kg/sonnenblume"
+    "Subordner":
+        type: "enum"
+        values:
+            - "Gesundheit"
+            - "Schule"
+    "Typ":
+        type: "enum"
+        values:
+            - "Rechnung"
+            - "Quittung"
+            - "Kontoauszug"
+            - "Sonstiges"
+    "Nummer":
+        type: "string"
+    "Text":
+        type: "string"
+
+  folder:
+    - $Ordner
+    - $Subordner
+    - $Typ
+  rules:
+    - name: "Steuerbescheid1-Beleg"
+      regexes:
+        - pos: "60-100, 0-30, 1-"
+          regex: ".*Steuerbescheid.*"
+        - pos: "60-100, 0-30, 1-"
+          regex: ".*Steuerbescheid.*"
+      actions:
+        - key: "Ordner"
+          value: "kg/schwalbennest"
+        - key: "Nummer"
+          value: "<nr>"
