@@ -24,7 +24,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import org.kapott.hbci.manager.HBCIUtils;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.data.renderer.NumberRenderer;
+// NumberRenderer import removed (unused)
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -60,6 +60,8 @@ public class UeberweisungenView extends VerticalLayout {
     private List<EmpfaengerInfo> bekannteEmpfaenger = List.of();
     private UeberweisungDataObject selected = null;
     private Dialog editDialog;
+    // data view not used yet; keep for future use
+    @SuppressWarnings("unused")
     private GridListDataView<UeberweisungDataObject> gridDataView;
     private Button bearbeitenBtn;
     private Button sendenBtn;

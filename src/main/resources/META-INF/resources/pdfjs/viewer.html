@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF Viewer</title>
+  <style>
+    html,body{height:100%;margin:0}
+    #viewer{padding:8px}
+    canvas{display:block;margin:8px auto;max-width:100%;height:auto}
+  </style>
+</head>
+<body>
+  <div id="viewer">Lade PDF…</div>
+  <!-- Use cdnjs build which exposes the pdfjsLib global reliably -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script>
+    (function(){
+      const urlParams = new URLSearchParams(window.location.search);
+      const pk = urlParams.get('filepk');
+      if (!pk) { document.getElementById('viewer').textContent = 'Kein Dokument angegeben'; return; }
+      const pdfUrl = '/documents/pdf/' + encodeURIComponent(pk);
+
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+      fetch(pdfUrl).then(r => {
+        if (!r.ok) throw new Error('PDF nicht gefunden');
+        return r.arrayBuffer();
+      }).then(data => {
+        const loadingTask = pdfjsLib.getDocument({data});
+        return loadingTask.promise;
+      }).then(pdf => {
+        const container = document.getElementById('viewer');
+        container.innerHTML = '';
+        const renderPage = (pageNum) => {
+          return pdf.getPage(pageNum).then(page => {
+            const scale = 1.2;
+            const viewport = page.getViewport({scale});
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            container.appendChild(canvas);
+            return page.render({canvasContext: context, viewport: viewport}).promise;
+          });
+        };
+        // render all pages sequentially
+        const promises = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          promises.push(renderPage(i));
+        }
+        return Promise.all(promises);
+      }).catch(err => {
+        document.getElementById('viewer').textContent = 'Fehler beim Laden des PDFs: ' + err.message;
+      });
+    })();
+  </script>
+</body>
+</html>

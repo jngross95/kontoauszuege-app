@@ -1,11 +1,10 @@
 package com.example.kontoauszuege.service;
 
 import com.example.kontoauszuege.service.BankAccess.BankConnection;
-import com.example.kontoauszuege.service.BankAccess.BankInformation;
+// BankInformation import removed (unused in tests)
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+// Mockito imports removed (unused in these tests)
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 

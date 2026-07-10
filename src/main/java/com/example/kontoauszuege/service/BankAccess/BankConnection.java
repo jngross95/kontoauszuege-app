@@ -14,11 +14,10 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
+// SimpleDateFormat removed (unused)
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.temporal.TemporalUnit;
+// unused imports removed
 import java.util.*;
 
 
@@ -141,7 +140,7 @@ public class BankConnection implements AutoCloseable {
         // HBCI4Java initialisieren
         // In "props" koennen optional Kernel-Parameter abgelegt werden, die in der Klasse
         // org.kapott.hbci.manager.HBCIUtils (oben im Javadoc) beschrieben sind.
-        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+        // SimpleDateFormat not used here, remove to avoid unused-variable warning
 
 
         System.out.println(String.format("!connect:  name='%s' blz=%s user=%s", name, bic, user));
@@ -275,7 +274,7 @@ public class BankConnection implements AutoCloseable {
         // 2. Auftrag fuer das Abrufen der Umsaetze erzeugen
 
 
-        HBCIJob umsatzJob = handle.newJob("KUmsAllCamt");//Camt
+        HBCIJob<?> umsatzJob = handle.newJob("KUmsAllCamt");//Camt
 
         Date myDate = startdate;
 
@@ -483,7 +482,7 @@ public class BankConnection implements AutoCloseable {
 
         var src = getKonto(iban);
 
-        HBCIJob umsatzJob =  handle.newJob("UebSEPA");
+        HBCIJob<?> umsatzJob =  handle.newJob("UebSEPA");
 
         var bic = info.getBic();
         //src.name = HBCIProperties.replace(src.name,HBCIProperties.TEXT_REPLACEMENTS_SEPA);
@@ -556,6 +555,7 @@ public class BankConnection implements AutoCloseable {
      * Beendet das Programm mit der angegebenen Fehler-Meldung.
      * @param msg die Meldung.
      */
+    @SuppressWarnings("unused")
     private static void error(String msg)
     {
         System.err.println(msg);

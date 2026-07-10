@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
@@ -34,7 +35,8 @@ public class ArchivierenView extends VerticalLayout {
     private final Button archiveBtn = new Button("Archivieren");
 
     private final H3 title = new H3("");
-    private final Div content = new Div();
+    private final IFrame pdfFrame = new IFrame();
+    private final Div attributesPanel = new Div();
 
     @Autowired
     public ArchivierenView(DocumentService documentService) {
@@ -58,9 +60,21 @@ public class ArchivierenView extends VerticalLayout {
         add(toolbar);
 
         add(title);
-        content.getStyle().set("white-space", "pre-wrap");
-        add(content);
-        setFlexGrow(1, content);
+
+        // Main split: left = PDF viewer (pdf.js), right = attributes
+        pdfFrame.setWidth("65%");
+        pdfFrame.setHeight("80vh");
+        pdfFrame.getElement().setAttribute("frameBorder", "0");
+
+        attributesPanel.getStyle().set("padding", "8px");
+        attributesPanel.getStyle().set("overflow", "auto");
+        attributesPanel.setWidth("35%");
+
+        HorizontalLayout main = new HorizontalLayout(pdfFrame, attributesPanel);
+        main.setSizeFull();
+        main.setFlexGrow(1, pdfFrame);
+        main.setFlexGrow(0, attributesPanel);
+        add(main);
 
         leftBtn.addClickListener(e -> showPrevious());
         rightBtn.addClickListener(e -> showNext());
@@ -80,7 +94,8 @@ public class ArchivierenView extends VerticalLayout {
     private void updateView() {
         if (documents == null || documents.isEmpty()) {
             title.setText("Keine neuen Dokumente");
-            content.removeAll();
+            pdfFrame.setSrc("");
+            attributesPanel.removeAll();
             leftBtn.setEnabled(false);
             rightBtn.setEnabled(false);
             archiveBtn.setEnabled(false);
@@ -93,16 +108,24 @@ public class ArchivierenView extends VerticalLayout {
         DocumentDataObject current = documents.get(currentIndex);
         title.setText((currentIndex + 1) + " / " + documents.size() + " — " + (current.getFileName() != null ? current.getFileName() : "(kein Dateiname)"));
 
-        content.removeAll();
+        attributesPanel.removeAll();
         Paragraph p = new Paragraph("Datei: " + (current.getFileName() != null ? current.getFileName() : ""));
-        content.add(p);
+        attributesPanel.add(p);
 
+
+        // set pdf viewer src to our pdf.js wrapper
+        String viewer = "pdfjs/viewer.html?filepk=" + current.getPk();
+        pdfFrame.setSrc(viewer);
+
+        attributesPanel.removeAll();
         Map<String, Object> attrs = current.getAttributes();
         if (attrs != null) {
             for (Map.Entry<String, Object> entry : attrs.entrySet()) {
-                Span line = new Span(entry.getKey() + ": " + String.valueOf(entry.getValue()));
-                content.add(line);
-                content.add(new Div());
+                Span key = new Span(entry.getKey() + ": ");
+                key.getStyle().set("font-weight", "bold");
+                Span value = new Span(String.valueOf(entry.getValue()));
+                Div row = new Div(key, value);
+                attributesPanel.add(row);
             }
         }
 
