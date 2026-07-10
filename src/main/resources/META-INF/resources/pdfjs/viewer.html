@@ -24,6 +24,9 @@ e    /* sidebar removed */
 </head>
 <body>
   <div id="toolbar">
+    <button id="prevPage">-</button>
+    <span id="pageDisplay">1 / ?</span>
+    <button id="nextPage">+</button>
     <label>Zoom:
       <select id="zoomSelect">
         <option value="0.5">50%</option>
@@ -53,12 +56,24 @@ e    /* sidebar removed */
 
       const viewerContainer = document.getElementById('viewerContainer');
       const zoomSelect = document.getElementById('zoomSelect');
+      const prevPageBtn = document.getElementById('prevPage');
+      const nextPageBtn = document.getElementById('nextPage');
+      const pageDisplay = document.getElementById('pageDisplay');
 
       let currentZoom = parseFloat(zoomSelect.value);
-      zoomSelect.addEventListener('change', () => { currentZoom = parseFloat(zoomSelect.value); renderAllPages(); });
+      zoomSelect.addEventListener('change', () => { currentZoom = parseFloat(zoomSelect.value); renderPage(currentPage); });
 
       let pdfDoc = null;
+      let currentPage = 1;
+      let totalPages = 0;
       const pageCanvases = [];
+
+      prevPageBtn.addEventListener('click', () => { if (currentPage>1) renderPage(currentPage-1); });
+      nextPageBtn.addEventListener('click', () => { if (currentPage<totalPages) renderPage(currentPage+1); });
+
+      function updatePageDisplay() {
+        pageDisplay.textContent = currentPage + ' / ' + (totalPages || '?');
+      }
 
       function clearViewer() {
         viewerContainer.innerHTML = '';
@@ -76,18 +91,18 @@ e    /* sidebar removed */
         return renderTask.promise.then(() => canvas);
       }
 
-      function renderAllPages() {
-        if (!pdfDoc) return Promise.resolve();
+      function renderPage(pageNum) {
+        if (!pdfDoc) return;
+        if (pageNum < 1 || pageNum > pdfDoc.numPages) return;
+        currentPage = pageNum;
+        updatePageDisplay();
         viewerContainer.innerHTML = '';
-        const promises = [];
-        for (let i=1;i<=pdfDoc.numPages;i++) {
-          promises.push(pdfDoc.getPage(i).then(page => renderPageToCanvas(page, currentZoom).then(canvas => {
-            canvas.dataset.pageNumber = i;
-            viewerContainer.appendChild(canvas);
-            pageCanvases[i] = canvas;
-          })));
-        }
-        return Promise.all(promises).then(()=>setupSelection());
+        return pdfDoc.getPage(pageNum).then(page => renderPageToCanvas(page, currentZoom).then(canvas => {
+          canvas.dataset.pageNumber = pageNum;
+          viewerContainer.appendChild(canvas);
+          pageCanvases[pageNum] = canvas;
+          setupSelection();
+        }));
       }
 
       function setupSelection() {
@@ -195,8 +210,10 @@ e    /* sidebar removed */
 
       pdfjsLib.getDocument({ url: pdfUrl }).promise.then(doc => {
         pdfDoc = doc;
-        // Render pages at current zoom
-        renderAllPages();
+        totalPages = doc.numPages;
+        updatePageDisplay();
+        // Render first page
+        renderPage(1);
       }).catch(err=>{
         document.getElementById('viewerMessage').textContent = 'Fehler beim Laden des PDF: ' + err.message;
       });
