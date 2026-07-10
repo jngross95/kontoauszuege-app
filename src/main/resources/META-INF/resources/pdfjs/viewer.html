@@ -177,10 +177,12 @@
               return r.text();
             })
             .then(text => {
-              if (!text) text = '(Keine Textausgabe)';
-              // simple feedback — replace with nicer UI later
-              alert('Ausgewählter Text:\n\n' + text);
-            }).catch(err => {
+                if (!text) text = '(Keine Textausgabe)';
+                const pageNum = currentCanvas && currentCanvas.dataset ? currentCanvas.dataset.pageNumber : '?';
+                const coordStr = `xFrom=${xFrom.toFixed(2)}%, xTo=${xTo.toFixed(2)}%, yFrom=${yFrom.toFixed(2)}%, yTo=${yTo.toFixed(2)}%`;
+                // simple feedback — replace with nicer UI later
+                alert('Seite: ' + pageNum + '\nKoordinaten: ' + coordStr + '\n\nAusgewählter Text:\n\n' + text);
+              }).catch(err => {
               console.error('Extraction failed', err);
               alert('Fehler bei der Textextraktion: ' + err.message);
             })
