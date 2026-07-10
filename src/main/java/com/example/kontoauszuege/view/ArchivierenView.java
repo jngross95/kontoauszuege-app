@@ -60,18 +60,25 @@ public class ArchivierenView extends VerticalLayout {
 
         // Main split: left = PDF viewer (pdf.js), right = attributes
         pdfFrame.setWidth("65%");
-        pdfFrame.setHeight("80vh");
+        pdfFrame.setHeightFull();
         pdfFrame.getElement().setAttribute("frameBorder", "0");
 
         attributesPanel.getStyle().set("padding", "8px");
         attributesPanel.getStyle().set("overflow", "auto");
         attributesPanel.setWidth("35%");
+        attributesPanel.setHeightFull();
 
         HorizontalLayout main = new HorizontalLayout(pdfFrame, attributesPanel);
+        // allow children to grow to available space without forcing overflow
+        main.getStyle().set("min-height", "0");
+        pdfFrame.getStyle().set("min-height", "0");
+        attributesPanel.getStyle().set("min-height", "0");
         main.setSizeFull();
         main.setFlexGrow(1, pdfFrame);
         main.setFlexGrow(0, attributesPanel);
-        add(main);
+        // add toolbar and main together and expand main to consume remaining vertical space
+        add(toolbar, main);
+        expand(main);
 
         leftBtn.addClickListener(e -> showPrevious());
         rightBtn.addClickListener(e -> showNext());

@@ -6,7 +6,7 @@
   <title>PDF Viewer</title>
   <style>
     html,body{height:100%;margin:0}
-    #viewer{padding:8px}
+    #viewer{padding:0;height:100%;box-sizing:border-box;overflow:hidden}
     canvas{display:block;margin:8px auto;max-width:100%;height:auto}
   </style>
 </head>
@@ -28,8 +28,11 @@
       iframe.style.width = '100%';
       iframe.style.height = '100%';
       iframe.style.border = 'none';
+      iframe.style.display = 'block';
       iframe.title = 'PDF Viewer';
-      container.style.height = '100vh';
+      container.style.height = '100%';
+      container.style.boxSizing = 'border-box';
+      container.style.overflow = 'hidden';
       container.appendChild(iframe);
     })();
   </script>
