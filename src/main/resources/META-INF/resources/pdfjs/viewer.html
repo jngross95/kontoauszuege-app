@@ -6,15 +6,16 @@
   <title>PDF Viewer (PDF.js)</title>
   <style>
     html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif}
-    .container{height:100%;display:flex;align-items:stretch}
+    body{display:flex;flex-direction:column}
+    .container{flex:1;display:flex;align-items:stretch;min-height:0}
     /* sidebar removed */
     .thumb{cursor:pointer;border:1px solid transparent;padding:4px;background:#fff}
     .thumb.selected{border-color:#06c}
     .thumb canvas{display:block;max-width:100%;height:auto}
-    #viewerContainer{position:relative;flex:1;overflow:auto;background:#999;padding:0;box-sizing:border-box}
+    #viewerContainer{position:relative;flex:1;overflow:auto;background:#999;padding:0;box-sizing:border-box;min-height:0}
     .selectionRect{position:absolute;border:2px solid red;background:rgba(255,0,0,0.06);pointer-events:none;display:none;z-index:9999}
-    .pageCanvas{display:block;margin:0;background:#fff;box-shadow:0 0 4px rgba(0,0,0,0.2);width:100%;height:auto}
-    #toolbar{display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #ddd;background:#fafafa}
+    .pageCanvas{display:block;margin:0 auto;background:#fff;box-shadow:0 0 4px rgba(0,0,0,0.2);width:100%;height:auto}
+    #toolbar{flex:0;display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #ddd;background:#fafafa;box-sizing:border-box}
     #toolbar select, #toolbar button{padding:4px}
     .hidden{display:none}
     @media (max-width:800px){#sidebar{display:none}}
