@@ -7,13 +7,13 @@
   <style>
     html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif}
     .container{height:100%;display:flex;align-items:stretch}
-e    /* sidebar removed */
+    /* sidebar removed */
     .thumb{cursor:pointer;border:1px solid transparent;padding:4px;background:#fff}
     .thumb.selected{border-color:#06c}
     .thumb canvas{display:block;max-width:100%;height:auto}
-    #viewerContainer{position:relative;flex:1;overflow:auto;background:#999;padding:8px;box-sizing:border-box}
+    #viewerContainer{position:relative;flex:1;overflow:auto;background:#999;padding:0;box-sizing:border-box}
     .selectionRect{position:absolute;border:2px solid red;background:rgba(255,0,0,0.06);pointer-events:none;display:none;z-index:9999}
-    .pageCanvas{display:block;margin:8px auto;background:#fff;box-shadow:0 0 4px rgba(0,0,0,0.2)}
+    .pageCanvas{display:block;margin:0;background:#fff;box-shadow:0 0 4px rgba(0,0,0,0.2);width:100%;height:auto}
     #toolbar{display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #ddd;background:#fafafa}
     #toolbar select, #toolbar button{padding:4px}
     .hidden{display:none}
@@ -81,12 +81,28 @@ e    /* sidebar removed */
       }
 
       function renderPageToCanvas(page, scale) {
+        // ensure scale fills container width (avoid gray gutters)
+        const orig = page.getViewport({scale:1});
+        const containerWidth = Math.max(20, viewerContainer.clientWidth);
+        const fitScale = containerWidth / orig.width;
+        if (typeof scale === 'number') {
+          scale = Math.max(scale, fitScale);
+        } else {
+          scale = fitScale;
+        }
         const viewport = page.getViewport({scale});
         const canvas = document.createElement('canvas');
         canvas.className = 'pageCanvas';
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+        // use devicePixelRatio for crisp rendering
+        const outputScale = window.devicePixelRatio || 1;
+        const targetWidth = Math.floor(viewport.width);
+        const targetHeight = Math.floor(viewport.height);
+        canvas.width = Math.floor(targetWidth * outputScale);
+        canvas.height = Math.floor(targetHeight * outputScale);
+        canvas.style.width = targetWidth + 'px';
+        canvas.style.height = targetHeight + 'px';
         const ctx = canvas.getContext('2d');
+        ctx.setTransform(outputScale, 0, 0, outputScale, 0, 0);
         const renderTask = page.render({canvasContext: ctx, viewport});
         return renderTask.promise.then(() => canvas);
       }
@@ -131,13 +147,14 @@ e    /* sidebar removed */
           e.preventDefault();
           isDragging = true;
           currentCanvas = canvas;
-          const coords = toViewerCoords(e.clientX, e.clientY, canvas);
-          startX = coords.x;
-          startY = coords.y;
-          // position sel relative to viewerContainer
-          const parentRect = viewerContainer.getBoundingClientRect();
-          const left = canvas.offsetLeft + startX;
-          const top = canvas.offsetTop + startY;
+            const coords = toViewerCoords(e.clientX, e.clientY, canvas);
+            startX = coords.x;
+            startY = coords.y;
+            // position sel relative to viewerContainer using bounding rects
+            const viewerRect = viewerContainer.getBoundingClientRect();
+            const canvasRect = coords.canvasRect;
+            const left = (canvasRect.left - viewerRect.left) + startX;
+            const top = (canvasRect.top - viewerRect.top) + startY;
           sel.style.left = left + 'px';
           sel.style.top = top + 'px';
           sel.style.width = '0px';
@@ -155,8 +172,10 @@ e    /* sidebar removed */
           const top = Math.min(startY, cy);
           const width = Math.abs(cx - startX);
           const height = Math.abs(cy - startY);
-          sel.style.left = (currentCanvas.offsetLeft + left) + 'px';
-          sel.style.top = (currentCanvas.offsetTop + top) + 'px';
+          const viewerRect = viewerContainer.getBoundingClientRect();
+          const canvasRect = currentCanvas.getBoundingClientRect();
+          sel.style.left = (canvasRect.left - viewerRect.left + left) + 'px';
+          sel.style.top = (canvasRect.top - viewerRect.top + top) + 'px';
           sel.style.width = width + 'px';
           sel.style.height = height + 'px';
         });
@@ -178,8 +197,9 @@ e    /* sidebar removed */
           sel.style.height = height + 'px';
 
           // compute percentages relative to canvas size
-          const canvasW = currentCanvas.clientWidth || currentCanvas.width;
-          const canvasH = currentCanvas.clientHeight || currentCanvas.height;
+          const canvasRectFinal = currentCanvas.getBoundingClientRect();
+          const canvasW = canvasRectFinal.width;
+          const canvasH = canvasRectFinal.height;
           const xFrom = (left / canvasW) * 100;
           const xTo = ((left + width) / canvasW) * 100;
           const yFrom = (top / canvasH) * 100;
