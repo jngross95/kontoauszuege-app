@@ -8,6 +8,9 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.html.Paragraph;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -117,11 +120,18 @@ public class ArchivierenView extends VerticalLayout {
         attributesPanel.removeAll();
         Paragraph p = new Paragraph("Datei: " + (current.getFileName() != null ? current.getFileName() : ""));
         attributesPanel.add(p);
+        // show file modification date if available
+        if (current.getFileModifyDate() != null) {
+            ZonedDateTime zdt = ZonedDateTime.ofInstant(current.getFileModifyDate(), ZoneId.systemDefault());
+            String fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(zdt);
+            Paragraph mod = new Paragraph("Geändert: " + fmt);
+            attributesPanel.add(mod);
+        }
         // set pdf viewer src to our pdf.js wrapper
         String viewer = "pdfjs/viewer.html?filepk=" + current.getPk();
         pdfFrame.setSrc(viewer);
 
-        attributesPanel.removeAll();
+        //attributesPanel.removeAll();
         Map<String, Object> attrs = current.getAttributes();
         if (attrs != null) {
             for (Map.Entry<String, Object> entry : attrs.entrySet()) {
