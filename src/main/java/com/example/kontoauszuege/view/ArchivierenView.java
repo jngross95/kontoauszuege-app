@@ -3,6 +3,8 @@ package com.example.kontoauszuege.view;
 import com.example.kontoauszuege.model.DocumentDataObject;
 import com.example.kontoauszuege.service.DocumentService;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
@@ -27,8 +29,8 @@ public class ArchivierenView extends VerticalLayout {
     private List<DocumentDataObject> documents = new ArrayList<>();
     private int currentIndex = 0;
 
-    private final Button leftBtn = new Button("Links");
-    private final Button rightBtn = new Button("Rechts");
+    private final Button leftBtn = new Button(VaadinIcon.ARROW_LEFT.create());
+    private final Button rightBtn = new Button(VaadinIcon.ARROW_RIGHT.create());
     private final Button archiveBtn = new Button("Archivieren");
 
     private final H3 title = new H3("");
@@ -44,6 +46,15 @@ public class ArchivierenView extends VerticalLayout {
 
         HorizontalLayout toolbar = new HorizontalLayout(leftBtn, rightBtn, archiveBtn);
         toolbar.setSpacing(true);
+
+        // Icon-only style and accessibility
+        leftBtn.addThemeVariants(ButtonVariant.LUMO_ICON);
+        rightBtn.addThemeVariants(ButtonVariant.LUMO_ICON);
+        leftBtn.getElement().setProperty("title", "Links");
+        rightBtn.getElement().setProperty("title", "Rechts");
+        leftBtn.getElement().setAttribute("aria-label", "Links");
+        rightBtn.getElement().setAttribute("aria-label", "Rechts");
+
         add(toolbar);
 
         add(title);
