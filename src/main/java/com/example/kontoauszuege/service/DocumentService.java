@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,6 +45,7 @@ public class DocumentService {
      */
     @Transactional
     public int ImportInbox() {
+        
         Path inbox = Paths.get(System.getProperty("user.home"), ".jbanking", "inbox");
         if (!Files.exists(inbox)) {
             LOG.info("Inbox-Verzeichnis existiert nicht: {}", inbox);
@@ -55,11 +57,24 @@ public class DocumentService {
                     .filter(p -> Files.isRegularFile(p) && p.toString().toLowerCase().endsWith(".pdf"))
                     .collect(Collectors.toList());
 
+            // collect existing filenames of NEW documents to avoid duplicate imports
+            List<DocumentDataObject> existing = getAllNewDocuments();
+            Set<String> existingNames = existing.stream()
+                    .map(DocumentDataObject::getFileName)
+                    .filter(n -> n != null)
+                    .collect(Collectors.toSet());
+
             int count = 0;
             for (Path p : pdfs) {
                 try {
+                    String fname = p.getFileName().toString();
+                    if (existingNames.contains(fname)) {
+                        // skip files already present as NEW
+                        continue;
+                    }
+
                     DocumentDataObject doc = new DocumentDataObject();
-                    doc.setFileName(p.getFileName().toString());
+                    doc.setFileName(fname);
                     doc.setState(DocumentState.NEW);
 
                     Map<String, Object> attrs = new HashMap<>();
@@ -70,6 +85,8 @@ public class DocumentService {
 
                     dataAccessService.insert(doc);
                     count++;
+                    // add to set so duplicates in the same run are ignored
+                    existingNames.add(fname);
                 } catch (Exception e) {
                     LOG.warn("Fehler beim Importieren von {}: {}", p, e.toString());
                 }
