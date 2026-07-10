@@ -3,37 +3,150 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PDF Viewer</title>
+  <title>PDF Viewer (PDF.js)</title>
   <style>
-    html,body{height:100%;margin:0}
-    #viewer{padding:0;height:100%;box-sizing:border-box;overflow:hidden}
-    canvas{display:block;margin:8px auto;max-width:100%;height:auto}
+    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif}
+    .container{height:100%;display:flex;align-items:stretch}
+    #sidebar{width:260px;background:#f5f5f5;border-right:1px solid #ddd;overflow:auto;padding:8px;box-sizing:border-box}
+    #sidebar h3{margin:4px 0 8px 0;font-size:14px}
+    #thumbnails{display:flex;flex-direction:column;gap:8px}
+    .thumb{cursor:pointer;border:1px solid transparent;padding:4px;background:#fff}
+    .thumb.selected{border-color:#06c}
+    .thumb canvas{display:block;max-width:100%;height:auto}
+    #viewerContainer{flex:1;overflow:auto;background:#999;padding:8px;box-sizing:border-box}
+    .pageCanvas{display:block;margin:8px auto;background:#fff;box-shadow:0 0 4px rgba(0,0,0,0.2)}
+    #toolbar{display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #ddd;background:#fafafa}
+    #toolbar select, #toolbar button{padding:4px}
+    .hidden{display:none}
+    @media (max-width:800px){#sidebar{display:none}}
   </style>
 </head>
+  
+</head>
 <body>
-  <div id="viewer">Lade PDF…</div>
-  <script>
+  <div id="toolbar">
+    <button id="toggleSidebar">Seitenansicht</button>
+    <label>Zoom:
+      <select id="zoomSelect">
+        <option value="0.5">50%</option>
+        <option value="0.75">75%</option>
+        <option value="1" selected>100%</option>
+        <option value="1.5">150%</option>
+        <option value="2">200%</option>
+      </select>
+    </label>
+  </div>
+  <div class="container">
+    <aside id="sidebar">
+      <h3>Seiten</h3>
+      <div id="thumbnails">Lade…</div>
+    </aside>
+    <main id="viewerContainer">
+      <div id="viewerMessage">Lade PDF…</div>
+    </main>
+  </div>
+
+  <script type="module">
+    import * as pdfjsLib from './lib/pdf.mjs';
     (function(){
       const urlParams = new URLSearchParams(window.location.search);
       const pk = urlParams.get('filepk');
-      if (!pk) { document.getElementById('viewer').textContent = 'Kein Dokument angegeben'; return; }
-      // Request the PDF stream and hide toolbar/navpanes where supported
-      const pdfUrl = '/documents/pdf/' + encodeURIComponent(pk) ;
+      if (!pk) { document.getElementById('viewerMessage').textContent = 'Kein Dokument angegeben'; return; }
+      const pdfUrl = '/documents/pdf/' + encodeURIComponent(pk);
 
-      // Embed the PDF using the browser's native PDF viewer so text can be selected
-      const container = document.getElementById('viewer');
-      container.innerHTML = '';
-      const iframe = document.createElement('iframe');
-      iframe.src = pdfUrl;
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      iframe.style.border = 'none';
-      iframe.style.display = 'block';
-      iframe.title = 'PDF Viewer';
-      container.style.height = '100%';
-      container.style.boxSizing = 'border-box';
-      container.style.overflow = 'hidden';
-      container.appendChild(iframe);
+      // PDF.js worker config (ESM build)
+      pdfjsLib.GlobalWorkerOptions.workerSrc = './lib/pdf.worker.mjs';
+
+      const viewerContainer = document.getElementById('viewerContainer');
+      const thumbsContainer = document.getElementById('thumbnails');
+      const sidebar = document.getElementById('sidebar');
+      const toggleSidebarBtn = document.getElementById('toggleSidebar');
+      const zoomSelect = document.getElementById('zoomSelect');
+
+      toggleSidebarBtn.addEventListener('click', () => { sidebar.style.display = (sidebar.style.display === 'none') ? 'block' : 'none'; });
+
+      let currentZoom = parseFloat(zoomSelect.value);
+      zoomSelect.addEventListener('change', () => { currentZoom = parseFloat(zoomSelect.value); renderAllPages(); });
+
+      let pdfDoc = null;
+      const pageCanvases = [];
+
+      function clearViewer() {
+        viewerContainer.innerHTML = '';
+        pageCanvases.length = 0;
+      }
+
+      function renderPageToCanvas(page, scale) {
+        const viewport = page.getViewport({scale});
+        const canvas = document.createElement('canvas');
+        canvas.className = 'pageCanvas';
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        const renderTask = page.render({canvasContext: ctx, viewport});
+        return renderTask.promise.then(() => canvas);
+      }
+
+      function renderAllPages() {
+        if (!pdfDoc) return;
+        viewerContainer.innerHTML = '';
+        const promises = [];
+        for (let i=1;i<=pdfDoc.numPages;i++) {
+          promises.push(pdfDoc.getPage(i).then(page => renderPageToCanvas(page, currentZoom).then(canvas => {
+            canvas.dataset.pageNumber = i;
+            viewerContainer.appendChild(canvas);
+            pageCanvases[i] = canvas;
+          })));
+        }
+        return Promise.all(promises);
+      }
+
+      function createThumbnail(pageNumber, page, thumbWidth=160) {
+        return Promise.resolve().then(()=>{
+          const orig = page.getViewport({scale:1});
+          const scale = thumbWidth / orig.width;
+          const viewport = page.getViewport({scale});
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
+          return page.render({canvasContext: ctx, viewport}).promise.then(()=>canvas);
+        });
+      }
+
+      pdfjsLib.getDocument({ url: pdfUrl }).promise.then(doc => {
+        pdfDoc = doc;
+        thumbsContainer.innerHTML = '';
+        const thumbPromises = [];
+        for (let i=1;i<=doc.numPages;i++) {
+          thumbPromises.push(doc.getPage(i).then(page => createThumbnail(i,page).then(canvas => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'thumb';
+            wrapper.dataset.page = i;
+            const label = document.createElement('div');
+            label.textContent = 'Seite ' + i;
+            label.style.fontSize = '12px';
+            label.style.marginBottom = '4px';
+            wrapper.appendChild(label);
+            wrapper.appendChild(canvas);
+            wrapper.addEventListener('click', () => {
+              const target = pageCanvases[i];
+              if (target) target.scrollIntoView({behavior:'smooth'});
+              document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('selected'));
+              wrapper.classList.add('selected');
+            });
+            thumbsContainer.appendChild(wrapper);
+            if (i===1) wrapper.classList.add('selected');
+          })));
+        }
+        // Render pages at current zoom
+        Promise.all(thumbPromises).then(()=>renderAllPages());
+      }).catch(err=>{
+        document.getElementById('viewerMessage').textContent = 'Fehler beim Laden des PDF: ' + err.message;
+      });
+
+      // open sidebar by default
+      sidebar.style.display = 'block';
     })();
   </script>
 </body>
