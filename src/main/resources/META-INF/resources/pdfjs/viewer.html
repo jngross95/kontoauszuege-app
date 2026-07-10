@@ -186,7 +186,8 @@ e    /* sidebar removed */
           const yTo = ((top + height) / canvasH) * 100;
 
           // call backend extract API
-          fetch(`/documents/pdf/${encodeURIComponent(pk)}/extract?xFrom=${encodeURIComponent(xFrom)}&xTo=${encodeURIComponent(xTo)}&yFrom=${encodeURIComponent(yFrom)}&yTo=${encodeURIComponent(yTo)}`)
+          const pageNum = currentCanvas && currentCanvas.dataset ? currentCanvas.dataset.pageNumber : '1';
+          fetch(`/documents/pdf/${encodeURIComponent(pk)}/extract?xFrom=${encodeURIComponent(xFrom)}&xTo=${encodeURIComponent(xTo)}&yFrom=${encodeURIComponent(yFrom)}&yTo=${encodeURIComponent(yTo)}&page=${encodeURIComponent(pageNum)}`)
             .then(r => {
               if (!r.ok) throw new Error('Server error ' + r.status);
               return r.text();

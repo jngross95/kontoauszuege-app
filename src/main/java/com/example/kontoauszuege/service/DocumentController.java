@@ -63,7 +63,8 @@ public class DocumentController {
                                                      @RequestParam("xFrom") double xFrom,
                                                      @RequestParam("xTo") double xTo,
                                                      @RequestParam("yFrom") double yFrom,
-                                                     @RequestParam("yTo") double yTo) throws IOException {
+                                                     @RequestParam("yTo") double yTo,
+                                                     @RequestParam(value = "page", required = false, defaultValue = "1") int page) throws IOException {
         Entity entity = repository.findByPk(pk).orElse(null);
         if (entity == null) {
             return ResponseEntity.notFound().build();
@@ -83,7 +84,7 @@ public class DocumentController {
 
         byte[] bytes = Files.readAllBytes(file);
         pdfService.setPdf(bytes);
-        String text = pdfService.extractText(xFrom, xTo, yFrom, yTo);
+        String text = pdfService.extractText(page, xFrom, xTo, yFrom, yTo);
         return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(text == null ? "" : text);
     }
 }
