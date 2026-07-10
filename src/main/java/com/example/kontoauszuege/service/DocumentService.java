@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,8 +34,10 @@ public class DocumentService {
     @Transactional(readOnly = true)
     public List<DocumentDataObject> getAllNewDocuments() {
         return dataAccessService.getAll(DocumentDataObject.class).stream()
-                .filter(d -> d.getState() == DocumentState.NEW)
-                .collect(Collectors.toList());
+            .filter(d -> d.getState() == DocumentState.NEW)
+            .sorted(Comparator.comparing(DocumentDataObject::getFileModifyDate,
+                Comparator.nullsLast(Comparator.naturalOrder())))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -107,8 +110,8 @@ public class DocumentService {
                     Map<String, Object> attrs = new HashMap<>();
                     attrs.put("path", p.toAbsolutePath().toString());
                     attrs.put("size", Files.size(p));
-                    attrs.put("lastModifiedMillis", Files.getLastModifiedTime(p).toMillis());
                     doc.setAttributes(attrs);
+                    doc.setFileModifyDate(Files.getLastModifiedTime(p).toInstant());
 
                     dataAccessService.insert(doc);
                     count++;
