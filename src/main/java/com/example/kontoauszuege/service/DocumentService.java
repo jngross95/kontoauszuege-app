@@ -44,7 +44,7 @@ public class DocumentService {
      */
     @Transactional
     public int ImportInbox() {
-        Path inbox = Paths.get(System.getProperty("user.home"), "banking", "inbox");
+        Path inbox = Paths.get(System.getProperty("user.home"), ".jbanking", "inbox");
         if (!Files.exists(inbox)) {
             LOG.info("Inbox-Verzeichnis existiert nicht: {}", inbox);
             return 0;
@@ -77,6 +77,19 @@ public class DocumentService {
             return count;
         } catch (IOException e) {
             throw new IllegalStateException("Fehler beim Durchsuchen des Inbox-Ordners", e);
+        }
+    }
+
+    @Transactional
+    public void archiveDocument(DocumentDataObject doc) {
+        if (doc == null) return;
+        try {
+            doc.setState(DocumentState.ARCHIVED);
+            // DataAccessService.update expects an object previously inserted or loaded
+            dataAccessService.update(doc);
+        } catch (Exception e) {
+            LOG.warn("Fehler beim Archivieren von {}: {}", doc, e.toString());
+            throw e;
         }
     }
 }
