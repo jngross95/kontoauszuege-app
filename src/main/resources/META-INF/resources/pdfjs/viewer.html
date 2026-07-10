@@ -21,38 +21,17 @@
       if (!pk) { document.getElementById('viewer').textContent = 'Kein Dokument angegeben'; return; }
       const pdfUrl = '/documents/pdf/' + encodeURIComponent(pk);
 
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
-      fetch(pdfUrl).then(r => {
-        if (!r.ok) throw new Error('PDF nicht gefunden');
-        return r.arrayBuffer();
-      }).then(data => {
-        const loadingTask = pdfjsLib.getDocument({data});
-        return loadingTask.promise;
-      }).then(pdf => {
-        const container = document.getElementById('viewer');
-        container.innerHTML = '';
-        const renderPage = (pageNum) => {
-          return pdf.getPage(pageNum).then(page => {
-            const scale = 1.2;
-            const viewport = page.getViewport({scale});
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            container.appendChild(canvas);
-            return page.render({canvasContext: context, viewport: viewport}).promise;
-          });
-        };
-        // render all pages sequentially
-        const promises = [];
-        for (let i = 1; i <= pdf.numPages; i++) {
-          promises.push(renderPage(i));
-        }
-        return Promise.all(promises);
-      }).catch(err => {
-        document.getElementById('viewer').textContent = 'Fehler beim Laden des PDFs: ' + err.message;
-      });
+      // Embed the PDF using the browser's native PDF viewer so text can be selected
+      const container = document.getElementById('viewer');
+      container.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.src = pdfUrl;
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      iframe.title = 'PDF Viewer';
+      container.style.height = '100vh';
+      container.appendChild(iframe);
     })();
   </script>
 </body>
