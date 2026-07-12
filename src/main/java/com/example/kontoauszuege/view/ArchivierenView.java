@@ -12,7 +12,11 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.ZonedDateTime;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.treegrid.TreeGrid;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -41,7 +45,11 @@ public class ArchivierenView extends VerticalLayout {
     // title removed per UI request
     private final IFrame pdfFrame = new IFrame();
     private final Div attributesPanel = new Div();
-    private final ComboBox<String> ordnerCombo = new ComboBox<>();
+    private final TreeGrid<String> ordnerTree = new TreeGrid<>();
+    private final com.vaadin.flow.component.textfield.TextField ordnerField = new com.vaadin.flow.component.textfield.TextField();
+    private final com.vaadin.flow.component.dialog.Dialog ordnerDialog = new com.vaadin.flow.component.dialog.Dialog();
+    private final java.util.Map<String, java.util.List<String>> ordnerChildren = new java.util.HashMap<>();
+    private String selectedFolderPath = null;
 
     @Autowired
     public ArchivierenView(DocumentService documentService) {
@@ -74,10 +82,55 @@ public class ArchivierenView extends VerticalLayout {
         attributesPanel.setWidth("35%");
         attributesPanel.setHeightFull();
 
-        // configure Ordner combobox
-        ordnerCombo.setLabel("Ordner");
-        ordnerCombo.setItems("KG/Pirckheimer", "KG/Schwalbennest", "Jürgen/Gesundheit", "Jürgen/Rente");
-        ordnerCombo.setWidthFull();
+        // configure Ordner tree (hierarchische Ansicht)
+        ordnerChildren.put("KG", Arrays.asList("KG/Pirckheimer", "KG/Schwalbennest"));
+        ordnerChildren.put("Jürgen", Arrays.asList("Jürgen/Gesundheit", "Jürgen/Rente"));
+
+        java.util.List<String> roots = Arrays.asList("KG", "Jürgen");
+        ordnerTree.addHierarchyColumn(item -> {
+            if (item == null) return "";
+            if (item.contains("/")) return item.substring(item.lastIndexOf('/') + 1);
+            return item;
+        }).setHeader("Ordner");
+        ordnerTree.setItems(roots, item -> ordnerChildren.getOrDefault(item, java.util.Collections.emptyList()));
+        ordnerTree.setWidthFull();
+        ordnerTree.setHeight("320px");
+
+        // configure ordnerField (read-only input that opens the tree dialog)
+        ordnerField.setLabel("Ordner");
+        ordnerField.setReadOnly(true);
+        ordnerField.setWidthFull();
+
+        // prepare dialog containing the tree
+        ordnerDialog.setWidth("420px");
+        ordnerDialog.setHeight("360px");
+        com.vaadin.flow.component.orderedlayout.VerticalLayout dlgLayout = new com.vaadin.flow.component.orderedlayout.VerticalLayout();
+        dlgLayout.setPadding(false);
+        dlgLayout.setSpacing(false);
+        dlgLayout.setSizeFull();
+        dlgLayout.add(ordnerTree);
+        ordnerDialog.add(dlgLayout);
+
+        // selection: only accept leaf nodes (nodes without children)
+        ordnerTree.addSelectionListener(e -> {
+            java.util.Optional<String> sel = e.getFirstSelectedItem();
+            if (sel.isPresent()) {
+                String v = sel.get();
+                boolean isLeaf = !ordnerChildren.containsKey(v);
+                if (isLeaf) {
+                    // store full path internally and show full path in the field
+                    selectedFolderPath = v;
+                    ordnerField.setValue(v);
+                    ordnerDialog.close();
+                } else {
+                    // toggle expansion for parent nodes
+                    if (ordnerTree.isExpanded(v)) ordnerTree.collapse(v); else ordnerTree.expand(v);
+                }
+            }
+        });
+
+        // open dialog when clicking the field (use element click listener)
+        ordnerField.getElement().addEventListener("click", evt -> ordnerDialog.open());
 
         HorizontalLayout main = new HorizontalLayout(pdfFrame, attributesPanel);
         // allow children to grow to available space without forcing overflow
@@ -89,6 +142,8 @@ public class ArchivierenView extends VerticalLayout {
         main.setFlexGrow(0, attributesPanel);
         // add toolbar and main together and expand main to consume remaining vertical space
         add(toolbar, main);
+        // attach dialog to this view so it's part of the UI tree
+        add(ordnerDialog);
         expand(main);
 
         leftBtn.addClickListener(e -> showPrevious());
@@ -125,8 +180,8 @@ public class ArchivierenView extends VerticalLayout {
         // no heading; show filename in attributes panel
 
         attributesPanel.removeAll();
-        // add ordner selector at top
-        attributesPanel.add(ordnerCombo);
+        // add ordner selector at top (read-only field that opens dialog)
+        attributesPanel.add(ordnerField);
         Paragraph p = new Paragraph("Datei: " + (current.getFileName() != null ? current.getFileName() : ""));
         attributesPanel.add(p);
         // show file modification date if available
@@ -141,7 +196,22 @@ public class ArchivierenView extends VerticalLayout {
         pdfFrame.setSrc(viewer);
 
         //attributesPanel.removeAll();
+        // restore previously selected folder (if any)
         Map<String, Object> attrs = current.getAttributes();
+        if (attrs != null && attrs.containsKey("folder")) {
+            Object f = attrs.get("folder");
+            if (f != null) {
+                selectedFolderPath = String.valueOf(f);
+                ordnerField.setValue(selectedFolderPath);
+            } else {
+                selectedFolderPath = null;
+                ordnerField.clear();
+            }
+        } else {
+            selectedFolderPath = null;
+            ordnerField.clear();
+        }
+
         if (attrs != null) {
             for (Map.Entry<String, Object> entry : attrs.entrySet()) {
                 Span key = new Span(entry.getKey() + ": ");
@@ -177,6 +247,15 @@ public class ArchivierenView extends VerticalLayout {
         if (documents == null || documents.isEmpty()) return;
         DocumentDataObject current = documents.get(currentIndex);
         try {
+            // persist selected folder into document attributes before archiving
+            if (selectedFolderPath != null && !selectedFolderPath.isEmpty()) {
+                current.getAttributes().put("folder", selectedFolderPath);
+            } else {
+                String selectedFolder = ordnerField.getValue();
+                if (selectedFolder != null && !selectedFolder.isEmpty()) {
+                    current.getAttributes().put("folder", selectedFolder);
+                }
+            }
             documentService.archiveDocument(current);
         } catch (Exception e) {
             // ignore for now; could show notification
