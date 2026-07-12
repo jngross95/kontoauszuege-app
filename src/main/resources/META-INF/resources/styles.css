@@ -128,7 +128,8 @@ vaadin-tab a.router-link {
 
 .stammdaten-left-tabs vaadin-tab::part(label),
 .stammdaten-left-tabs vaadin-tab {
-  color: #ffffff !important;
+  /* inactive tab labels slightly muted like main navbar */
+  color: rgba(255,255,255,0.6) !important;
 }
 
 .stammdaten-left-tabs vaadin-tab[selected]::part(label),
@@ -136,6 +137,12 @@ vaadin-tab a.router-link {
   color: #ffffff !important;
   font-weight: 700 !important;
   text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+
+/* hover state for better contrast on hover */
+.stammdaten-left-tabs vaadin-tab:hover::part(label),
+.stammdaten-left-tabs vaadin-tab:hover {
+  color: rgba(255,255,255,0.9) !important;
 }
 
 .stammdaten-content {
