@@ -45,15 +45,13 @@ public class StammdatenView extends VerticalLayout {
         content.addClassName("stammdaten-content");
 
         // Create tab-content pairs
-        Tab tabArchiv = new Tab("Archiv-Einstellungen");
         Tab tabOrdner = new Tab("Ordner");
         Tab tabBankkontakte = new Tab("Bankkontakte");
         Tab tabBankkonten = new Tab("Bankkonten");
 
-        leftTabs.add(tabArchiv, tabOrdner, tabBankkontakte, tabBankkonten);
+        leftTabs.add(tabOrdner, tabBankkontakte, tabBankkonten);
 
         // create content components
-        Div archivContent = new Div(new Span("Archiv-Einstellungen"));
         Div ordnerContent = new Div(new Span("Ordnerverwaltung (Platzhalter)"));
 
         // instantiate existing views as embedded components
@@ -61,13 +59,11 @@ public class StammdatenView extends VerticalLayout {
         BankkontenView bankkontenView = new BankkontenView(bankAccountService, bankStatementService, baseService);
 
         // ensure sizing
-        archivContent.setSizeFull();
         ordnerContent.setSizeFull();
         bankkontakteView.setSizeFull();
         bankkontenView.setSizeFull();
 
         Map<Tab, Component> tabsToPages = new LinkedHashMap<>();
-        tabsToPages.put(tabArchiv, archivContent);
         tabsToPages.put(tabOrdner, ordnerContent);
         tabsToPages.put(tabBankkontakte, bankkontakteView);
         tabsToPages.put(tabBankkonten, bankkontenView);

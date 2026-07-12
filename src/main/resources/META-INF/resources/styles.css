@@ -129,7 +129,7 @@ vaadin-tab a.router-link {
 .stammdaten-left-tabs vaadin-tab::part(label),
 .stammdaten-left-tabs vaadin-tab {
   /* inactive tab labels slightly muted like main navbar */
-  color: rgba(255,255,255,0.6) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
 }
 
 .stammdaten-left-tabs vaadin-tab[selected]::part(label),
