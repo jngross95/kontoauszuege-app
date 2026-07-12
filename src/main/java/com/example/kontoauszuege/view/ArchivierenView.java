@@ -12,6 +12,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.ZonedDateTime;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -40,6 +41,7 @@ public class ArchivierenView extends VerticalLayout {
     // title removed per UI request
     private final IFrame pdfFrame = new IFrame();
     private final Div attributesPanel = new Div();
+    private final ComboBox<String> ordnerCombo = new ComboBox<>();
 
     @Autowired
     public ArchivierenView(DocumentService documentService) {
@@ -71,6 +73,11 @@ public class ArchivierenView extends VerticalLayout {
         attributesPanel.getStyle().set("overflow", "auto");
         attributesPanel.setWidth("35%");
         attributesPanel.setHeightFull();
+
+        // configure Ordner combobox
+        ordnerCombo.setLabel("Ordner");
+        ordnerCombo.setItems("KG/Pirckheimer", "KG/Schwalbennest", "Jürgen/Gesundheit", "Jürgen/Rente");
+        ordnerCombo.setWidthFull();
 
         HorizontalLayout main = new HorizontalLayout(pdfFrame, attributesPanel);
         // allow children to grow to available space without forcing overflow
@@ -118,6 +125,8 @@ public class ArchivierenView extends VerticalLayout {
         // no heading; show filename in attributes panel
 
         attributesPanel.removeAll();
+        // add ordner selector at top
+        attributesPanel.add(ordnerCombo);
         Paragraph p = new Paragraph("Datei: " + (current.getFileName() != null ? current.getFileName() : ""));
         attributesPanel.add(p);
         // show file modification date if available
