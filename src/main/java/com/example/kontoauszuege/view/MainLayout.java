@@ -17,17 +17,14 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     private final Tab tabArchivieren;
     private final Tab tabUeberweisungen;
     private final Tab tabStammdaten;
-    private final Tab tabBankkontakte;
-    private final Tab tabBankkonten;
+    
 
     public MainLayout() {
         tabArchivieren = new Tab(new RouterLink("Archivieren", ArchivierenView.class));
         tabKontoauszuege = new Tab(new RouterLink("Kontoauszüge", KontoauszuegeView.class));
         tabUeberweisungen = new Tab(new RouterLink("Überweisungen", UeberweisungenView.class));
         tabStammdaten   = new Tab(new RouterLink("Stammdaten", StammdatenView.class));
-        tabBankkontakte = new Tab(new RouterLink("Bankkontakte", BankkontakteView.class));
-        tabBankkonten   = new Tab(new RouterLink("Bankkonten", BankkontenView.class));
-        tabs = new Tabs(tabArchivieren, tabKontoauszuege, tabUeberweisungen, tabStammdaten, tabBankkontakte, tabBankkonten);
+        tabs = new Tabs(tabArchivieren, tabKontoauszuege, tabUeberweisungen, tabStammdaten);
 
         H1 title = new H1("Kontoauszüge App");
         title.getStyle()
@@ -49,12 +46,8 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
             tabs.setSelectedTab(tabKontoauszuege);
         } else if (path.equals("ueberweisungen")) {
             tabs.setSelectedTab(tabUeberweisungen);
-        } else if (path.equals("stammdaten")) {
+        } else if (path.equals("stammdaten") || path.equals("bankkontakte") || path.equals("bankkonten")) {
             tabs.setSelectedTab(tabStammdaten);
-        } else if (path.equals("bankkontakte")) {
-            tabs.setSelectedTab(tabBankkontakte);
-        } else if (path.equals("bankkonten")) {
-            tabs.setSelectedTab(tabBankkonten);
         } else if (path.equals("archivieren")) {
             tabs.setSelectedTab(tabArchivieren);
         }

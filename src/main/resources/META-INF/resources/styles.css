@@ -68,6 +68,84 @@ vaadin-tab[selected] {
   font-weight: 700;
 }
 
+/* Ensure anchor links inside the navbar and tabs inherit a readable color */
+vaadin-app-layout::part(navbar) a,
+vaadin-app-layout::part(navbar) vaadin-tab a,
+vaadin-tab a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* Make sure selected tab link is emphasized */
+vaadin-app-layout::part(navbar) vaadin-tab[selected] a,
+vaadin-tab[selected] a {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* Force tab label coloring with higher specificity to override defaults */
+vaadin-app-layout::part(navbar) vaadin-tab::part(label),
+vaadin-tab::part(label) {
+  color: rgba(255,255,255,0.95) !important;
+}
+
+/* Emphasize selected tab label */
+vaadin-app-layout::part(navbar) vaadin-tab[selected]::part(label),
+vaadin-tab[selected]::part(label) {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+
+/* Ensure RouterLink inside tab inherits label color */
+vaadin-tab vaadin-router-link,
+vaadin-tab a.router-link {
+  color: inherit !important;
+}
+
+/* ============================================================
+   STAMMDATEN - linke, vertikale NavBar
+   ============================================================ */
+.stammdaten-left-tabs {
+  background: linear-gradient(135deg, #3730a3 0%, #6366f1 55%, #a855f7 100%);
+  color: #ffffff;
+  padding: 0.75rem 0.5rem;
+  border-radius: 12px;
+  min-width: 160px;
+  width: 180px;
+  box-shadow: 0 2px 18px rgba(0,0,0,0.12);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.stammdaten-left-tabs vaadin-tabs {
+  height: 100%;
+}
+
+.stammdaten-left-tabs vaadin-tab {
+  --lumo-primary-color: #ffffff;
+}
+
+.stammdaten-left-tabs vaadin-tab::part(label),
+.stammdaten-left-tabs vaadin-tab {
+  color: #ffffff !important;
+}
+
+.stammdaten-left-tabs vaadin-tab[selected]::part(label),
+.stammdaten-left-tabs vaadin-tab[selected] {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+
+.stammdaten-content {
+  background: linear-gradient(160deg, #f8faff 0%, #f1f4ff 100%);
+  padding: 1rem;
+  border-radius: 12px;
+  box-sizing: border-box;
+  height: 100%;
+}
+
 /* Tab indicator line */
 vaadin-tabs::part(tabs-container) {
   --lumo-primary-color: #a5b4fc;
