@@ -1,0 +1,28 @@
+<form>
+	<p>
+		<span color="header" font="header">Einstellungen</span>
+	</p>
+
+	<li>
+	  Deaktivieren Sie die Option <b>Kontonummern und Bankleitzahlen mittels Prüfsumme testen</b>,
+	  wenn Sie nicht wünschen, dass Hibiscus die von Ihnen eingegebenen Kontonummern
+	  auf Plausibilität prüfen soll.
+	</li>
+
+	<li>
+		Sie können ein Limit für den Maximalbetrag eines Auftrages definieren um zu verhindern,
+    dass Sie versehentlich einen zu großen Betrag eingeben.
+	</li>
+
+	<li>
+		<b>Umsatz-Kategorien:</b> Sie können auch mehrere Suchbegriffe (durch Komma getrennt)
+		eingeben. Umsätze werden dann bereits dieser Kategorie zugeordnet, wenn nur
+		einer der angegebenen Suchbegriffe gefunden wurde. Soll der Suchbegriff explizit ein
+		Komma enthalten, muss dem Komma ein umgekehrter Schrägstrich (Backslash, <pre>\</pre>)
+		vorangestellt werden.
+	</li>
+
+	<li>
+		<b>Zeiträume:</b> Sie können wählen, welche Zeitraum-Vorauswahlen angeboten werden.
+	</li>
+</form>

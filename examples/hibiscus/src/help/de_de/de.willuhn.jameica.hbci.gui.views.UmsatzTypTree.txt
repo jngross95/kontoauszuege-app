@@ -1,0 +1,27 @@
+<form>
+	<p>
+		<span color="header" font="header">Umsätze nach Kategorien</span>
+	</p>
+	
+	<p>
+		In dieser Liste sehen Sie alle Umsätze - gruppiert nach Kategorie,
+		die den angegebenen Kriterien entsprechen.
+		Zu jeder Kategorie wird ausserdem die Summe aller enthaltenen
+		Beträge angezeigt.
+	</p>
+	<p>
+	  Umsätze, die noch keiner Kategorie zugeordnet sind, werden
+	  unter <b>Nicht zugeordnet</b> aufgeführt.
+	</p>
+	
+  <p>
+    <b>Tipp:</b> Im Reiter &quot;Im Verlauf&quot; kann durch Doppelklick auf
+    einen Eintrag in der Legende die Datenreihe ein- oder ausgeblendet werden.
+    Mit einem Rechtsklick auf die Legende kann ein Kontext-Menü zum Ein- oder
+    Ausblenden aller Datenreihen geöffnet werden.
+  </p>
+	<p>
+	  <b>Hinweis:</b> Klicken Sie mit der rechten Maustaste in die Grafik
+	  und wählen Sie &quot;Gruppierung nach&quot;, um nach Jahr, Monat oder Woche zu gruppieren.
+	</p>
+</form>

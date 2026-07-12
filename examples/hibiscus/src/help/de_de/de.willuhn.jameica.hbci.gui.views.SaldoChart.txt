@@ -1,0 +1,23 @@
+<form>
+	<p>
+		<span color="header" font="header">Saldo im Verlauf</span>
+	</p>
+	
+	<p>
+	  Diese Auswertung stellt den Saldo im zeitlichen Verlauf dar.
+	</p>
+	
+	<p>
+	  Klicken Sie auf <b>Limits konfigurieren...</b>, um für ein Konto ein
+	  oberes und/oder unteres Saldo-Limit zu definieren. Wenn der
+	  prognostizierte Saldo den Wert innerhalb der angegebenen Anzahl von
+    Tagen erreicht, wird auf der Startseite ein Hinweis-Text angezeigt.
+	</p>
+
+  <p>
+    <b>Tipp:</b> Durch Doppelklick auf einen Eintrag in der Legende kann
+    die Datenreihe ein- oder ausgeblendet werden. Mit einem Rechtsklick auf die
+    Legende kann ein Kontext-Menü zum Ein- oder Ausblenden aller Datenreihen
+    geöffnet werden.
+  </p>
+</form>

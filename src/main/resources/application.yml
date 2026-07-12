@@ -49,38 +49,23 @@ doc:
     "Ordner":
       type: "enum"
       values:
-        - "kg/schwalbennest"
-        - "kg/sonnenblume"
-    "Subordner":
-        type: "enum"
-        values:
-            - "Gesundheit"
-            - "Schule"
-    "Typ":
-        type: "enum"
-        values:
-            - "Rechnung"
-            - "Quittung"
-            - "Kontoauszug"
-            - "Sonstiges"
+        - "kg/Objekte/schwalbennest"
+        - "kg/Objekte/sonnenblume"
+    "DocTyp":
+      type: "enum"
+      values:
+        - "Rechnung"
+        - "Versicherung"
+        - "Grundsteuerbescheid"
+        - "Kontoauszug"
+        - "Sonstiges"    
+    "Datum":
+        type: "string"
+    "Jahr":
+        type: "string"
+    "Monat":
+        type: "string"
     "Nummer":
         type: "string"
-    "Text":
+    "ArchivDateiname":
         type: "string"
-
-  folder:
-    - $Ordner
-    - $Subordner
-    - $Typ
-  rules:
-    - name: "Steuerbescheid1-Beleg"
-      regexes:
-        - pos: "60-100, 0-30, 1-"
-          regex: ".*Steuerbescheid.*"
-        - pos: "60-100, 0-30, 1-"
-          regex: ".*Steuerbescheid.*"
-      actions:
-        - key: "Ordner"
-          value: "kg/schwalbennest"
-        - key: "Nummer"
-          value: "<nr>"

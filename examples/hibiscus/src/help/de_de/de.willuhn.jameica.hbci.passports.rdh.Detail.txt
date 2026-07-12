@@ -1,0 +1,24 @@
+<form>
+	<p>
+		<span color="header" font="header">Details der Schlüsseldatei</span>
+	</p>
+	
+  <p>
+    Die Angabe eines Alias-Namens hilft Ihnen, mehrere installierte Schlüssel
+    besser unterscheiden zu können. Geben Sie hier z.Bsp. den Namen der Bank ein.
+  </p>
+
+	<p>
+	  Der Schlüssel wird beim Export mit einem Passwort geschützt.
+	  Merken Sie sich dieses bitte, um ihn wieder importieren zu können.
+	</p>
+
+  <p>
+    <b>Tipp</b>: Falls Sie bei einer Bank mehrere Konten mit verschiedenen
+    Bank-Zugängen besitzen, dann können Sie die gewünschten Konten fest zuordnen,
+    für die dieser Bankzugang gelten soll.
+    Auf diese Weise müssen Sie beim Ausführen von Geschäftsvorfällen
+    den zu verwendenden Bankzugang nicht manuell wählen.
+  </p>
+
+</form>
