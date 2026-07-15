@@ -112,7 +112,7 @@ public class BankConnection implements AutoCloseable {
         // Registrierung/Produktkennung für HBCI4Java setzen
         //props.setProperty("client.product.name", "2955BDAE0301F8FFB6C78C101");
         // Registrierung/Produktkennung für HBCI4Java setzen
-        props.setProperty("client.product.name", "2955BDAE0301F8FFB6C78C101");
+       // props.setProperty("client.product.name", "2955BDAE0301F8FFB6C78C101");
         HBCIUtils.init(props, new MyHBCICallback());
     }
 
