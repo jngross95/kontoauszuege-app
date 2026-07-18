@@ -1,9 +1,6 @@
 package com.example.kontoauszuege.service;
 
-import com.example.kontoauszuege.model.Entity;
-import com.example.kontoauszuege.repository.EntityRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.kontoauszuege.model.DocumentDataObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,31 +19,22 @@ import java.nio.file.Paths;
 @RequestMapping("/documents")
 public class DocumentController {
 
-    private final EntityRepository repository;
-    private final ObjectMapper objectMapper;
+    private final DocumentService documentService;
     private final PdfService pdfService;
 
-    public DocumentController(EntityRepository repository, ObjectMapper objectMapper, PdfService pdfService) {
-        this.repository = repository;
-        this.objectMapper = objectMapper;
+    public DocumentController(DocumentService documentService, PdfService pdfService) {
+        this.documentService = documentService;
         this.pdfService = pdfService;
     }
 
     @GetMapping(value = "/pdf/{pk}")
     public ResponseEntity<InputStreamResource> getPdfByPk(@PathVariable String pk) throws IOException {
-        Entity entity = repository.findByPk(pk).orElse(null);
-        if (entity == null) {
+        DocumentDataObject doc = documentService.getByPk(pk);
+        if (doc == null || doc.getFileName() == null) {
             return ResponseEntity.notFound().build();
         }
 
-        JsonNode root = objectMapper.readTree(entity.getData());
-        JsonNode attrs = root.path("attributes");
-        String path = attrs.path("path").asText(null);
-        if (path == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Path file = Paths.get(path);
+        Path file = Paths.get(doc.getFileName());
         if (!Files.exists(file) || !Files.isRegularFile(file)) {
             return ResponseEntity.notFound().build();
         }
@@ -65,19 +53,12 @@ public class DocumentController {
                                                      @RequestParam("yFrom") double yFrom,
                                                      @RequestParam("yTo") double yTo,
                                                      @RequestParam(value = "page", required = false, defaultValue = "1") int page) throws IOException {
-        Entity entity = repository.findByPk(pk).orElse(null);
-        if (entity == null) {
+        DocumentDataObject doc = documentService.getByPk(pk);
+        if (doc == null || doc.getFileName() == null) {
             return ResponseEntity.notFound().build();
         }
 
-        JsonNode root = objectMapper.readTree(entity.getData());
-        JsonNode attrs = root.path("attributes");
-        String path = attrs.path("path").asText(null);
-        if (path == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Path file = Paths.get(path);
+        Path file = Paths.get(System.getProperty("user.home"), ".jbanking", "inbox", doc.getFileName());
         if (!Files.exists(file) || !Files.isRegularFile(file)) {
             return ResponseEntity.notFound().build();
         }

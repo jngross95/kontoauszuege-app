@@ -12,9 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -37,6 +35,15 @@ public class DocumentService {
             .sorted(Comparator.comparing(DocumentDataObject::getFileModifyDate,
                 Comparator.nullsLast(Comparator.naturalOrder())))
             .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public DocumentDataObject getByPk(String pk) {
+        if (pk == null) return null;
+        return dataAccessService.getAll(DocumentDataObject.class).stream()
+                .filter(d -> pk.equals(d.getPk()))
+                .findFirst()
+                .orElse(null);
     }
 
     @Transactional(readOnly = true)
