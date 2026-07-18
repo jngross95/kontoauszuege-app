@@ -151,9 +151,9 @@ public class ArchivierenView extends VerticalLayout {
         pdfFrame.getStyle().set("min-height", "0");
         attributesPanel.getStyle().set("min-height", "0");
         split.setSizeFull();
-        // default: viewer 65% / attributes 35%
+        // default: viewer 50% / attributes 50%
         try {
-            split.setSplitterPosition(65);
+            split.setSplitterPosition(50);
         } catch (Exception ignore) {
         }
         // add toolbar and split together and expand split to consume remaining vertical space
