@@ -67,10 +67,14 @@ public class DocumentService {
     @Transactional
     public int ImportInbox() {
         
-        Path inbox = Paths.get(System.getProperty("user.home"), ".jbanking", "inbox");
+        Path inbox = Paths.get(fileSystemService.getBaseDir(), "inbox");
         if (!Files.exists(inbox)) {
-            LOG.info("Inbox-Verzeichnis existiert nicht: {}", inbox);
-            return 0;
+           //create the inbox directory if it does not exist
+           try {
+               Files.createDirectories(inbox);
+           } catch (IOException e) {
+               throw new IllegalStateException("Fehler beim Erstellen des Inbox-Ordners: "+ inbox.toAbsolutePath().toString(), e);
+           } 
         }
 
         // collect existing filenames of NEW documents to avoid duplicate imports
@@ -78,7 +82,7 @@ public class DocumentService {
 
         // Lösche DB-Einträge, deren Datei nicht mehr auf der Platte existiert
         existing.removeIf(d -> {
-            if (d.getFilePath() == null || d.getFileName() == null || !Files.exists(Paths.get(d.getFilePath(), d.getFileName()))) {
+            if (d.getFilePath() == null || d.getFileName() == null || !Files.exists(resolvePath(d.getFilePath(), d.getFileName()))) {
                 try {
                     dataAccessService.delete(d);
                 } catch (Exception e) {
@@ -111,7 +115,9 @@ public class DocumentService {
 
                     DocumentDataObject doc = new DocumentDataObject();
                     doc.setFileName(fname);
-                    doc.setFilePath(p.toAbsolutePath().getParent().toString());
+                    Path parent = p.toAbsolutePath().normalize().getParent();
+                    Path relParent = inbox.toAbsolutePath().normalize().relativize(parent);
+                    doc.setFilePath(relParent.toString().replace(File.separatorChar, '/'));
                     doc.setState(DocumentState.NEW);
                     doc.setFileModifyDate(Files.getLastModifiedTime(p).toInstant());
 
@@ -134,19 +140,9 @@ public class DocumentService {
         if (doc == null) return;
         try {
             doc.setState(DocumentState.ARCHIVED);
-            if(doc.getArchivDateiname() == null || doc.getArchivDateiname().isBlank())
-                throw new RuntimeException("Archiv Ordner nmicht gesetzt");
-
             doc.setFileName(doc.getArchivDateiname());
-            String basePath = fileSystemService.getBaseDir();
-            String relativeFolder = doc.getArchivOrdner();
-            if(relativeFolder == null || relativeFolder.isBlank())
-                throw new RuntimeException("Archiv Ordner nicht gesetzt");
 
-            doc.setFilePath(
-                    Paths.get(
-                            basePath,
-                            relativeFolder.replace('/', File.separatorChar)).toString());
+            doc.setFilePath(doc.getArchivOrdner());
 
             // DataAccessService.update expects an object previously inserted or loaded
             dataAccessService.update(doc);
@@ -186,11 +182,12 @@ public class DocumentService {
      */
     @Transactional
     public int deleteMissingNewDocuments() {
+        Path inbox = Paths.get(fileSystemService.getBaseDir());
         List<DocumentDataObject> docs = getAllNewDocuments();
         int deleted = 0;
         for (DocumentDataObject d : docs) {
             try {
-                Path path = Paths.get(d.getFilePath(), d.getFileName());
+                Path path = resolvePath(d.getFilePath(), d.getFileName());
                 if (!Files.exists(path)) {
                     dataAccessService.delete(d);
                     deleted++;
@@ -200,5 +197,9 @@ public class DocumentService {
             }
         }
         return deleted;
+    }
+
+    private Path resolvePath(String storedFilePath, String fileName) {
+        return Paths.get(fileSystemService.getBaseDir(), storedFilePath, fileName);
     }
 }
