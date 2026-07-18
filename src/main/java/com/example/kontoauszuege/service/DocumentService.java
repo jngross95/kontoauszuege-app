@@ -166,20 +166,13 @@ public class DocumentService {
      */
     @Transactional
     public boolean deleteDocument(String pk) {
-        if (pk == null) return false;
-        List<DocumentDataObject> all = getAllNewDocuments();
-        for (DocumentDataObject d : all) {
-            if (pk.equals(d.getPk())) {
-                try {
-                    dataAccessService.delete(d);
-                    return true;
-                } catch (Exception e) {
-                    LOG.warn("Fehler beim Löschen von pk={}: {}", pk, e.toString());
-                    return false;
-                }
-            }
+        try {
+            dataAccessService.delete(this.getByPk(pk));
+            return true;
+        } catch (Exception e) {
+            LOG.warn("Fehler beim Löschen von pk={}: {}", pk, e.toString());
+            return false;
         }
-        return false;
     }
 
     /**

@@ -1,10 +1,15 @@
 package com.example.kontoauszuege.view;
 
 import com.example.kontoauszuege.model.DocumentDataObject;
-import com.example.kontoauszuege.model.DocumentState;
 import com.example.kontoauszuege.service.DocumentService;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -22,6 +27,8 @@ public class DokumenteView extends VerticalLayout {
 
     private final DocumentService documentService;
     private final Grid<DocumentDataObject> grid = new Grid<>(DocumentDataObject.class, false);
+    private DocumentDataObject selected = null;
+    private Button entfernenBtn;
 
     @Autowired
     public DokumenteView(DocumentService documentService) {
@@ -32,12 +39,30 @@ public class DokumenteView extends VerticalLayout {
         setSpacing(false);
         addClassName("dokumente-view");
 
+        add(createToolbar());
         configureGrid();
         add(new Hr(), grid);
         setFlexGrow(1, grid);
 
         loadData();
     }
+
+    // ── Toolbar ───────────────────────────────────────────────────────────
+
+    private HorizontalLayout createToolbar() {
+        entfernenBtn = new Button("Entfernen", VaadinIcon.TRASH.create(), e -> entfernen());
+        entfernenBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        entfernenBtn.setEnabled(false);
+
+        HorizontalLayout toolbar = new HorizontalLayout(entfernenBtn);
+        toolbar.setAlignItems(FlexComponent.Alignment.CENTER);
+        toolbar.setPadding(false);
+        toolbar.setSpacing(true);
+        toolbar.getStyle().set("padding-bottom", "var(--lumo-space-s)");
+        return toolbar;
+    }
+
+    // ── Grid ──────────────────────────────────────────────────────────────
 
     private void configureGrid() {
         grid.addColumn(doc -> doc.getState() != null ? doc.getState().name() : "")
@@ -64,6 +89,31 @@ public class DokumenteView extends VerticalLayout {
                 .setAutoWidth(true);
 
         grid.setWidthFull();
+        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        grid.addSelectionListener(e -> {
+            selected = e.getFirstSelectedItem().orElse(null);
+            updateActionButtons();
+        });
+    }
+
+    // ── Aktionen ──────────────────────────────────────────────────────────
+
+    private void entfernen() {
+        if (selected == null) {
+            Notification.show("Bitte zuerst ein Dokument auswählen.",
+                    2500, Notification.Position.MIDDLE);
+            return;
+        }
+        documentService.deleteDocument(selected.getPk());
+        selected = null;
+        updateActionButtons();
+        loadData();
+    }
+
+    private void updateActionButtons() {
+        if (entfernenBtn != null) {
+            entfernenBtn.setEnabled(selected != null);
+        }
     }
 
     private void loadData() {
