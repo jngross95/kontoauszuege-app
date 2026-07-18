@@ -23,10 +23,10 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import com.example.kontoauszuege.service.FileSystemService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Route(value = "archivieren", layout = MainLayout.class)
 @PageTitle("Archivieren")
@@ -51,9 +51,12 @@ public class ArchivierenView extends VerticalLayout {
     private final java.util.Map<String, java.util.List<String>> ordnerChildren = new java.util.HashMap<>();
     private String selectedFolderPath = null;
 
+    private final FileSystemService fileSystemService;
+
     @Autowired
-    public ArchivierenView(DocumentService documentService) {
+    public ArchivierenView(DocumentService documentService, FileSystemService fileSystemService) {
         this.documentService = documentService;
+        this.fileSystemService = fileSystemService;
 
         setSizeFull();
         setPadding(true);
@@ -82,17 +85,13 @@ public class ArchivierenView extends VerticalLayout {
         attributesPanel.setWidth("35%");
         attributesPanel.setHeightFull();
 
-        // configure Ordner tree (hierarchische Ansicht)
-        ordnerChildren.put("KG", Arrays.asList("KG/Pirckheimer", "KG/Schwalbennest"));
-        ordnerChildren.put("Jürgen", Arrays.asList("Jürgen/Gesundheit", "Jürgen/Rente"));
-
-        java.util.List<String> roots = Arrays.asList("KG", "Jürgen");
+        // configure Ordner tree (hierarchische Ansicht) from FileSystemService
+        rebuildOrdnerTree();
         ordnerTree.addHierarchyColumn(item -> {
             if (item == null) return "";
             if (item.contains("/")) return item.substring(item.lastIndexOf('/') + 1);
             return item;
         }).setHeader("Ordner");
-        ordnerTree.setItems(roots, item -> ordnerChildren.getOrDefault(item, java.util.Collections.emptyList()));
         ordnerTree.setWidthFull();
         ordnerTree.setHeight("320px");
 
@@ -131,6 +130,11 @@ public class ArchivierenView extends VerticalLayout {
 
         // open dialog when clicking the field (use element click listener)
         ordnerField.getElement().addEventListener("click", evt -> ordnerDialog.open());
+        ordnerDialog.addOpenedChangeListener(ev -> {
+            if (ev.isOpened()) {
+                rebuildOrdnerTree();
+            }
+        });
 
         HorizontalLayout main = new HorizontalLayout(pdfFrame, attributesPanel);
         // allow children to grow to available space without forcing overflow
@@ -159,6 +163,29 @@ public class ArchivierenView extends VerticalLayout {
         documents = documentService.getAllNewDocuments();
         currentIndex = 0;
         updateView();
+    }
+
+    private void rebuildOrdnerTree() {
+        ordnerChildren.clear();
+        java.util.List<String> subs = fileSystemService.getSubDirectories();
+        java.util.Set<String> rootsSet = new java.util.LinkedHashSet<>();
+        for (String p : subs) {
+            String[] parts = p.split("/");
+            if (parts.length == 0) continue;
+            rootsSet.add(parts[0]);
+            String parent = parts[0];
+            for (int i = 1; i < parts.length; i++) {
+                String child = parent + "/" + parts[i];
+                java.util.List<String> children = ordnerChildren.computeIfAbsent(parent, k -> new java.util.ArrayList<>());
+                // avoid adding the same child multiple times
+                if (!children.contains(child)) {
+                    children.add(child);
+                }
+                parent = child;
+            }
+        }
+        java.util.List<String> roots = new java.util.ArrayList<>(rootsSet);
+        ordnerTree.setItems(roots, item -> ordnerChildren.getOrDefault(item, java.util.Collections.emptyList()));
     }
 
     private void updateView() {
