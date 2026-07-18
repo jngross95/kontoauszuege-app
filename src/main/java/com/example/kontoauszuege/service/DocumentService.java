@@ -227,9 +227,10 @@ public class DocumentService {
                     String newName = guid+"-"+originalName;
                     target = inbox.resolve(newName);
                 }
-                Files.move(source, target, StandardCopyOption.ATOMIC_MOVE);
+                Files.copy(source, target);
             }
             dataAccessService.delete(doc);
+            Files.delete(source);
             return true;
         } catch (Exception e) {
             LOG.warn("Fehler beim Dearchivieren von pk={}: {}", pk, e.toString());
