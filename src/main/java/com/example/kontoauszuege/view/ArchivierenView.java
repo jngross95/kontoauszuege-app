@@ -332,6 +332,8 @@ public class ArchivierenView extends VerticalLayout {
         if (documents == null || documents.isEmpty()) return;
         DocumentDataObject current = documents.get(currentIndex);
         current.setDatum(archivDatumPicker.getValue());
+        current.setArchivDateiname(archivDateinameCombo.getValue());
+        current.setArchivOrdner(archivOrdnerField.getValue());
         try {
             documentService.archiveDocument(current);
         } catch (Exception e) {

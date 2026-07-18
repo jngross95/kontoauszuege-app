@@ -131,6 +131,8 @@ public class DocumentService {
         if (doc == null) return;
         try {
             doc.setState(DocumentState.ARCHIVED);
+
+
             // DataAccessService.update expects an object previously inserted or loaded
             dataAccessService.update(doc);
         } catch (Exception e) {
