@@ -116,7 +116,8 @@ public class DocumentService {
                     DocumentDataObject doc = new DocumentDataObject();
                     doc.setFileName(fname);
                     Path parent = p.toAbsolutePath().normalize().getParent();
-                    Path relParent = inbox.toAbsolutePath().normalize().relativize(parent);
+                    var baseDir = Path.of(this.fileSystemService.getBaseDir());
+                    Path relParent = baseDir.toAbsolutePath().normalize().relativize(parent);
                     doc.setFilePath(relParent.toString().replace(File.separatorChar, '/'));
                     doc.setState(DocumentState.NEW);
                     doc.setFileModifyDate(Files.getLastModifiedTime(p).toInstant());
@@ -140,10 +141,6 @@ public class DocumentService {
         if (doc == null) return;
         try {
             doc.setState(DocumentState.ARCHIVED);
-            doc.setFileName(doc.getArchivDateiname());
-
-            doc.setFilePath(doc.getArchivOrdner());
-
             // DataAccessService.update expects an object previously inserted or loaded
             dataAccessService.update(doc);
         } catch (Exception e) {

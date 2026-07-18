@@ -275,8 +275,8 @@ public class ArchivierenView extends VerticalLayout {
 
         //attributesPanel.removeAll();
         // restore previously selected folder (if any)
-        if(current.getArchivOrdner() != null) {
-            selectedFolderPath = String.valueOf(current.getArchivOrdner());
+        if(current.getFilePath()!= null) {
+            selectedFolderPath = current.getFilePath();
             archivOrdnerField.setValue(selectedFolderPath);
         } else {
             selectedFolderPath = null;
@@ -285,10 +285,6 @@ public class ArchivierenView extends VerticalLayout {
 
         // if folder was restored from attributes, update filename suggestions
         updateArchivDateiSuggestions(selectedFolderPath);
-        // prefill filename: use saved attribute, then original filename, then default
-        if (current.getArchivDateiname() != null) {
-           archivDateinameCombo.setValue(current.getArchivDateiname());
-        }
 
         // restore datum; fall back to fileModifyDate if not set
         if (current.getDatum() != null) {
@@ -300,11 +296,11 @@ public class ArchivierenView extends VerticalLayout {
             archivDatumPicker.clear();
         }
 
-        var archivDateiname = archivDateinameCombo.getValue();
-        if (archivDateiname == null || !archivDateiname.isBlank()) {
-            if (current.getFileName() != null && !current.getFileName().isBlank()) {
-                archivDateinameCombo.setValue(current.getFileName());
-            } 
+        String archivDateiname = archivDateinameCombo.getValue();
+        if ((archivDateiname == null || archivDateiname.isBlank())
+                && current.getFileName() != null
+                && !current.getFileName().isBlank()) {
+            archivDateinameCombo.setValue(current.getFileName());
         }
 
         leftBtn.setEnabled(currentIndex > 0);
@@ -332,8 +328,8 @@ public class ArchivierenView extends VerticalLayout {
         if (documents == null || documents.isEmpty()) return;
         DocumentDataObject current = documents.get(currentIndex);
         current.setDatum(archivDatumPicker.getValue());
-        current.setArchivDateiname(archivDateinameCombo.getValue());
-        current.setArchivOrdner(archivOrdnerField.getValue());
+        current.setFileName(archivDateinameCombo.getValue());
+        current.setFilePath(archivOrdnerField.getValue());
         try {
             documentService.archiveDocument(current);
         } catch (Exception e) {

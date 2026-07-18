@@ -45,13 +45,13 @@ public class DokumenteView extends VerticalLayout {
                 .setSortable(true)
                 .setAutoWidth(true);
 
-        grid.addColumn(DocumentDataObject::getArchivOrdner)
-                .setHeader("Archiv-Ordner")
+        grid.addColumn(DocumentDataObject::getFilePath)
+                .setHeader("Ordner")
                 .setSortable(true)
                 .setAutoWidth(true);
 
-        grid.addColumn(DocumentDataObject::getArchivDateiname)
-                .setHeader("Archiv-Dateiname")
+        grid.addColumn(DocumentDataObject::getFileName)
+                .setHeader("Dateiname")
                 .setSortable(true)
                 .setAutoWidth(true);
 

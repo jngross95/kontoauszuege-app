@@ -51,22 +51,6 @@ public class DocumentDataObject extends DataObject {
         this.fileModifyDate = fileModifyDate;
     }
 
-    public String getArchivDateiname() {
-        return archivDateiname;
-    }
-
-    public void setArchivDateiname(String archivDateiname) {
-        this.archivDateiname = archivDateiname;
-    }
-
-    public String getArchivOrdner() {
-        return archivOrdner;
-    }
-
-    public void setArchivOrdner(String archivOrdner) {
-        this.archivOrdner = archivOrdner;
-    }
-
     public LocalDate getDatum() {
         return datum;
     }
