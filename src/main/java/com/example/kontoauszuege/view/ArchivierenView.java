@@ -167,9 +167,10 @@ public class ArchivierenView extends VerticalLayout {
 
     private void rebuildOrdnerTree() {
         ordnerChildren.clear();
-        java.util.List<String> subs = fileSystemService.getSubDirectories();
-        java.util.Set<String> rootsSet = new java.util.LinkedHashSet<>();
-        for (String p : subs) {
+        // deduplicate and sort all subdirectory paths
+        java.util.Set<String> subsSet = new java.util.TreeSet<>(fileSystemService.getSubDirectories());
+        java.util.Set<String> rootsSet = new java.util.TreeSet<>();
+        for (String p : subsSet) {
             String[] parts = p.split("/");
             if (parts.length == 0) continue;
             rootsSet.add(parts[0]);
@@ -184,7 +185,18 @@ public class ArchivierenView extends VerticalLayout {
                 parent = child;
             }
         }
+        // sort children lists by their final path segment (folder name)
+        for (java.util.Map.Entry<String, java.util.List<String>> en : ordnerChildren.entrySet()) {
+            en.getValue().sort((a, b) -> {
+                String na = a.contains("/") ? a.substring(a.lastIndexOf('/') + 1) : a;
+                String nb = b.contains("/") ? b.substring(b.lastIndexOf('/') + 1) : b;
+                return na.compareToIgnoreCase(nb);
+            });
+        }
+
+        // create sorted roots list (by name)
         java.util.List<String> roots = new java.util.ArrayList<>(rootsSet);
+        roots.sort(String::compareToIgnoreCase);
         ordnerTree.setItems(roots, item -> ordnerChildren.getOrDefault(item, java.util.Collections.emptyList()));
     }
 
