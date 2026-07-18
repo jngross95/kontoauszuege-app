@@ -3,6 +3,7 @@ package com.example.kontoauszuege.model;
 import com.example.kontoauszuege.service.DataAccess.DataObject;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ public class DocumentDataObject extends DataObject {
     private Instant fileModifyDate;
     private String archivDateiname;
     private String archivOrdner;
+    private LocalDate datum;
 
     public String getFileName() {
         return fileName;
@@ -54,5 +56,13 @@ public class DocumentDataObject extends DataObject {
 
     public void setArchivOrdner(String archivOrdner) {
         this.archivOrdner = archivOrdner;
+    }
+
+    public LocalDate getDatum() {
+        return datum;
+    }
+
+    public void setDatum(LocalDate datum) {
+        this.datum = datum;
     }
 }
