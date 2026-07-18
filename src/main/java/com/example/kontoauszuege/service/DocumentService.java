@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,9 +25,11 @@ public class DocumentService {
     private static final Logger LOG = LoggerFactory.getLogger(DocumentService.class);
 
     private final DataAccessService dataAccessService;
+    private final FileSystemService fileSystemService;
 
-    public DocumentService(DataAccessService dataAccessService) {
+    public DocumentService(DataAccessService dataAccessService, FileSystemService fileSystemService) {
         this.dataAccessService = dataAccessService;
+        this.fileSystemService = fileSystemService;
     }
 
     @Transactional(readOnly = true)
@@ -131,7 +134,19 @@ public class DocumentService {
         if (doc == null) return;
         try {
             doc.setState(DocumentState.ARCHIVED);
+            if(doc.getArchivDateiname() == null || doc.getArchivDateiname().isBlank())
+                throw new RuntimeException("Archiv Ordner nmicht gesetzt");
 
+            doc.setFileName(doc.getArchivDateiname());
+            String basePath = fileSystemService.getBaseDir();
+            String relativeFolder = doc.getArchivOrdner();
+            if(relativeFolder == null || relativeFolder.isBlank())
+                throw new RuntimeException("Archiv Ordner nicht gesetzt");
+
+            doc.setFilePath(
+                    Paths.get(
+                            basePath,
+                            relativeFolder.replace('/', File.separatorChar)).toString());
 
             // DataAccessService.update expects an object previously inserted or loaded
             dataAccessService.update(doc);
