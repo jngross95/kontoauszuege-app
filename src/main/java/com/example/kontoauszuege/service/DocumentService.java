@@ -147,7 +147,7 @@ public class DocumentService {
                 if(Files.exists(newFile)) {
                     throw new IllegalStateException("Die Datei newFile existiert bereits: " + newFile.toAbsolutePath().toString());
                 }
-                Files.copy(actualFile, newFile);
+                Files.copy(actualFile, newFile, StandardCopyOption.COPY_ATTRIBUTES);
             }
             doc.setState(DocumentState.ARCHIVED);
             // DataAccessService.update expects an object previously inserted or loaded
@@ -227,7 +227,7 @@ public class DocumentService {
                     String newName = guid+"-"+originalName;
                     target = inbox.resolve(newName);
                 }
-                Files.copy(source, target);
+                Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
             }
             dataAccessService.delete(doc);
             Files.delete(source);
