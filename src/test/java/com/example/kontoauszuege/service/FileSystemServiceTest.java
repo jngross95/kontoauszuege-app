@@ -1,6 +1,7 @@
 package com.example.kontoauszuege.service;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.lang.reflect.Field;
@@ -12,16 +13,25 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FileSystemServiceTest {
 
+    @TempDir
+    Path tempDir;
+
+    private FileSystemService fs;
+
     private void setBaseDir(FileSystemService fs, Path base) throws Exception {
         Field f = FileSystemService.class.getDeclaredField("baseDir");
         f.setAccessible(true);
         f.set(fs, base.toString());
     }
 
-    @Test
-    void copyFile_success(@TempDir Path tempDir) throws Exception {
-        FileSystemService fs = new FileSystemService();
+    @BeforeEach
+    void beforeEach() throws Exception {
+        fs = new FileSystemService();
         setBaseDir(fs, tempDir);
+    }
+
+    @Test
+    void copyFile_success() throws Exception {
 
         // prepare source file (outside baseDir)
         Path source = Files.createTempFile("srcfile", ".txt");
@@ -41,9 +51,7 @@ public class FileSystemServiceTest {
     }
 
     @Test
-    void copyFile_parentMissing_throws(@TempDir Path tempDir) throws Exception {
-        FileSystemService fs = new FileSystemService();
-        setBaseDir(fs, tempDir);
+    void copyFile_parentMissing_throws() throws Exception {
 
         Path source = Files.createTempFile("srcfile", ".txt");
         Files.writeString(source, "x");
@@ -51,14 +59,12 @@ public class FileSystemServiceTest {
         String destRel = "no/such/dir/file.pdf";
 
         IllegalStateException ex = assertThrows(IllegalStateException.class,
-                () -> fs.copyFile(source.toString(), destRel));
+            () -> fs.copyFile(source.toString(), destRel));
         assertTrue(ex.getMessage().contains("Zielverzeichnis existiert nicht"));
     }
 
     @Test
-    void copyFile_destExists_throws(@TempDir Path tempDir) throws Exception {
-        FileSystemService fs = new FileSystemService();
-        setBaseDir(fs, tempDir);
+    void copyFile_destExists_throws() throws Exception {
 
         Path source = Files.createTempFile("srcfile", ".txt");
         Files.writeString(source, "data");
@@ -69,16 +75,13 @@ public class FileSystemServiceTest {
         Files.writeString(dest, "already");
 
         IllegalStateException ex = assertThrows(IllegalStateException.class,
-                () -> fs.copyFile(source.toString(), "kunde/2026/beleg.pdf"));
+            () -> fs.copyFile(source.toString(), "kunde/2026/beleg.pdf"));
         assertTrue(ex.getMessage().contains("Zieldatei existiert bereits"));
         assertTrue(ex.getMessage().contains(dest.toAbsolutePath().toString()));
     }
 
     @Test
-    void copyFile_sourceMissing_throws(@TempDir Path tempDir) throws Exception {
-        FileSystemService fs = new FileSystemService();
-        setBaseDir(fs, tempDir);
-
+    void copyFile_sourceMissing_throws() throws Exception {
         String missing = tempDir.resolve("does-not-exist.txt").toString();
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
