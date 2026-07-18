@@ -13,9 +13,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.ZonedDateTime;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.treegrid.TreeGrid;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -50,6 +47,7 @@ public class ArchivierenView extends VerticalLayout {
     private final com.vaadin.flow.component.dialog.Dialog ordnerDialog = new com.vaadin.flow.component.dialog.Dialog();
     private final java.util.Map<String, java.util.List<String>> ordnerChildren = new java.util.HashMap<>();
     private String selectedFolderPath = null;
+    private boolean restoringSelection = false;
 
     private final FileSystemService fileSystemService;
 
@@ -118,7 +116,9 @@ public class ArchivierenView extends VerticalLayout {
                 // store full path internally and show full path in the field
                 selectedFolderPath = v;
                 ordnerField.setValue(v);
-                ordnerDialog.close();
+                if (!restoringSelection) {
+                    ordnerDialog.close();
+                }
             }
         });
 
@@ -127,6 +127,9 @@ public class ArchivierenView extends VerticalLayout {
         ordnerDialog.addOpenedChangeListener(ev -> {
             if (ev.isOpened()) {
                 rebuildOrdnerTree();
+                if (selectedFolderPath != null && !selectedFolderPath.isBlank()) {
+                    expandAndSelect(selectedFolderPath);
+                }
             }
         });
 
@@ -296,5 +299,20 @@ public class ArchivierenView extends VerticalLayout {
         documents.remove(currentIndex);
         if (currentIndex >= documents.size()) currentIndex = documents.size() - 1;
         updateView();
+    }
+
+    private void expandAndSelect(String path) {
+        // Expand all ancestor nodes so the selected folder is visible
+        String[] parts = path.split("/");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parts.length - 1; i++) {
+            if (i > 0) sb.append("/");
+            sb.append(parts[i]);
+            ordnerTree.expand(sb.toString());
+        }
+        // Programmatically select without triggering the close-dialog side-effect
+        restoringSelection = true;
+        ordnerTree.select(path);
+        restoringSelection = false;
     }
 }
