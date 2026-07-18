@@ -50,7 +50,7 @@ public class DokumenteView extends VerticalLayout {
     // ── Toolbar ───────────────────────────────────────────────────────────
 
     private HorizontalLayout createToolbar() {
-        entfernenBtn = new Button("Entfernen", VaadinIcon.TRASH.create(), e -> entfernen());
+        entfernenBtn = new Button("Unarchive", VaadinIcon.TRASH.create(), e -> entfernen());
         entfernenBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
         entfernenBtn.setEnabled(false);
 
@@ -104,7 +104,7 @@ public class DokumenteView extends VerticalLayout {
                     2500, Notification.Position.MIDDLE);
             return;
         }
-        documentService.deleteDocument(selected.getPk());
+        documentService.unarchiveDocument(selected.getPk());
         selected = null;
         updateActionButtons();
         loadData();

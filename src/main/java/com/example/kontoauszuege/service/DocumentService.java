@@ -182,7 +182,6 @@ public class DocumentService {
      */
     @Transactional
     public int deleteMissingNewDocuments() {
-        Path inbox = Paths.get(fileSystemService.getBaseDir());
         List<DocumentDataObject> docs = getAllNewDocuments();
         int deleted = 0;
         for (DocumentDataObject d : docs) {
@@ -197,6 +196,46 @@ public class DocumentService {
             }
         }
         return deleted;
+    }
+
+    /**
+     * Dearchiviert ein Dokument anhand seines fachlichen Schlüssels (pk).
+     * Falls die Datei auf der Platte existiert, wird sie nach basePath/inbox verschoben.
+     * Anschließend wird der DB-Eintrag gelöscht.
+     *
+     * @return true wenn erfolgreich, false wenn nicht gefunden oder Fehler
+     */
+    @Transactional
+    public boolean unarchiveDocument(String pk) {
+        DocumentDataObject doc = getByPk(pk);
+        if (doc == null) {
+            LOG.warn("unarchiveDocument: kein Dokument mit pk={} gefunden", pk);
+            return false;
+        }
+        if(doc.getState() != DocumentState.ARCHIVED) {
+            throw new RuntimeException("unarchiveDocument: Dokument mit pk=" + pk + " ist nicht ARCHIVED, sondern " + doc.getState());
+        }
+        try {
+            Path source = resolvePath(doc.getFilePath(), doc.getFileName());
+            if (Files.exists(source)) {
+                Path inbox = Paths.get(fileSystemService.getBaseDir(), "inbox");
+                Files.createDirectories(inbox);
+                Path target = inbox.resolve(source.getFileName());
+                if (Files.exists(target)) {
+                    String originalName = source.getFileName().toString();
+                    String guid = java.util.UUID.randomUUID().toString();
+                    String newName = guid+"-"+originalName;
+                    target = inbox.resolve(newName);
+                }
+                Files.move(source, target, StandardCopyOption.ATOMIC_MOVE);
+            }
+            dataAccessService.delete(doc);
+            return true;
+        } catch (Exception e) {
+            LOG.warn("Fehler beim Dearchivieren von pk={}: {}", pk, e.toString());
+            dataAccessService.delete(doc);
+            return false;
+        }
     }
 
     private Path resolvePath(String storedFilePath, String fileName) {
