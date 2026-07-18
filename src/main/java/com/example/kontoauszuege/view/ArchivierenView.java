@@ -314,5 +314,7 @@ public class ArchivierenView extends VerticalLayout {
         restoringSelection = true;
         ordnerTree.select(path);
         restoringSelection = false;
+        // Scroll so the selected entry is visible
+        ordnerTree.scrollToItem(path);
     }
 }
