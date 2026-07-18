@@ -10,6 +10,7 @@ import java.util.Map;
 public class DocumentDataObject extends DataObject {
 
     private String fileName;
+    private String filePath;
     private DocumentState state = DocumentState.NEW;
     private Map<String, Object> attributes = new HashMap<>();
     // Zeitstempel der letzten Änderung der Datei (vom Dateisystem)
@@ -24,6 +25,14 @@ public class DocumentDataObject extends DataObject {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public DocumentState getState() {

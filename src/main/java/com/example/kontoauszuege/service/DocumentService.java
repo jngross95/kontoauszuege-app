@@ -94,6 +94,7 @@ public class DocumentService {
 
                     DocumentDataObject doc = new DocumentDataObject();
                     doc.setFileName(fname);
+                    doc.setFilePath(p.toAbsolutePath().getParent().toString());
                     doc.setState(DocumentState.NEW);
                     doc.setFileModifyDate(Files.getLastModifiedTime(p).toInstant());
 
@@ -158,7 +159,7 @@ public class DocumentService {
         int deleted = 0;
         for (DocumentDataObject d : docs) {
             try {
-                Path path = Paths.get(d.getFileName());
+                Path path = Paths.get(d.getFilePath(), d.getFileName());
                 if (!Files.exists(path)) {
                     dataAccessService.delete(d);
                     deleted++;

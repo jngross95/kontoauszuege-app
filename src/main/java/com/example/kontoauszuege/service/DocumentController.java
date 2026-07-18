@@ -30,11 +30,11 @@ public class DocumentController {
     @GetMapping(value = "/pdf/{pk}")
     public ResponseEntity<InputStreamResource> getPdfByPk(@PathVariable String pk) throws IOException {
         DocumentDataObject doc = documentService.getByPk(pk);
-        if (doc == null || doc.getFileName() == null) {
+        if (doc == null || doc.getFilePath() == null || doc.getFileName() == null) {
             return ResponseEntity.notFound().build();
         }
 
-        Path file = Paths.get(doc.getFileName());
+        Path file = Paths.get(doc.getFilePath(), doc.getFileName());
         if (!Files.exists(file) || !Files.isRegularFile(file)) {
             return ResponseEntity.notFound().build();
         }
@@ -54,11 +54,11 @@ public class DocumentController {
                                                      @RequestParam("yTo") double yTo,
                                                      @RequestParam(value = "page", required = false, defaultValue = "1") int page) throws IOException {
         DocumentDataObject doc = documentService.getByPk(pk);
-        if (doc == null || doc.getFileName() == null) {
+        if (doc == null || doc.getFilePath() == null || doc.getFileName() == null) {
             return ResponseEntity.notFound().build();
         }
 
-        Path file = Paths.get(System.getProperty("user.home"), ".jbanking", "inbox", doc.getFileName());
+        Path file = Paths.get(doc.getFilePath(), doc.getFileName());
         if (!Files.exists(file) || !Files.isRegularFile(file)) {
             return ResponseEntity.notFound().build();
         }
