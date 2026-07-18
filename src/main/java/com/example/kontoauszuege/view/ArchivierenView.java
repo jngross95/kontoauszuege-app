@@ -8,6 +8,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.ZonedDateTime;
@@ -99,7 +101,7 @@ public class ArchivierenView extends VerticalLayout {
         ordnerTree.setHeight("320px");
 
         // configure archivOrdnerField (read-only input that opens the tree dialog)
-        archivOrdnerField.setLabel("Archiv-Ordner");
+        archivOrdnerField.setLabel("Ordner");
         archivOrdnerField.setReadOnly(true);
         archivOrdnerField.setWidthFull();
 
@@ -114,7 +116,7 @@ public class ArchivierenView extends VerticalLayout {
         archivOrdnerDialog.add(dlgLayout);
 
         // configure archivDateiname ComboBox (allow custom text + suggestions)
-        archivDateinameCombo.setLabel("Archiv-Dateiname");
+        archivDateinameCombo.setLabel("Dateiname");
         archivDateinameCombo.setAllowCustomValue(true);
         archivDateinameCombo.setWidthFull();
         archivDateinameCombo.addCustomValueSetListener(evt -> archivDateinameCombo.setValue(evt.getDetail()));
@@ -332,12 +334,28 @@ public class ArchivierenView extends VerticalLayout {
         current.setFilePath(archivOrdnerField.getValue());
         try {
             documentService.archiveDocument(current);
-        } catch (Exception e) {
-            // ignore for now; could show notification
+            documents.remove(currentIndex);
+            if (currentIndex >= documents.size()) currentIndex = documents.size() - 1;
+            updateView();
+        } catch (RuntimeException e) {
+            Notification error = Notification.show(
+                    "Fehler beim Archivieren: " + getErrorMessage(e),
+                    5000,
+                    Notification.Position.MIDDLE
+            );
+            error.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
-        documents.remove(currentIndex);
-        if (currentIndex >= documents.size()) currentIndex = documents.size() - 1;
-        updateView();
+    }
+
+    private String getErrorMessage(Throwable throwable) {
+        if (throwable == null) return "Unbekannter Fehler";
+        String message = throwable.getMessage();
+        if (message != null && !message.isBlank()) return message;
+        Throwable cause = throwable.getCause();
+        if (cause != null && cause.getMessage() != null && !cause.getMessage().isBlank()) {
+            return cause.getMessage();
+        }
+        return throwable.getClass().getSimpleName();
     }
 
     private void expandAndSelect(String path) {

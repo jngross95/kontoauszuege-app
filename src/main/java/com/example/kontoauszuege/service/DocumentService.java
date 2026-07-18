@@ -140,12 +140,12 @@ public class DocumentService {
         try {
             var actual = this.getByPk(doc.getPk());
 
-            if(actual.getFilePath().equals("inbox")) {
-                throw new IllegalStateException("in den inbox Ordner darf nicht ariviert werden. Bitte wähle einen anderen Ordner ");
-            }
-
             var actualFile = resolvePath(actual.getFilePath(), actual.getFileName());
             var newFile = resolvePath(doc.getFilePath(), doc.getFileName());
+
+            if(doc.getFilePath().equals("inbox")) {
+                throw new IllegalStateException("in den inbox Ordner darf nicht ariviert werden. Bitte wähle einen anderen Ordner ");
+            }
 
             if(!actualFile.equals(newFile)) {
                 // copy the file on disk

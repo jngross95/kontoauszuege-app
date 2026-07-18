@@ -8,6 +8,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -104,10 +105,40 @@ public class DokumenteView extends VerticalLayout {
                     2500, Notification.Position.MIDDLE);
             return;
         }
-        documentService.unarchiveDocument(selected.getPk());
+        try {
+            boolean success = documentService.unarchiveDocument(selected.getPk());
+            if (!success) {
+                Notification error = Notification.show(
+                        "Fehler beim Dearchivieren. Details bitte im Server-Log prüfen.",
+                        5000,
+                        Notification.Position.MIDDLE
+                );
+                error.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                return;
+            }
+        } catch (RuntimeException ex) {
+            Notification error = Notification.show(
+                    "Fehler beim Dearchivieren: " + getErrorMessage(ex),
+                    5000,
+                    Notification.Position.MIDDLE
+            );
+            error.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return;
+        }
         selected = null;
         updateActionButtons();
         loadData();
+    }
+
+    private String getErrorMessage(Throwable throwable) {
+        if (throwable == null) return "Unbekannter Fehler";
+        String message = throwable.getMessage();
+        if (message != null && !message.isBlank()) return message;
+        Throwable cause = throwable.getCause();
+        if (cause != null && cause.getMessage() != null && !cause.getMessage().isBlank()) {
+            return cause.getMessage();
+        }
+        return throwable.getClass().getSimpleName();
     }
 
     private void updateActionButtons() {
