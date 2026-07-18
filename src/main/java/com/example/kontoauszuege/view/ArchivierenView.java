@@ -126,8 +126,12 @@ public class ArchivierenView extends VerticalLayout {
                 // store full path internally and show full path in the field
                 selectedFolderPath = v;
                 archivOrdnerField.setValue(v);
-                // update filename suggestions for the newly selected folder
+                // update filename suggestions for the newly selected folder (preserve current value)
+                String previousFilename = archivDateinameCombo.getValue();
                 updateArchivDateiSuggestions(v);
+                if (previousFilename != null && !previousFilename.isBlank()) {
+                    archivDateinameCombo.setValue(previousFilename);
+                }
                 if (!restoringSelection) {
                     archivOrdnerDialog.close();
                 }
