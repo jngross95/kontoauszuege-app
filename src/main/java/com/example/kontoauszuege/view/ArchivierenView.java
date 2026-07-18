@@ -110,21 +110,15 @@ public class ArchivierenView extends VerticalLayout {
         dlgLayout.add(ordnerTree);
         ordnerDialog.add(dlgLayout);
 
-        // selection: only accept leaf nodes (nodes without children)
+        // selection: accept any node (including non-leaf). Selecting sets the folder.
         ordnerTree.addSelectionListener(e -> {
             java.util.Optional<String> sel = e.getFirstSelectedItem();
             if (sel.isPresent()) {
                 String v = sel.get();
-                boolean isLeaf = !ordnerChildren.containsKey(v);
-                if (isLeaf) {
-                    // store full path internally and show full path in the field
-                    selectedFolderPath = v;
-                    ordnerField.setValue(v);
-                    ordnerDialog.close();
-                } else {
-                    // toggle expansion for parent nodes
-                    if (ordnerTree.isExpanded(v)) ordnerTree.collapse(v); else ordnerTree.expand(v);
-                }
+                // store full path internally and show full path in the field
+                selectedFolderPath = v;
+                ordnerField.setValue(v);
+                ordnerDialog.close();
             }
         });
 
