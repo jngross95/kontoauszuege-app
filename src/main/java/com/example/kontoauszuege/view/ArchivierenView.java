@@ -20,6 +20,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.kontoauszuege.service.FileSystemService;
@@ -144,19 +145,22 @@ public class ArchivierenView extends VerticalLayout {
             }
         });
 
-        HorizontalLayout main = new HorizontalLayout(pdfFrame, attributesPanel);
+        SplitLayout split = new SplitLayout(pdfFrame, attributesPanel);
         // allow children to grow to available space without forcing overflow
-        main.getStyle().set("min-height", "0");
+        split.getStyle().set("min-height", "0");
         pdfFrame.getStyle().set("min-height", "0");
         attributesPanel.getStyle().set("min-height", "0");
-        main.setSizeFull();
-        main.setFlexGrow(1, pdfFrame);
-        main.setFlexGrow(0, attributesPanel);
-        // add toolbar and main together and expand main to consume remaining vertical space
-        add(toolbar, main);
+        split.setSizeFull();
+        // default: viewer 65% / attributes 35%
+        try {
+            split.setSplitterPosition(65);
+        } catch (Exception ignore) {
+        }
+        // add toolbar and split together and expand split to consume remaining vertical space
+        add(toolbar, split);
         // attach dialog to this view so it's part of the UI tree
         add(archivOrdnerDialog);
-        expand(main);
+        expand(split);
 
         leftBtn.addClickListener(e -> showPrevious());
         rightBtn.addClickListener(e -> showNext());
