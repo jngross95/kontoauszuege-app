@@ -14,7 +14,7 @@ public class FileSystemServiceTest {
     @Test
     void getSubDirectories_returnsRelativePaths() throws Exception {
         // create temp directory structure
-        Path root = Files.createTempDirectory("fsstest");
+        Path root = Files.createTempDirectory("fsstest-test");
         try {
             Path d1 = root.resolve("juergen").resolve("dir1");
             Files.createDirectories(d1);
@@ -37,7 +37,8 @@ public class FileSystemServiceTest {
             assertTrue(subs.contains("kg/w1"), "missing kg/w1");
         } finally {
             // cleanup
-            Files.walk(root)
+                Files.walk(root)
+                    .filter(x -> x.getFileName().toString().contains("fsstest-test"))
                     .sorted((a, b) -> b.compareTo(a))
                     .forEach(p -> {
                         try { Files.deleteIfExists(p); } catch (Exception ignored) {}
