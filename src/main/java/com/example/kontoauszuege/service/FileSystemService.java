@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.nio.file.StandardCopyOption;
 
 @Service
 public class FileSystemService {
@@ -104,7 +103,13 @@ public class FileSystemService {
             if (parent != null && (!Files.exists(parent) || !Files.isDirectory(parent))) {
                 throw new IllegalStateException("Zielverzeichnis existiert nicht: " + parent);
             }
-            Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING);
+
+            // do not overwrite existing files: fail if destination exists
+            if (Files.exists(dest)) {
+                throw new IllegalStateException("Zieldatei existiert bereits: " + dest.toAbsolutePath().toString());
+            }
+
+            Files.copy(source, dest);
         } catch (IOException e) {
             throw new IllegalStateException("Fehler beim Kopieren von " + sourceAbsoluteFileName + " nach " + dest, e);
         }
