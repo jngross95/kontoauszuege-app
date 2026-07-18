@@ -72,6 +72,20 @@ public class DocumentService {
 
         // collect existing filenames of NEW documents to avoid duplicate imports
         List<DocumentDataObject> existing = getAllNewDocuments();
+
+        // Lösche DB-Einträge, deren Datei nicht mehr auf der Platte existiert
+        existing.removeIf(d -> {
+            if (d.getFilePath() == null || d.getFileName() == null || !Files.exists(Paths.get(d.getFilePath(), d.getFileName()))) {
+                try {
+                    dataAccessService.delete(d);
+                } catch (Exception e) {
+                    LOG.warn("Fehler beim Löschen von fehlendem Dokument {}", d.getPk());
+                }
+                return true;
+            }
+            return false;
+        });
+
         Set<String> existingNames = existing.stream()
                 .map(DocumentDataObject::getFileName)
                 .filter(n -> n != null)
