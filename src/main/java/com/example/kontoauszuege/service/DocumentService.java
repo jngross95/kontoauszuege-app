@@ -139,6 +139,11 @@ public class DocumentService {
         if (doc == null) return;
         try {
             var actual = this.getByPk(doc.getPk());
+
+            if(actual.getFilePath().equals("inbox")) {
+                throw new IllegalStateException("in den inbox Ordner darf nicht ariviert werden. Bitte wähle einen anderen Ordner ");
+            }
+
             var actualFile = resolvePath(actual.getFilePath(), actual.getFileName());
             var newFile = resolvePath(doc.getFilePath(), doc.getFileName());
 
@@ -152,7 +157,10 @@ public class DocumentService {
             doc.setState(DocumentState.ARCHIVED);
             // DataAccessService.update expects an object previously inserted or loaded
             dataAccessService.update(doc);
-            Files.delete(actualFile);
+
+            if(!actualFile.equals(newFile)) {
+                Files.delete(actualFile);
+            }
         } catch (Exception e) {
             LOG.warn("Fehler beim Archivieren von {}: {}", doc, e.toString());
             throw new RuntimeException(e);
@@ -227,9 +235,12 @@ public class DocumentService {
                     String newName = guid+"-"+originalName;
                     target = inbox.resolve(newName);
                 }
+
                 Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
             }
             dataAccessService.delete(doc);
+
+
             Files.delete(source);
             return true;
         } catch (Exception e) {
