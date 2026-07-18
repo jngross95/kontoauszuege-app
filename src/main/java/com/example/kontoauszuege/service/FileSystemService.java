@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.nio.file.StandardCopyOption;
 
 @Service
 public class FileSystemService {
@@ -75,6 +76,37 @@ public class FileSystemService {
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new IllegalStateException("Fehler beim Durchsuchen des Verzeichnisses: " + baseDir, e);
+        }
+    }
+
+    /**
+     * Kopiert eine Datei von einem absoluten Quell-Pfad in den Zielpfad
+     * relativ zum konfigurierten `baseDir`.
+     *
+     * @param sourceAbsoluteFileName absolute Pfad zur Quelldatei
+     * @param destFileName Ziel-Dateiname mit relativem Pfad (z.B. "kunde/2026/beleg.pdf")
+     */
+    public void copyFile(String sourceAbsoluteFileName, String destFileName) {
+        Objects.requireNonNull(sourceAbsoluteFileName, "sourceAbsoluteFileName must not be null");
+        Objects.requireNonNull(destFileName, "destFileName must not be null");
+
+        Path root = Paths.get(baseDir);
+        Path source = Paths.get(sourceAbsoluteFileName);
+        if (!Files.exists(source) || !Files.isRegularFile(source)) {
+            throw new IllegalArgumentException("Quelldatei existiert nicht oder ist keine Datei: " + sourceAbsoluteFileName);
+        }
+
+        Path dest = root.resolve(destFileName.replace('/', File.separatorChar)).normalize();
+
+        try {
+            // require that target parent directory already exists
+            Path parent = dest.getParent();
+            if (parent != null && (!Files.exists(parent) || !Files.isDirectory(parent))) {
+                throw new IllegalStateException("Zielverzeichnis existiert nicht: " + parent);
+            }
+            Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new IllegalStateException("Fehler beim Kopieren von " + sourceAbsoluteFileName + " nach " + dest, e);
         }
     }
 
