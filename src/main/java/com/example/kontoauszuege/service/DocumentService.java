@@ -10,9 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
 import java.util.Set;
 import java.util.Comparator;
@@ -140,12 +138,24 @@ public class DocumentService {
     public void archiveDocument(DocumentDataObject doc) {
         if (doc == null) return;
         try {
+            var actual = this.getByPk(doc.getPk());
+            var actualFile = resolvePath(actual.getFilePath(), actual.getFileName());
+            var newFile = resolvePath(doc.getFilePath(), doc.getFileName());
+
+            if(!actualFile.equals(newFile)) {
+                // copy the file on disk
+                if(Files.exists(newFile)) {
+                    throw new IllegalStateException("Die Datei newFile existiert bereits: " + newFile.toAbsolutePath().toString());
+                }
+                Files.copy(actualFile, newFile);
+            }
             doc.setState(DocumentState.ARCHIVED);
             // DataAccessService.update expects an object previously inserted or loaded
             dataAccessService.update(doc);
+            Files.delete(actualFile);
         } catch (Exception e) {
             LOG.warn("Fehler beim Archivieren von {}: {}", doc, e.toString());
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 
