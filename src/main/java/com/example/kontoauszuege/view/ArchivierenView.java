@@ -49,6 +49,7 @@ public class ArchivierenView extends VerticalLayout {
     private final com.vaadin.flow.component.textfield.TextField archivOrdnerField = new com.vaadin.flow.component.textfield.TextField();
     private final com.vaadin.flow.component.dialog.Dialog archivOrdnerDialog = new com.vaadin.flow.component.dialog.Dialog();
     private final com.vaadin.flow.component.combobox.ComboBox<String> archivDateinameCombo = new com.vaadin.flow.component.combobox.ComboBox<>();
+    private final com.vaadin.flow.component.datepicker.DatePicker archivDatumPicker = new com.vaadin.flow.component.datepicker.DatePicker();
     private final java.util.Map<String, java.util.List<String>> ordnerChildren = new java.util.HashMap<>();
     private String selectedFolderPath = null;
     private boolean restoringSelection = false;
@@ -117,6 +118,10 @@ public class ArchivierenView extends VerticalLayout {
         archivDateinameCombo.setAllowCustomValue(true);
         archivDateinameCombo.setWidthFull();
         archivDateinameCombo.addCustomValueSetListener(evt -> archivDateinameCombo.setValue(evt.getDetail()));
+
+        // configure archivDatumPicker
+        archivDatumPicker.setLabel("Datum");
+        archivDatumPicker.setWidthFull();
 
         // selection: accept any node (including non-leaf). Selecting sets the folder.
         ordnerTree.addSelectionListener(e -> {
@@ -253,6 +258,8 @@ public class ArchivierenView extends VerticalLayout {
         attributesPanel.add(archivOrdnerField);
         // add archiv dateiname selector (allows custom value)
         attributesPanel.add(archivDateinameCombo);
+        // add datum picker
+        attributesPanel.add(archivDatumPicker);
         Paragraph p = new Paragraph("Datei: " + (current.getFileName() != null ? current.getFileName() : ""));
         attributesPanel.add(p);
         // show file modification date if available
@@ -281,6 +288,16 @@ public class ArchivierenView extends VerticalLayout {
         // prefill filename: use saved attribute, then original filename, then default
         if (current.getArchivDateiname() != null) {
            archivDateinameCombo.setValue(current.getArchivDateiname());
+        }
+
+        // restore datum; fall back to fileModifyDate if not set
+        if (current.getDatum() != null) {
+            archivDatumPicker.setValue(current.getDatum());
+        } else if (current.getFileModifyDate() != null) {
+            archivDatumPicker.setValue(current.getFileModifyDate()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate());
+        } else {
+            archivDatumPicker.clear();
         }
 
         var archivDateiname = archivDateinameCombo.getValue();
@@ -314,6 +331,7 @@ public class ArchivierenView extends VerticalLayout {
     private void archiveCurrent() {
         if (documents == null || documents.isEmpty()) return;
         DocumentDataObject current = documents.get(currentIndex);
+        current.setDatum(archivDatumPicker.getValue());
         try {
             documentService.archiveDocument(current);
         } catch (Exception e) {
