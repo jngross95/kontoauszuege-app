@@ -15,16 +15,18 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     private final Tabs tabs;
     private final Tab tabKontoauszuege;
     private final Tab tabArchivieren;
+    private final Tab tabDokumente;
     private final Tab tabUeberweisungen;
     private final Tab tabStammdaten;
     
 
     public MainLayout() {
         tabArchivieren = new Tab(new RouterLink("Archivieren", ArchivierenView.class));
+        tabDokumente = new Tab(new RouterLink("Dokumente", DokumenteView.class));
         tabKontoauszuege = new Tab(new RouterLink("Kontoauszüge", KontoauszuegeView.class));
         tabUeberweisungen = new Tab(new RouterLink("Überweisungen", UeberweisungenView.class));
         tabStammdaten   = new Tab(new RouterLink("Stammdaten", StammdatenView.class));
-        tabs = new Tabs(tabArchivieren, tabKontoauszuege, tabUeberweisungen, tabStammdaten);
+        tabs = new Tabs(tabArchivieren, tabDokumente, tabKontoauszuege, tabUeberweisungen, tabStammdaten);
 
         H1 title = new H1("Kontoauszüge App");
         title.getStyle()
@@ -50,6 +52,8 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
             tabs.setSelectedTab(tabStammdaten);
         } else if (path.equals("archivieren")) {
             tabs.setSelectedTab(tabArchivieren);
+        } else if (path.equals("dokumente")) {
+            tabs.setSelectedTab(tabDokumente);
         }
     }
 }

@@ -32,6 +32,14 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
+    public List<DocumentDataObject> getAllDocuments() {
+        return dataAccessService.getAll(DocumentDataObject.class).stream()
+            .sorted(Comparator.comparing(DocumentDataObject::getFileModifyDate,
+                Comparator.nullsLast(Comparator.naturalOrder())))
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<DocumentDataObject> getAllNewDocuments() {
         return dataAccessService.getAll(DocumentDataObject.class).stream()
             .filter(d -> d.getState() == DocumentState.NEW)
