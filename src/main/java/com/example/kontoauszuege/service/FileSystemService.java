@@ -23,6 +23,38 @@ public class FileSystemService {
     }
 
     /**
+     * Liefert die Dateinamen (nur Dateien, keine Verzeichnisse) im angegebenen
+     * relativen Ordner-Pfad. Wenn der übergebene Pfad null oder leer ist,
+     * wird das Basisverzeichnis verwendet.
+     * Rückgabe: sortierte Liste der Dateinamen (ohne Pfad).
+     */
+    public List<String> getFileNames(String relativeFolderPath) {
+        Objects.requireNonNull(baseDir, "baseDir must not be null");
+        Path root = Paths.get(baseDir);
+        if (!Files.exists(root) || !Files.isDirectory(root)) {
+            return List.of();
+        }
+
+        Path folder = (relativeFolderPath == null || relativeFolderPath.isBlank())
+                ? root
+                : root.resolve(relativeFolderPath.replace('/', File.separatorChar));
+
+        if (!Files.exists(folder) || !Files.isDirectory(folder)) {
+            return List.of();
+        }
+
+        try (Stream<Path> stream = Files.list(folder)) {
+            return stream
+                    .filter(Files::isRegularFile)
+                    .map(p -> p.getFileName().toString())
+                    .sorted(String::compareToIgnoreCase)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new IllegalStateException("Fehler beim Lesen des Ordners: " + folder, e);
+        }
+    }
+
+    /**
      * Liefert alle Unterverzeichnisse des basisverzeichnisses rekursiv als
      * relative Pfade (mit '/' als Trenner), z.B. "juergen/dir1", "kg/w1".
      */

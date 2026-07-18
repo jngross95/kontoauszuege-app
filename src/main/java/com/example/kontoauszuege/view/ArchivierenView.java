@@ -19,6 +19,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import com.vaadin.flow.component.combobox.ComboBox;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.kontoauszuege.service.FileSystemService;
 
@@ -45,6 +47,7 @@ public class ArchivierenView extends VerticalLayout {
     private final TreeGrid<String> ordnerTree = new TreeGrid<>();
     private final com.vaadin.flow.component.textfield.TextField archivOrdnerField = new com.vaadin.flow.component.textfield.TextField();
     private final com.vaadin.flow.component.dialog.Dialog archivOrdnerDialog = new com.vaadin.flow.component.dialog.Dialog();
+    private final com.vaadin.flow.component.combobox.ComboBox<String> archivDateinameCombo = new com.vaadin.flow.component.combobox.ComboBox<>();
     private final java.util.Map<String, java.util.List<String>> ordnerChildren = new java.util.HashMap<>();
     private String selectedFolderPath = null;
     private boolean restoringSelection = false;
@@ -108,6 +111,12 @@ public class ArchivierenView extends VerticalLayout {
         dlgLayout.add(ordnerTree);
         archivOrdnerDialog.add(dlgLayout);
 
+        // configure archivDateiname ComboBox (allow custom text + suggestions)
+        archivDateinameCombo.setLabel("Archiv-Dateiname");
+        archivDateinameCombo.setAllowCustomValue(true);
+        archivDateinameCombo.setWidthFull();
+        archivDateinameCombo.addCustomValueSetListener(evt -> archivDateinameCombo.setValue(evt.getDetail()));
+
         // selection: accept any node (including non-leaf). Selecting sets the folder.
         ordnerTree.addSelectionListener(e -> {
             java.util.Optional<String> sel = e.getFirstSelectedItem();
@@ -116,6 +125,8 @@ public class ArchivierenView extends VerticalLayout {
                 // store full path internally and show full path in the field
                 selectedFolderPath = v;
                 archivOrdnerField.setValue(v);
+                // update filename suggestions for the newly selected folder
+                updateArchivDateiSuggestions(v);
                 if (!restoringSelection) {
                     archivOrdnerDialog.close();
                 }
@@ -197,6 +208,20 @@ public class ArchivierenView extends VerticalLayout {
         ordnerTree.setItems(roots, item -> ordnerChildren.getOrDefault(item, java.util.Collections.emptyList()));
     }
 
+    /**
+     * Aktualisiert die Vorschlagsliste für den Archiv-Dateinamen basierend auf
+     * dem relativen Ordnerpfad. Wenn der Pfad null oder leer ist, werden die
+     * Dateien des Basisverzeichnisses vorgeschlagen.
+     */
+    private void updateArchivDateiSuggestions(String relativeFolderPath) {
+        try {
+            java.util.List<String> names = fileSystemService.getFileNames(relativeFolderPath);
+            archivDateinameCombo.setItems(names);
+        } catch (Exception e) {
+            archivDateinameCombo.setItems(java.util.Collections.emptyList());
+        }
+    }
+
     private void updateView() {
         if (documents == null || documents.isEmpty()) {
             // no documents
@@ -218,6 +243,18 @@ public class ArchivierenView extends VerticalLayout {
         attributesPanel.removeAll();
         // add archivOrdner selector at top (read-only field that opens dialog)
         attributesPanel.add(archivOrdnerField);
+        // add archiv dateiname selector (allows custom value)
+        // populate suggestions based on selected folder
+        updateArchivDateiSuggestions(selectedFolderPath);
+        // prefill with existing attribute or original filename
+        if (current.getAttributes() != null && current.getAttributes().containsKey("archivFileName")) {
+            Object afn = current.getAttributes().get("archivFileName");
+            if (afn != null) archivDateinameCombo.setValue(String.valueOf(afn));
+        } else {
+            // default to original filename
+            if (current.getFileName() != null) archivDateinameCombo.setValue(current.getFileName());
+        }
+        attributesPanel.add(archivDateinameCombo);
         Paragraph p = new Paragraph("Datei: " + (current.getFileName() != null ? current.getFileName() : ""));
         attributesPanel.add(p);
         // show file modification date if available
@@ -247,6 +284,9 @@ public class ArchivierenView extends VerticalLayout {
             selectedFolderPath = null;
             archivOrdnerField.clear();
         }
+
+        // if folder was restored from attributes, update filename suggestions
+        updateArchivDateiSuggestions(selectedFolderPath);
 
         if (attrs != null) {
             for (Map.Entry<String, Object> entry : attrs.entrySet()) {
@@ -291,6 +331,14 @@ public class ArchivierenView extends VerticalLayout {
                     if (selectedFolder != null && !selectedFolder.isEmpty()) {
                     current.getAttributes().put("folder", selectedFolder);
                 }
+            }
+            // persist chosen archive filename (if any)
+            try {
+                String chosen = archivDateinameCombo.getValue();
+                if (chosen != null && !chosen.isBlank()) {
+                    current.getAttributes().put("archivFileName", chosen);
+                }
+            } catch (Exception ignore) {
             }
             documentService.archiveDocument(current);
         } catch (Exception e) {
