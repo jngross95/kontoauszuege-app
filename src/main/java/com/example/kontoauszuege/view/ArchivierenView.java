@@ -43,8 +43,8 @@ public class ArchivierenView extends VerticalLayout {
     private final IFrame pdfFrame = new IFrame();
     private final Div attributesPanel = new Div();
     private final TreeGrid<String> ordnerTree = new TreeGrid<>();
-    private final com.vaadin.flow.component.textfield.TextField ordnerField = new com.vaadin.flow.component.textfield.TextField();
-    private final com.vaadin.flow.component.dialog.Dialog ordnerDialog = new com.vaadin.flow.component.dialog.Dialog();
+    private final com.vaadin.flow.component.textfield.TextField archivOrdnerField = new com.vaadin.flow.component.textfield.TextField();
+    private final com.vaadin.flow.component.dialog.Dialog archivOrdnerDialog = new com.vaadin.flow.component.dialog.Dialog();
     private final java.util.Map<String, java.util.List<String>> ordnerChildren = new java.util.HashMap<>();
     private String selectedFolderPath = null;
     private boolean restoringSelection = false;
@@ -89,24 +89,24 @@ public class ArchivierenView extends VerticalLayout {
             if (item == null) return "";
             if (item.contains("/")) return item.substring(item.lastIndexOf('/') + 1);
             return item;
-        }).setHeader("Ordner");
+        }).setHeader("Archiv-Ordner");
         ordnerTree.setWidthFull();
         ordnerTree.setHeight("320px");
 
-        // configure ordnerField (read-only input that opens the tree dialog)
-        ordnerField.setLabel("Ordner");
-        ordnerField.setReadOnly(true);
-        ordnerField.setWidthFull();
+        // configure archivOrdnerField (read-only input that opens the tree dialog)
+        archivOrdnerField.setLabel("Archiv-Ordner");
+        archivOrdnerField.setReadOnly(true);
+        archivOrdnerField.setWidthFull();
 
         // prepare dialog containing the tree
-        ordnerDialog.setWidth("420px");
-        ordnerDialog.setHeight("360px");
+        archivOrdnerDialog.setWidth("420px");
+        archivOrdnerDialog.setHeight("360px");
         com.vaadin.flow.component.orderedlayout.VerticalLayout dlgLayout = new com.vaadin.flow.component.orderedlayout.VerticalLayout();
         dlgLayout.setPadding(false);
         dlgLayout.setSpacing(false);
         dlgLayout.setSizeFull();
         dlgLayout.add(ordnerTree);
-        ordnerDialog.add(dlgLayout);
+        archivOrdnerDialog.add(dlgLayout);
 
         // selection: accept any node (including non-leaf). Selecting sets the folder.
         ordnerTree.addSelectionListener(e -> {
@@ -115,16 +115,16 @@ public class ArchivierenView extends VerticalLayout {
                 String v = sel.get();
                 // store full path internally and show full path in the field
                 selectedFolderPath = v;
-                ordnerField.setValue(v);
+                archivOrdnerField.setValue(v);
                 if (!restoringSelection) {
-                    ordnerDialog.close();
+                    archivOrdnerDialog.close();
                 }
             }
         });
 
         // open dialog when clicking the field (use element click listener)
-        ordnerField.getElement().addEventListener("click", evt -> ordnerDialog.open());
-        ordnerDialog.addOpenedChangeListener(ev -> {
+        archivOrdnerField.getElement().addEventListener("click", evt -> archivOrdnerDialog.open());
+        archivOrdnerDialog.addOpenedChangeListener(ev -> {
             if (ev.isOpened()) {
                 rebuildOrdnerTree();
                 if (selectedFolderPath != null && !selectedFolderPath.isBlank()) {
@@ -144,7 +144,7 @@ public class ArchivierenView extends VerticalLayout {
         // add toolbar and main together and expand main to consume remaining vertical space
         add(toolbar, main);
         // attach dialog to this view so it's part of the UI tree
-        add(ordnerDialog);
+        add(archivOrdnerDialog);
         expand(main);
 
         leftBtn.addClickListener(e -> showPrevious());
@@ -216,8 +216,8 @@ public class ArchivierenView extends VerticalLayout {
         // no heading; show filename in attributes panel
 
         attributesPanel.removeAll();
-        // add ordner selector at top (read-only field that opens dialog)
-        attributesPanel.add(ordnerField);
+        // add archivOrdner selector at top (read-only field that opens dialog)
+        attributesPanel.add(archivOrdnerField);
         Paragraph p = new Paragraph("Datei: " + (current.getFileName() != null ? current.getFileName() : ""));
         attributesPanel.add(p);
         // show file modification date if available
@@ -238,14 +238,14 @@ public class ArchivierenView extends VerticalLayout {
             Object f = attrs.get("folder");
             if (f != null) {
                 selectedFolderPath = String.valueOf(f);
-                ordnerField.setValue(selectedFolderPath);
+                archivOrdnerField.setValue(selectedFolderPath);
             } else {
                 selectedFolderPath = null;
-                ordnerField.clear();
+                archivOrdnerField.clear();
             }
         } else {
             selectedFolderPath = null;
-            ordnerField.clear();
+            archivOrdnerField.clear();
         }
 
         if (attrs != null) {
@@ -287,8 +287,8 @@ public class ArchivierenView extends VerticalLayout {
             if (selectedFolderPath != null && !selectedFolderPath.isEmpty()) {
                 current.getAttributes().put("folder", selectedFolderPath);
             } else {
-                String selectedFolder = ordnerField.getValue();
-                if (selectedFolder != null && !selectedFolder.isEmpty()) {
+                    String selectedFolder = archivOrdnerField.getValue();
+                    if (selectedFolder != null && !selectedFolder.isEmpty()) {
                     current.getAttributes().put("folder", selectedFolder);
                 }
             }
