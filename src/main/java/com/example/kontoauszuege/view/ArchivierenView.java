@@ -248,16 +248,6 @@ public class ArchivierenView extends VerticalLayout {
         // add archivOrdner selector at top (read-only field that opens dialog)
         attributesPanel.add(archivOrdnerField);
         // add archiv dateiname selector (allows custom value)
-        // populate suggestions based on selected folder
-        updateArchivDateiSuggestions(selectedFolderPath);
-        // prefill with existing attribute or original filename
-        if (current.getAttributes() != null && current.getAttributes().containsKey("archivFileName")) {
-            Object afn = current.getAttributes().get("archivFileName");
-            if (afn != null) archivDateinameCombo.setValue(String.valueOf(afn));
-        } else {
-            // default to original filename
-            if (current.getFileName() != null) archivDateinameCombo.setValue(current.getFileName());
-        }
         attributesPanel.add(archivDateinameCombo);
         Paragraph p = new Paragraph("Datei: " + (current.getFileName() != null ? current.getFileName() : ""));
         attributesPanel.add(p);
@@ -291,6 +281,18 @@ public class ArchivierenView extends VerticalLayout {
 
         // if folder was restored from attributes, update filename suggestions
         updateArchivDateiSuggestions(selectedFolderPath);
+        // prefill filename: use saved attribute, then original filename, then default
+        if (attrs != null && attrs.containsKey("archivFileName")) {
+            Object afn = attrs.get("archivFileName");
+            if (afn != null) archivDateinameCombo.setValue(String.valueOf(afn));
+        }
+
+        var archivDateiname = archivDateinameCombo.getValue();
+        if (archivDateiname == null || !archivDateiname.isBlank()) {
+            if (current.getFileName() != null && !current.getFileName().isBlank()) {
+                archivDateinameCombo.setValue(current.getFileName());
+            } 
+        }
 
         if (attrs != null) {
             for (Map.Entry<String, Object> entry : attrs.entrySet()) {
