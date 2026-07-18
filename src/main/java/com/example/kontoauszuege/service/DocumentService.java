@@ -62,32 +62,6 @@ public class DocumentService {
                 .filter(n -> n != null)
                 .collect(Collectors.toSet());
 
-        // Prüfe vorhandene DB-Einträge: wenn die referenzierte Datei nicht mehr existiert,
-        // lösche den DB-Eintrag (deleteDocument) und entferne den Namen aus existingNames
-        for (DocumentDataObject d : existing) {
-            try {
-                Map<String, Object> attrs = d.getAttributes();
-                if (attrs == null) continue;
-                Object p = attrs.get("path");
-                if (!(p instanceof String)) continue;
-                Path path = Paths.get((String) p);
-                if (!Files.exists(path)) {
-                    String pk = d.getPk();
-                    if (pk != null) {
-                        boolean ok = deleteDocument(pk);
-                        if (ok) {
-                            // ensure we don't treat the filename as existing
-                            if (d.getFileName() != null) existingNames.remove(d.getFileName());
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                LOG.warn("Fehler beim Prüfen vorhandener Datei für {}: {}", d, e.toString());
-            }
-        }
-
-
-                
         try (Stream<Path> stream = Files.walk(inbox)) {
             List<Path> pdfs = stream
                     .filter(p -> Files.isRegularFile(p) && p.toString().toLowerCase().endsWith(".pdf"))
@@ -106,11 +80,6 @@ public class DocumentService {
                     DocumentDataObject doc = new DocumentDataObject();
                     doc.setFileName(fname);
                     doc.setState(DocumentState.NEW);
-
-                    Map<String, Object> attrs = new HashMap<>();
-                    attrs.put("path", p.toAbsolutePath().toString());
-                    attrs.put("size", Files.size(p));
-                    doc.setAttributes(attrs);
                     doc.setFileModifyDate(Files.getLastModifiedTime(p).toInstant());
 
                     dataAccessService.insert(doc);
@@ -174,11 +143,7 @@ public class DocumentService {
         int deleted = 0;
         for (DocumentDataObject d : docs) {
             try {
-                Map<String, Object> attrs = d.getAttributes();
-                if (attrs == null) continue;
-                Object p = attrs.get("path");
-                if (!(p instanceof String)) continue;
-                Path path = Paths.get((String) p);
+                Path path = Paths.get(d.getFileName());
                 if (!Files.exists(path)) {
                     dataAccessService.delete(d);
                     deleted++;

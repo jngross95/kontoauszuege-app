@@ -13,6 +13,8 @@ public class DocumentDataObject extends DataObject {
     private Map<String, Object> attributes = new HashMap<>();
     // Zeitstempel der letzten Änderung der Datei (vom Dateisystem)
     private Instant fileModifyDate;
+    private String archivDateiname;
+    private String archivOrdner;
 
     public String getFileName() {
         return fileName;
@@ -30,19 +32,27 @@ public class DocumentDataObject extends DataObject {
         this.state = state;
     }
 
-    public Map<String, Object> getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(Map<String, Object> attributes) {
-        this.attributes = attributes;
-    }
-
     public Instant getFileModifyDate() {
         return fileModifyDate;
     }
 
     public void setFileModifyDate(Instant fileModifyDate) {
         this.fileModifyDate = fileModifyDate;
+    }
+
+    public String getArchivDateiname() {
+        return archivDateiname;
+    }
+
+    public void setArchivDateiname(String archivDateiname) {
+        this.archivDateiname = archivDateiname;
+    }
+
+    public String getArchivOrdner() {
+        return archivOrdner;
+    }
+
+    public void setArchivOrdner(String archivOrdner) {
+        this.archivOrdner = archivOrdner;
     }
 }

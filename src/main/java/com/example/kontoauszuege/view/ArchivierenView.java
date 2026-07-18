@@ -268,16 +268,9 @@ public class ArchivierenView extends VerticalLayout {
 
         //attributesPanel.removeAll();
         // restore previously selected folder (if any)
-        Map<String, Object> attrs = current.getAttributes();
-        if (attrs != null && attrs.containsKey("folder")) {
-            Object f = attrs.get("folder");
-            if (f != null) {
-                selectedFolderPath = String.valueOf(f);
-                archivOrdnerField.setValue(selectedFolderPath);
-            } else {
-                selectedFolderPath = null;
-                archivOrdnerField.clear();
-            }
+        if(current.getArchivOrdner() != null) {
+            selectedFolderPath = String.valueOf(current.getArchivOrdner());
+            archivOrdnerField.setValue(selectedFolderPath);
         } else {
             selectedFolderPath = null;
             archivOrdnerField.clear();
@@ -286,9 +279,8 @@ public class ArchivierenView extends VerticalLayout {
         // if folder was restored from attributes, update filename suggestions
         updateArchivDateiSuggestions(selectedFolderPath);
         // prefill filename: use saved attribute, then original filename, then default
-        if (attrs != null && attrs.containsKey("archivFileName")) {
-            Object afn = attrs.get("archivFileName");
-            if (afn != null) archivDateinameCombo.setValue(String.valueOf(afn));
+        if (current.getArchivDateiname() != null) {
+           archivDateinameCombo.setValue(current.getArchivDateiname());
         }
 
         var archivDateiname = archivDateinameCombo.getValue();
@@ -296,16 +288,6 @@ public class ArchivierenView extends VerticalLayout {
             if (current.getFileName() != null && !current.getFileName().isBlank()) {
                 archivDateinameCombo.setValue(current.getFileName());
             } 
-        }
-
-        if (attrs != null) {
-            for (Map.Entry<String, Object> entry : attrs.entrySet()) {
-                Span key = new Span(entry.getKey() + ": ");
-                key.getStyle().set("font-weight", "bold");
-                Span value = new Span(String.valueOf(entry.getValue()));
-                Div row = new Div(key, value);
-                attributesPanel.add(row);
-            }
         }
 
         leftBtn.setEnabled(currentIndex > 0);
@@ -333,23 +315,6 @@ public class ArchivierenView extends VerticalLayout {
         if (documents == null || documents.isEmpty()) return;
         DocumentDataObject current = documents.get(currentIndex);
         try {
-            // persist selected folder into document attributes before archiving
-            if (selectedFolderPath != null && !selectedFolderPath.isEmpty()) {
-                current.getAttributes().put("folder", selectedFolderPath);
-            } else {
-                    String selectedFolder = archivOrdnerField.getValue();
-                    if (selectedFolder != null && !selectedFolder.isEmpty()) {
-                    current.getAttributes().put("folder", selectedFolder);
-                }
-            }
-            // persist chosen archive filename (if any)
-            try {
-                String chosen = archivDateinameCombo.getValue();
-                if (chosen != null && !chosen.isBlank()) {
-                    current.getAttributes().put("archivFileName", chosen);
-                }
-            } catch (Exception ignore) {
-            }
             documentService.archiveDocument(current);
         } catch (Exception e) {
             // ignore for now; could show notification
