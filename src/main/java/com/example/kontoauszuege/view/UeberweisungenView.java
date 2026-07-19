@@ -298,6 +298,8 @@ public class UeberweisungenView extends VerticalLayout {
         senderField.addValueChangeListener(e -> {
             BankAccountDataObject konto = e.getValue();
             senderField.setPrefixComponent(senderIcon(konto));
+            // clear validation state when user changes selection
+            senderField.setInvalid(false);
             if (konto != null && konto.getIban() != null && !konto.getIban().isBlank()) {
                 Span ibanSpan = new Span(konto.getIban());
                 ibanSpan.getStyle().set("font-size", "var(--lumo-font-size-xs)");
@@ -329,6 +331,8 @@ public class UeberweisungenView extends VerticalLayout {
         empfaengerField.addCustomValueSetListener(e -> empfaengerField.setValue(new EmpfaengerInfo(e.getDetail(), "", "")));
         empfaengerField.addValueChangeListener(e -> {
             EmpfaengerInfo ei = e.getValue();
+            // clear validation state when user picks/edits recipient
+            empfaengerField.setInvalid(false);
             if (ei != null) {
                 if (ei.iban() != null && !ei.iban().isBlank()) {
                     empfaengerIbanField.setValue(ei.iban());
@@ -526,6 +530,20 @@ public class UeberweisungenView extends VerticalLayout {
 
     private boolean speichern() {
         if (selected == null) return true;
+        // Validierung: Sender und Empfänger müssen gesetzt sein
+        BankAccountDataObject senderValCheck = senderField.getValue();
+        if (senderValCheck == null) {
+            senderField.setInvalid(true); 
+            Notification.show("Bitte einen Sender auswählen.", 3000, Notification.Position.MIDDLE);
+            return false;
+        }
+        EmpfaengerInfo empfInfoCheck = empfaengerField.getValue();
+        if (empfInfoCheck == null || empfInfoCheck.name() == null || empfInfoCheck.name().isBlank()) {
+            empfaengerField.setInvalid(true);
+            Notification.show("Bitte einen Empfänger angeben.", 3000, Notification.Position.MIDDLE);
+            return false;
+        }
+
         // Validierung: IBAN prüfen
         String ibanToCheck = empfaengerIbanField.getValue();
         String norm = ibanToCheck == null ? "" : ibanToCheck.trim().replace(" ", "");
@@ -550,7 +568,14 @@ public class UeberweisungenView extends VerticalLayout {
         selected.setVerwendungszweck(verwendungszweck.getValue());
         String betragText = betragField.getValue().trim().replace(",", ".");
         try {
-            selected.setBetrag(betragText.isEmpty() ? BigDecimal.ZERO : new BigDecimal(betragText));
+            BigDecimal amt = betragText.isEmpty() ? BigDecimal.ZERO : new BigDecimal(betragText);
+            if (amt.compareTo(BigDecimal.ZERO) == 0) {
+                betragField.setInvalid(true);
+                betragField.setErrorMessage("Betrag darf nicht 0 sein");
+                Notification.show("Betrag darf nicht 0 sein.", 3000, Notification.Position.MIDDLE);
+                return false;
+            }
+            selected.setBetrag(amt);
         } catch (NumberFormatException ex) {
             betragField.setInvalid(true);
             betragField.setErrorMessage("Ungültiger Betrag – bitte Zahl eingeben (z. B. 12,50)");
@@ -583,6 +608,11 @@ public class UeberweisungenView extends VerticalLayout {
         // clear any previous validation state for amount
         betragField.setInvalid(false);
         betragField.setErrorMessage("");
+        // clear sender/recipient validation states
+        senderField.setInvalid(false);
+        empfaengerField.setInvalid(false);
+        empfaengerIbanField.setInvalid(false);
+        empfaengerIbanField.setErrorMessage("");
     }
 
     private void clearFormular() {
@@ -594,6 +624,10 @@ public class UeberweisungenView extends VerticalLayout {
         betragField.clear();
         betragField.setInvalid(false);
         betragField.setErrorMessage("");
+        senderField.setInvalid(false);
+        empfaengerField.setInvalid(false);
+        empfaengerIbanField.setInvalid(false);
+        empfaengerIbanField.setErrorMessage("");
     }
 
     private Image senderIcon(BankAccountDataObject konto) {
