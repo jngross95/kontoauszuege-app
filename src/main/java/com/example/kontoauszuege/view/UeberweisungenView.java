@@ -441,8 +441,9 @@ public class UeberweisungenView extends VerticalLayout {
         dialog.add(form);
 
         Button okBtn = new Button("Ok", VaadinIcon.CHECK.create(), e -> {
-            speichern();
-            dialog.close();
+            if (speichern()) {
+                dialog.close();
+            }
         });
         okBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
@@ -523,8 +524,8 @@ public class UeberweisungenView extends VerticalLayout {
         }
     }
 
-    private void speichern() {
-        if (selected == null) return;
+    private boolean speichern() {
+        if (selected == null) return true;
         // Validierung: IBAN prüfen
         String ibanToCheck = empfaengerIbanField.getValue();
         String norm = ibanToCheck == null ? "" : ibanToCheck.trim().replace(" ", "");
@@ -538,7 +539,7 @@ public class UeberweisungenView extends VerticalLayout {
             empfaengerIbanField.setInvalid(true);
             empfaengerIbanField.setErrorMessage("Ungültige IBAN");
             Notification.show("Bitte eine gültige IBAN eingeben.", 3000, Notification.Position.MIDDLE);
-            return;
+            return false;
         }
         BankAccountDataObject senderVal = senderField.getValue();
         selected.setSenderIban(senderVal != null ? senderVal.getIban() : "");
@@ -555,11 +556,12 @@ public class UeberweisungenView extends VerticalLayout {
             betragField.setErrorMessage("Ungültiger Betrag – bitte Zahl eingeben (z. B. 12,50)");
             Notification.show("Ungültiger Betrag – bitte Zahl eingeben (z. B. 12,50)",
                     3000, Notification.Position.MIDDLE);
-            return;
+            return false;
         }
         service.update(selected);
         refreshGrid();
         grid.select(selected);
+        return true;
     }
 
     private void ladeFormular(UeberweisungDataObject u) {
