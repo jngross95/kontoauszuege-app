@@ -59,6 +59,7 @@ public class UeberweisungenView extends VerticalLayout {
     private List<BankAccountDataObject> senderItems = List.of();
     private List<EmpfaengerInfo> bekannteEmpfaenger = List.of();
     private UeberweisungDataObject selected = null;
+    private boolean isNeu = false;
     private Dialog editDialog;
     // data view not used yet; keep for future use
     @SuppressWarnings("unused")
@@ -451,7 +452,10 @@ public class UeberweisungenView extends VerticalLayout {
         });
         okBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        Button abbrechenBtn = new Button("Abbrechen", e -> dialog.close());
+        Button abbrechenBtn = new Button("Abbrechen", e -> {
+            isNeu = false;
+            dialog.close();
+        });
         abbrechenBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         dialog.getFooter().add(abbrechenBtn, okBtn);
@@ -462,10 +466,8 @@ public class UeberweisungenView extends VerticalLayout {
     // ── Aktionen ──────────────────────────────────────────────────────────
 
     private void neueUeberweisung() {
+        isNeu = true;
         UeberweisungDataObject neu = new UeberweisungDataObject();
-        service.add(neu);
-        refreshGrid();
-        grid.select(neu);
         ladeFormular(neu);
         editDialog.open();
     }
@@ -476,6 +478,7 @@ public class UeberweisungenView extends VerticalLayout {
                     2500, Notification.Position.MIDDLE);
             return;
         }
+        isNeu = false;
         ladeFormular(selected);
         editDialog.open();
     }
@@ -583,7 +586,12 @@ public class UeberweisungenView extends VerticalLayout {
                     3000, Notification.Position.MIDDLE);
             return false;
         }
-        service.update(selected);
+        if (isNeu) {
+            service.add(selected);
+        } else {
+            service.update(selected);
+        }
+        isNeu = false;
         refreshGrid();
         grid.select(selected);
         return true;
