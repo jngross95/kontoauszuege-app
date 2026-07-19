@@ -344,6 +344,25 @@ public class UeberweisungenView extends VerticalLayout {
         betragField.setPlaceholder("0,00");
         betragField.setWidthFull();
 
+        // Validate amount on blur and show error like for IBAN
+        betragField.addBlurListener(e -> {
+            String txt = betragField.getValue() == null ? "" : betragField.getValue().trim();
+            if (txt.isEmpty()) {
+                betragField.setInvalid(false);
+                betragField.setErrorMessage("");
+                return;
+            }
+            String norm = txt.replace(',', '.');
+            try {
+                new BigDecimal(norm);
+                betragField.setInvalid(false);
+                betragField.setErrorMessage("");
+            } catch (Exception ex) {
+                betragField.setInvalid(true);
+                betragField.setErrorMessage("Ungültiger Betrag – bitte Zahl eingeben (z. B. 12,50)");
+            }
+        });
+
         verwendungszweck.setWidthFull();
 
         FormLayout form = new FormLayout();
@@ -532,6 +551,8 @@ public class UeberweisungenView extends VerticalLayout {
         try {
             selected.setBetrag(betragText.isEmpty() ? BigDecimal.ZERO : new BigDecimal(betragText));
         } catch (NumberFormatException ex) {
+            betragField.setInvalid(true);
+            betragField.setErrorMessage("Ungültiger Betrag – bitte Zahl eingeben (z. B. 12,50)");
             Notification.show("Ungültiger Betrag – bitte Zahl eingeben (z. B. 12,50)",
                     3000, Notification.Position.MIDDLE);
             return;
@@ -557,6 +578,9 @@ public class UeberweisungenView extends VerticalLayout {
         verwendungszweck.setValue(u.getVerwendungszweck() != null ? u.getVerwendungszweck() : "");
         betragField.setValue(u.getBetrag() != null
                 ? u.getBetrag().toPlainString().replace(".", ",") : "");
+        // clear any previous validation state for amount
+        betragField.setInvalid(false);
+        betragField.setErrorMessage("");
     }
 
     private void clearFormular() {
@@ -566,6 +590,8 @@ public class UeberweisungenView extends VerticalLayout {
         empfaengerIbanField.clear();
         verwendungszweck.clear();
         betragField.clear();
+        betragField.setInvalid(false);
+        betragField.setErrorMessage("");
     }
 
     private Image senderIcon(BankAccountDataObject konto) {
