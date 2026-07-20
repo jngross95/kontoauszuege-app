@@ -1,7 +1,7 @@
 [Desktop Entry]
 Comment[de_DE]=
 Comment=
-Exec=google-chrome --app=http://localhost:8084 --ozone-platform=x11 --class=Kontoauszuege
+Exec=google-chrome --app=http://localhost:8084 --ozone-platform=x11 --class=KontoauszuegeApp
 GenericName[de_DE]=
 GenericName=
 Icon=/home/jngross/proj/kontoauszuege-app/src/main/resources/META-INF/resources/icons/kontoausz-favicon-48.png
@@ -15,4 +15,4 @@ TerminalOptions=
 Type=Application
 X-KDE-SubstituteUID=false
 X-KDE-Username=
-StartupWMClass=Kontoauszuege
+StartupWMClass=KontoauszuegeApp
