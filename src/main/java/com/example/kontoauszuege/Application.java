@@ -90,6 +90,21 @@ public class Application {
 
     /** Versucht, Chrome/Chromium im App-Modus zu starten (kein Tab, kein Adressfeld). */
     private static boolean tryAppMode(String url, String userDataDir) {
+        // Wenn der Benutzer die .desktop-Datei installiert hat, starte über gtk-launch
+        // damit KDE die Anwendung dem .desktop-Eintrag und Icon zuordnen kann.
+        Path userDesktop = Path.of(System.getProperty("user.home"), ".local/share/applications/kontoauszuege-app.desktop");
+        Path sysDesktop = Path.of("/usr/share/applications/kontoauszuege-app.desktop");
+        if (Files.exists(userDesktop) || Files.exists(sysDesktop)) {
+            try {
+                new ProcessBuilder("gtk-launch", "kontoauszuege-app").start();
+                log.info("App über gtk-launch gestartet (kontoauszuege-app)");
+                return true;
+            } catch (Exception ex) {
+                log.warn("gtk-launch fehlgeschlagen: {}", ex.getMessage());
+                // fallthrough: probiere normalen Browser-Start
+            }
+        }
+
         String[] candidates = {"brave-browser", "google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "flatpak run com.brave.Browser"};
         for (String browser : candidates) {
             try {

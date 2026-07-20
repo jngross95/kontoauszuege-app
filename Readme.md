@@ -16,3 +16,6 @@ String dstName,
             BigDecimal btgValue,
             String endToEndId,
             String usage
+
+
+cp kontoauszuege-app.desktop ~/.local/share/applications/kontoauszuege-app.desktop
