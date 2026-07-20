@@ -90,6 +90,7 @@ public class Application {
 
     /** Versucht, Chrome/Chromium im App-Modus zu starten (kein Tab, kein Adressfeld). */
     private static boolean tryAppMode(String url, String userDataDir) {
+       /*
         // Wenn der Benutzer die .desktop-Datei installiert hat, starte über gtk-launch
         // damit KDE die Anwendung dem .desktop-Eintrag und Icon zuordnen kann.
         Path userDesktop = Path.of(System.getProperty("user.home"), ".local/share/applications/kontoauszuege-app.desktop");
@@ -104,7 +105,7 @@ public class Application {
                 // fallthrough: probiere normalen Browser-Start
             }
         }
-
+*/
         String[] candidates = {"brave-browser", "google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "flatpak run com.brave.Browser"};
         for (String browser : candidates) {
             try {
@@ -116,7 +117,7 @@ public class Application {
                 // Erzwinge X11/Ozone (nutzt XWayland unter Wayland), löst Icon/WM_CLASS Matching
                 commandList.add("--ozone-platform=x11");
                 // Setze eine eindeutige WM_CLASS, damit KDE das Fenster dem .desktop zuordnen kann
-                commandList.add("--class=Kontoauszuege");
+            //    commandList.add("--class=Kontoauszuege");
                 // Autofill/Password-Dialoge unterdrücken (funktioniert für alle Chromium-basierten Browser)
                 commandList.add("--disable-save-password-bubble");
                 commandList.add("--disable-features=AutofillCreditCardUpload,AutofillSaveCardBubble,AutofillEnableAccountWalletStorage");
