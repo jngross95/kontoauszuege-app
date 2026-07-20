@@ -90,7 +90,7 @@ public class Application {
 
     /** Versucht, Chrome/Chromium im App-Modus zu starten (kein Tab, kein Adressfeld). */
     private static boolean tryAppMode(String url, String userDataDir) {
-        String[] candidates = {"google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "brave-browser", "flatpak run com.brave.Browser"};
+        String[] candidates = {"brave-browser", "google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "flatpak run com.brave.Browser"};
         for (String browser : candidates) {
             try {
                 String[] command = browser.split(" ");
@@ -98,6 +98,8 @@ public class Application {
                 if (userDataDir != null && !userDataDir.isBlank()) {
                     commandList.add("--user-data-dir=" + userDataDir);
                 }
+                // Erzwinge X11/Ozone (nutzt XWayland unter Wayland), löst Icon/WM_CLASS Matching
+                commandList.add("--ozone-platform=x11");
                 // Autofill/Password-Dialoge unterdrücken (funktioniert für alle Chromium-basierten Browser)
                 commandList.add("--disable-save-password-bubble");
                 commandList.add("--disable-features=AutofillCreditCardUpload,AutofillSaveCardBubble,AutofillEnableAccountWalletStorage");
