@@ -100,6 +100,8 @@ public class Application {
                 }
                 // Erzwinge X11/Ozone (nutzt XWayland unter Wayland), löst Icon/WM_CLASS Matching
                 commandList.add("--ozone-platform=x11");
+                // Setze eine eindeutige WM_CLASS, damit KDE das Fenster dem .desktop zuordnen kann
+                commandList.add("--class=Kontoauszuege");
                 // Autofill/Password-Dialoge unterdrücken (funktioniert für alle Chromium-basierten Browser)
                 commandList.add("--disable-save-password-bubble");
                 commandList.add("--disable-features=AutofillCreditCardUpload,AutofillSaveCardBubble,AutofillEnableAccountWalletStorage");
