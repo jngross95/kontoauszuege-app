@@ -81,6 +81,10 @@ public class BankkontenView extends VerticalLayout {
     private void configureGrid() {
         // Reorder column with Up / Down buttons
         var reorderColumn = grid.addColumn(new ComponentRenderer<>(account -> {
+            boolean isSelected = selected != null
+                    && selected.getPk() != null
+                    && selected.getPk().equals(account.getPk());
+
             HorizontalLayout layout = new HorizontalLayout();
             layout.setSpacing(false);
             layout.setPadding(false);
@@ -89,10 +93,12 @@ public class BankkontenView extends VerticalLayout {
             Button up = new Button(VaadinIcon.ARROW_UP.create(), e -> moveUp(account));
             up.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
             up.getElement().setAttribute("title", "Nach oben");
+            up.setEnabled(isSelected);
 
             Button down = new Button(VaadinIcon.ARROW_DOWN.create(), e -> moveDown(account));
             down.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
             down.getElement().setAttribute("title", "Nach unten");
+            down.setEnabled(isSelected);
 
             layout.add(up, down);
             return layout;
@@ -146,7 +152,10 @@ public class BankkontenView extends VerticalLayout {
                 .setAutoWidth(true);
 
         grid.setWidthFull();
-        grid.addSelectionListener(e -> selected = e.getFirstSelectedItem().orElse(null));
+        grid.addSelectionListener(e -> {
+            selected = e.getFirstSelectedItem().orElse(null);
+            grid.getDataProvider().refreshAll();
+        });
 
         // Rechtsklick selektiert die Zeile (JS-seitig, synct zurück zum Server)
         grid.getElement().executeJs("""
