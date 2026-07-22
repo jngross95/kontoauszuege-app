@@ -79,6 +79,30 @@ public class BankkontenView extends VerticalLayout {
     }
 
     private void configureGrid() {
+        // Reorder column with Up / Down buttons
+        var reorderColumn = grid.addColumn(new ComponentRenderer<>(account -> {
+            HorizontalLayout layout = new HorizontalLayout();
+            layout.setSpacing(false);
+            layout.setPadding(false);
+            layout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+            Button up = new Button(VaadinIcon.ARROW_UP.create(), e -> moveUp(account));
+            up.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+            up.getElement().setAttribute("title", "Nach oben");
+
+            Button down = new Button(VaadinIcon.ARROW_DOWN.create(), e -> moveDown(account));
+            down.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+            down.getElement().setAttribute("title", "Nach unten");
+
+            layout.add(up, down);
+            return layout;
+        }));
+        reorderColumn.setHeader("text");
+        reorderColumn.setAutoWidth(false);
+        reorderColumn.setFlexGrow(0);
+        reorderColumn.setWidth("80px");
+        reorderColumn.setFrozen(true);
+
         grid.addColumn(new ComponentRenderer<>(account -> {
             HorizontalLayout layout = new HorizontalLayout();
             layout.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -290,8 +314,64 @@ public class BankkontenView extends VerticalLayout {
         deleted.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     }
 
+    private void moveUp(BankAccountDataObject account) {
+        if (account == null) return;
+        List<BankAccountDataObject> all = bankAccountService.getAllBankAccounts();
+        int idx = -1;
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getPk().equals(account.getPk())) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx > 0) {
+            BankAccountDataObject prev = all.get(idx - 1);
+            Integer aIdx = account.getOrderIndex() != null ? account.getOrderIndex() : 0;
+            Integer pIdx = prev.getOrderIndex() != null ? prev.getOrderIndex() : 0;
+            account.setOrderIndex(pIdx);
+            prev.setOrderIndex(aIdx);
+            bankAccountService.updateBankAccount(account);
+            bankAccountService.updateBankAccount(prev);
+            refreshGrid();
+        }
+    }
+
+    private void moveDown(BankAccountDataObject account) {
+        if (account == null) return;
+        List<BankAccountDataObject> all = bankAccountService.getAllBankAccounts();
+        int idx = -1;
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getPk().equals(account.getPk())) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx >= 0 && idx < all.size() - 1) {
+            BankAccountDataObject next = all.get(idx + 1);
+            Integer aIdx = account.getOrderIndex() != null ? account.getOrderIndex() : 0;
+            Integer nIdx = next.getOrderIndex() != null ? next.getOrderIndex() : 0;
+            account.setOrderIndex(nIdx);
+            next.setOrderIndex(aIdx);
+            bankAccountService.updateBankAccount(account);
+            bankAccountService.updateBankAccount(next);
+            refreshGrid();
+        }
+    }
+
     private void refreshGrid() {
         List<BankAccountDataObject> bankAccountDataObjects = bankAccountService.getAllBankAccounts();
+        // Indices normalisieren: nach orderIndex sortieren, dann 0 … n-1 neu vergeben
+        bankAccountDataObjects = new java.util.ArrayList<>(bankAccountDataObjects);
+        bankAccountDataObjects.sort(java.util.Comparator.comparing(
+                BankAccountDataObject::getOrderIndex,
+                java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())));
+        for (int i = 0; i < bankAccountDataObjects.size(); i++) {
+            BankAccountDataObject a = bankAccountDataObjects.get(i);
+            if (a.getOrderIndex() == null || a.getOrderIndex() != i) {
+                a.setOrderIndex(i);
+                bankAccountService.updateBankAccount(a);
+            }
+        }
         grid.setItems(bankAccountDataObjects);
         selected = null;
     }
