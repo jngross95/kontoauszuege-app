@@ -63,7 +63,6 @@ public class KontoauszuegeView extends VerticalLayout {
         List<BankAccountDataObject> konten = bankAccountService.getAllBankAccounts().stream()
                 .filter(k -> k.getName() != null && !k.getName().isBlank())
                 .distinct()
-                .sorted(java.util.Comparator.comparing(BankAccountDataObject::getName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
 
         for (BankAccountDataObject k : konten) {
