@@ -92,7 +92,6 @@ public class UeberweisungenView extends VerticalLayout {
         // ── Teil 3: Dialog vorbereiten ────────────────────────────────────
         senderItems = bankAccountService.getAllBankAccounts().stream()
                 .filter(b -> b.getName() != null && !b.getName().isBlank())
-                .sorted(java.util.Comparator.comparing(BankAccountDataObject::getName, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
 
         // deduplizieren: jede IBAN/name nur einmal aufnehmen
