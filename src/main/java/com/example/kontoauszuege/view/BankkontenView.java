@@ -341,7 +341,7 @@ public class BankkontenView extends VerticalLayout {
             prev.setOrderIndex(aIdx);
             bankAccountService.updateBankAccount(account);
             bankAccountService.updateBankAccount(prev);
-            refreshGrid();
+            refreshGrid(account.getPk());
         }
     }
 
@@ -363,11 +363,15 @@ public class BankkontenView extends VerticalLayout {
             next.setOrderIndex(aIdx);
             bankAccountService.updateBankAccount(account);
             bankAccountService.updateBankAccount(next);
-            refreshGrid();
+            refreshGrid(account.getPk());
         }
     }
 
     private void refreshGrid() {
+        refreshGrid(null);
+    }
+
+    private void refreshGrid(String selectPk) {
         List<BankAccountDataObject> bankAccountDataObjects = bankAccountService.getAllBankAccounts();
         // Indices normalisieren: nach orderIndex sortieren, dann 0 … n-1 neu vergeben
         bankAccountDataObjects = new java.util.ArrayList<>(bankAccountDataObjects);
@@ -382,6 +386,16 @@ public class BankkontenView extends VerticalLayout {
             }
         }
         grid.setItems(bankAccountDataObjects);
-        selected = null;
+        if (selectPk != null) {
+            bankAccountDataObjects.stream()
+                    .filter(a -> selectPk.equals(a.getPk()))
+                    .findFirst()
+                    .ifPresent(a -> {
+                        selected = a;
+                        grid.select(a);
+                    });
+        } else {
+            selected = null;
+        }
     }
 }
