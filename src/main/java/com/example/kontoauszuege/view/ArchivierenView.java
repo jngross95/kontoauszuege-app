@@ -84,6 +84,7 @@ public class ArchivierenView extends VerticalLayout {
         pdfFrame.setWidth("65%");
         pdfFrame.setHeightFull();
         pdfFrame.getElement().setAttribute("frameBorder", "0");
+        pdfFrame.getElement().setAttribute("allow", "clipboard-write");
 
         attributesPanel.getStyle().set("padding", "8px");
         attributesPanel.getStyle().set("overflow", "auto");

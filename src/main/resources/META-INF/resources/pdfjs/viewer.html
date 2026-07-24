@@ -231,9 +231,24 @@
               const pageNum = currentCanvas && currentCanvas.dataset ? currentCanvas.dataset.pageNumber : '?';
               const coordStr = `xFrom=${xFrom.toFixed(2)}%, xTo=${xTo.toFixed(2)}%, yFrom=${yFrom.toFixed(2)}%, yTo=${yTo.toFixed(2)}%`;
               console.log('Seite: ' + pageNum + ' | Koordinaten: ' + coordStr + ' | Text: ' + text);
-              navigator.clipboard.writeText(text).catch(err => console.warn('Clipboard-Fehler:', err));
+              if (navigator.clipboard && document.hasFocus()) {
+                navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+              } else {
+                fallbackCopy(text);
+              }
             }).catch(err => { console.error('Fehler bei der Textextraktion:', err); })
             .finally(() => { setTimeout(() => { sel.style.display = 'none'; }, 800); });
+        }
+
+        function fallbackCopy(text) {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          try { document.execCommand('copy'); } catch(e) { console.warn('execCommand copy fehlgeschlagen:', e); }
+          document.body.removeChild(ta);
         }
 
         viewerContainer.addEventListener('pointerup', finishSelection);
