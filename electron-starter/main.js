@@ -16,8 +16,8 @@ let shuttingDown = false;
 
 function createSplashWindow() {
   splashWindow = new BrowserWindow({
-    width: 520,
-    height: 360,
+    width: 620,
+    height: 460,
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -61,12 +61,17 @@ function createMainWindow() {
     return { action: 'deny' };
   });
 
+
+  mainWindow.loadURL(BACKEND_ENTRY, {
+    userAgent: 'Kontoauszüge Electron App'
+  });
+  /*
   mainWindow.loadFile(path.join(__dirname, 'main.html'), {
     query: {
       target: BACKEND_ENTRY
     }
   });
-
+*/
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
