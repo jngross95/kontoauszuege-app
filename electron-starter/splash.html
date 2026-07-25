@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kontoauszüge starten</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="screen screen--splash">
+  <main class="card card--splash">
+    <div class="spinner" aria-hidden="true"></div>
+    <h1>Kontoauszüge werden gestartet</h1>
+    <p>Spring Boot wird im Hintergrund auf <strong>127.0.0.1:8084</strong> vorbereitet.</p>
+    <p class="muted">Bitte dieses Fenster geöffnet lassen.</p>
+    <div id="error" class="error" hidden></div>
+  </main>
+  <script>
+    const { ipcRenderer } = require('electron');
+    ipcRenderer.on('startup-error', (_event, payload) => {
+      const error = document.getElementById('error');
+      error.hidden = false;
+      error.textContent = payload?.message || 'Backend konnte nicht gestartet werden.';
+    });
+  </script>
+</body>
+</html>

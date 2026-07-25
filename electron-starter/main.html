@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kontoauszüge App</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="screen screen--main">
+  <main class="card card--main">
+    <div class="spinner spinner--small" aria-hidden="true"></div>
+    <h1>Hauptseite wird geladen</h1>
+    <p id="message">Die Spring-Boot-App wird auf <strong>127.0.0.1:8084</strong> geöffnet.</p>
+    <p class="muted">Falls der Wechsel nicht automatisch erfolgt, wird die Zielseite gleich geladen.</p>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const target = params.get('target') || 'http://127.0.0.1:8084/';
+
+    setTimeout(() => {
+      window.location.replace(target);
+    }, 500);
+  </script>
+</body>
+</html>
