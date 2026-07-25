@@ -20,13 +20,20 @@ import java.util.List;
 public class Application {
 
     private static final Logger log = LoggerFactory.getLogger(Application.class);
+    private static volatile boolean NO_BROWSER_START = false;
 
     public static void main(String[] args) {
         try{
             log.info("Starte Kontoauszüge App ...");
             BankConnection.init();
             ensureDataDirectory();
-            SpringApplication.run(Application.class, args);
+            // Check for -no-browser-start flag and remove it from args passed to Spring
+            List<String> argList = new ArrayList<>(Arrays.asList(args));
+            if (argList.remove("-no-browser-start")) {
+                NO_BROWSER_START = true;
+                log.info("Browser start suppressed via -no-browser-start flag");
+            }
+            SpringApplication.run(Application.class, argList.toArray(new String[0]));
         } catch (Exception e) {
             log.error("Fehler beim Starten der Anwendung: {}", e.getMessage(), e);
             onServerReady(null);
@@ -53,6 +60,11 @@ public class Application {
         //int port = event.getWebServer().getPort();
         int port = 8084;
         String url = "http://localhost:" + port;
+
+        if (NO_BROWSER_START) {
+            log.info("Browser start skipped because -no-browser-start was set");
+            return;
+        }
 
         Thread browserThread = new Thread(() -> {
             try {

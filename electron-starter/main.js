@@ -108,8 +108,9 @@ function startBackend() {
     }
 
     cmd = 'java';
-    args = ['-jar', jarPath];
-    console.log('Starting backend from JAR:', jarPath);
+    // Pass -no-browser-start to Spring Boot so the backend doesn't open a browser
+    args = ['-jar', jarPath, '-no-browser-start'];
+    console.log('Starting backend from JAR:', jarPath, 'with -no-browser-start');
 
     backendProcess = spawn(cmd, args, {
       cwd: REPO_ROOT,
