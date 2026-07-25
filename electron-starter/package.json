@@ -1,0 +1,44 @@
+{
+  "name": "kontoauszuege-electron-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Electron starter that launches the Spring Boot app and shows a splash screen while it starts.",
+  "main": "main.js",
+  "type": "commonjs",
+  "author": "",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "check": "node --check main.js",
+    "dist:linux": "electron-builder --linux zip",
+    "dist:win": "electron-builder --win zip",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:all": "electron-builder --linux zip --win zip --mac dmg"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^32.2.4",
+    "electron-builder": "^24.6.0"
+  },
+  "build": {
+    "appId": "com.example.kontoauszuege",
+    "productName": "Kontoauszuege",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/*/{README,README.md,readme.md}"
+    ],
+    "linux": {
+      "target": ["zip"],
+      "category": "Utility"
+    },
+    "win": {
+      "target": ["zip"]
+    },
+    "mac": {
+      "target": ["dmg"]
+    }
+  }
+}
