@@ -1,5 +1,6 @@
 {
   "python.defaultInterpreterPath": "/home/jngross/venv311/bin/python",
   "python.terminal.activateEnvironment": true,
-  "java.configuration.updateBuildConfiguration": "interactive"
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "java.compile.nullAnalysis.mode": "automatic"
 }
