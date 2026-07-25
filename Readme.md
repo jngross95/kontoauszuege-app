@@ -6,6 +6,7 @@ mvn spring-boot:run
 
 
 
+
 # production build
 mvn clean package -Dvaadin.productionMode=true -Pproduction
 target/start.sh
