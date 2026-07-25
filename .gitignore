@@ -34,3 +34,4 @@ src/main/frontend/generated/
 src/main/bundles/prod.bundle
 
 electron-starter/dist
+electron-starter/spring-boot-app
