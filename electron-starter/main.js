@@ -54,6 +54,13 @@ function createMainWindow() {
   });
 
   mainWindow.removeMenu();
+
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12' && input.type === 'keyDown') {
+      mainWindow.webContents.toggleDevTools();
+    }
+  });
+
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith(BACKEND_URL)) {
       return { action: 'allow' };
