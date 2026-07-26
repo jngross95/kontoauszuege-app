@@ -26,6 +26,7 @@ function createSplashWindow() {
     show: true,
     title: 'Kontoauszüge starten',
     backgroundColor: '#0f172a',
+    icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true
@@ -46,6 +47,7 @@ function createMainWindow() {
     show: true,
     backgroundColor: '#ffffff',
     title: 'Kontoauszüge App',
+    icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
