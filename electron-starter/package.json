@@ -14,9 +14,8 @@
     "dist:mac": "electron-builder --mac dmg",
     "dist:all": "electron-builder --linux AppImage --win nsis --mac dmg"
   },
-  "dependencies": {},
   "devDependencies": {
-    "electron": "^32.2.4",
+    "electron": "^43.2.0",
     "electron-builder": "^24.6.0"
   },
   "build": {
@@ -33,18 +32,26 @@
       {
         "from": "../dist",
         "to": "spring-boot-app",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "category": "Utility"
     },
     "win": {
-      "target": ["nsis"]
+      "target": [
+        "nsis"
+      ]
     },
     "mac": {
-      "target": ["dmg"]
+      "target": [
+        "dmg"
+      ]
     },
     "nsis": {
       "oneClick": false,
