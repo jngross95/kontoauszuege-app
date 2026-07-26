@@ -23,6 +23,18 @@ cp -v "$JAR" "$DIST_DIR/"
 echo "Done. Dist contents:"
 ls -l "$DIST_DIR"
 
+echo "Creating minimal JRE with jlink..."
+MODULES="java.se,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.naming.dns,jdk.unsupported,jdk.zipfs,jdk.management,jdk.management.agent,jdk.attach,jdk.charsets,jdk.localedata"
+jlink \
+  --add-modules "$MODULES" \
+  --strip-debug \
+  --no-man-pages \
+  --no-header-files \
+  --compress zip-6 \
+  --output $DIST_DIR/jre-minimal
+
+
+
 echo "Building Electron app"
 # Allow passing the npm script to run as first argument, default to "dist:win"
 BUILD_TARGET="${1:-dist:win}"
