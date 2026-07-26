@@ -9,10 +9,10 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "dist:linux": "electron-builder --linux zip",
-    "dist:win": "electron-builder --win zip",
+    "dist:linux": "electron-builder --linux AppImage",
+    "dist:win": "electron-builder --win nsis",
     "dist:mac": "electron-builder --mac dmg",
-    "dist:all": "electron-builder --linux zip --win zip --mac dmg"
+    "dist:all": "electron-builder --linux AppImage --win nsis --mac dmg"
   },
   "dependencies": {},
   "devDependencies": {
@@ -37,14 +37,19 @@
       }
     ],
     "linux": {
-      "target": ["zip"],
+      "target": ["AppImage"],
       "category": "Utility"
     },
     "win": {
-      "target": ["zip"]
+      "target": ["nsis"]
     },
     "mac": {
       "target": ["dmg"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
     }
   }
 }
