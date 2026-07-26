@@ -309,6 +309,8 @@ function shutdownBackend(timeoutMs = 10000) {
 }
 
 async function bootstrap() {
+  console.log('!!userData:', app.getPath('userData'));
+
   createSplashWindow();
   try {
     if (!SKIP_BACKEND_START) {
