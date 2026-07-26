@@ -8,6 +8,8 @@ const REPO_ROOT = path.resolve(__dirname, '..');
 const BACKEND_URL = process.env.KONTOAUSZUEGE_URL || 'http://127.0.0.1:8084';
 const BACKEND_ENTRY = `${BACKEND_URL.replace(/\/$/, '')}/`;
 const START_COMMAND = process.platform === 'win32' ? 'mvn.cmd' : 'mvn';
+// If the Electron app is started with `-no-backend-start`, don't start Spring Boot
+const SKIP_BACKEND_START = process.argv.includes('-no-backend-start');
 
 let splashWindow;
 let mainWindow;
@@ -240,7 +242,14 @@ function shutdownBackend() {
 async function bootstrap() {
   createSplashWindow();
   try {
-    startBackend();
+    if (!SKIP_BACKEND_START) {
+      startBackend();
+    } else {
+      console.log('Skipping backend start due to -no-backend-start flag');
+      if (splashWindow) {
+        splashWindow.webContents.send('startup-info', { message: 'Skipping backend start (flag -no-backend-start)'});
+      }
+    }
   } catch (err) {
     console.error('startBackend failed:', err);
     if (splashWindow) {
@@ -250,7 +259,12 @@ async function bootstrap() {
   }
 
   try {
-    await waitForBackend(BACKEND_ENTRY);
+    if (!SKIP_BACKEND_START) {
+      await waitForBackend(BACKEND_ENTRY);
+    } else {
+      // When skipping backend start, don't wait for it. Give splash a brief moment.
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
   } catch (error) {
     if (splashWindow) {
       splashWindow.webContents.send('startup-error', {
