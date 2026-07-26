@@ -37,7 +37,7 @@ jlink \
 
 echo "Building Electron app"
 # Allow passing the npm script to run as first argument, default to "dist:win"
-BUILD_TARGET="${1:-dist:win}"
+BUILD_TARGET="${1:-dist:linux}"
 echo "Running: npm run $BUILD_TARGET"
 cd electron-starter
 npm ci
