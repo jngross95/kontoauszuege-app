@@ -23,4 +23,10 @@ cp -v "$JAR" "$DIST_DIR/"
 echo "Done. Dist contents:"
 ls -l "$DIST_DIR"
 
-
+echo "Building Electron app"
+# Allow passing the npm script to run as first argument, default to "dist:win"
+BUILD_TARGET="${1:-dist:win}"
+echo "Running: npm run $BUILD_TARGET"
+cd electron-starter
+npm run "$BUILD_TARGET"
+cd ..

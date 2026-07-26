@@ -121,7 +121,8 @@ function startBackend() {
       cwd: REPO_ROOT,
       // Use a shell on Windows to ensure .cmd/.bat resolution works reliably
       shell: process.platform === 'win32',
-      windowsHide: true,
+      /*windowsHide: true,*/
+      windowsHide: false,
       env: {
         ...process.env,
         SPRING_PROFILES_ACTIVE: process.env.SPRING_PROFILES_ACTIVE || 'default'
