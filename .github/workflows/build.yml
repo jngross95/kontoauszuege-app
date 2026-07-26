@@ -22,8 +22,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build (production mode)
-        run: mvn clean package -Dvaadin.productionMode=true -Pproduction
 
       - name: Create Dist
         run: |
@@ -51,11 +49,11 @@ jobs:
           cache: maven
 
       - name: Create Dist
-        run: |
-          ./dist.sh
+        run: bash ./dist.sh
+        shell: bash
 
       - name: Upload Windows bundle
         uses: actions/upload-artifact@v4
         with:
           name: kontoauszuege-app-windows
-          path: electron-starter/dist/Kontoauszuege Setup 1.0.0.exe
+          path: electron-starter/dist/*.exe
