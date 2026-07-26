@@ -127,22 +127,34 @@ function startBackend() {
       throw err;
     }
 
-    cmd = 'java';
+    // Prefer an app-bundled JRE if present under spring-boot-app/jre-minimal/bin
+    const bundledJreBin = path.join(process.resourcesPath || REPO_ROOT, 'spring-boot-app', 'jre-minimal', 'bin');
+    const javaExeName = process.platform === 'win32' ? 'java.exe' : 'java';
+    const bundledJava = path.join(bundledJreBin, javaExeName);
+
     // Pass -no-browser-start to Spring Boot so the backend doesn't open a browser
     args = ['-jar', jarPath, '-no-browser-start'];
-    console.log('Starting backend from JAR:', jarPath, 'with -no-browser-start');
 
-    backendProcess = spawn(cmd, args, {
+    if (fs.existsSync(bundledJava)) {
+      cmd = bundledJava;
+      console.log('Starting backend using bundled JRE:', bundledJava);
+    } else {
+      cmd = 'java';
+      console.log('Bundled JRE not found, falling back to system java');
+    }
+
+    const spawnOptions = {
       cwd: jarDir || REPO_ROOT,
-      // Use a shell on Windows to ensure .cmd/.bat resolution works reliably
-      shell: process.platform === 'win32',
-      /*windowsHide: true,*/
+      // Only use shell on Windows when relying on system `java` command
+      shell: cmd === 'java' && process.platform === 'win32',
       windowsHide: false,
       env: {
         ...process.env,
         SPRING_PROFILES_ACTIVE: process.env.SPRING_PROFILES_ACTIVE || 'default'
       }
-    });
+    };
+
+    backendProcess = spawn(cmd, args, spawnOptions);
   } catch (err) {
     console.error('Failed to spawn backend process:', err);
     if (splashWindow) {
