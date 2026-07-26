@@ -85,26 +85,39 @@ function startBackend() {
   let cmd = START_COMMAND;
   let args = ['spring-boot:run'];
   try {
+    // Search directories in order of preference. When packaged, the JAR
+    // should live in the app's resources under `spring-boot-app`.
+    const resourceDir = path.join(process.resourcesPath || REPO_ROOT, 'spring-boot-app');
     const targetDir = path.join(REPO_ROOT, 'target');
+    const searchDirs = [resourceDir, targetDir];
+
     let jarPath = null;
-    if (fs.existsSync(targetDir)) {
-      const files = fs.readdirSync(targetDir).filter(f => f.endsWith('.jar'));
-      // Prefer non-original jar files (exclude *.jar.original or *.original)
-      const candidates = files.filter(f => !/\.original$/.test(f) && !/\.jar\.original$/.test(f));
-      const jars = candidates.length ? candidates : files;
-      if (jars.length) {
-        // choose the most recent jar by mtime
-        jars.sort((a, b) => {
-          const aStat = fs.statSync(path.join(targetDir, a));
-          const bStat = fs.statSync(path.join(targetDir, b));
-          return bStat.mtimeMs - aStat.mtimeMs;
-        });
-        jarPath = path.join(targetDir, jars[0]);
+    let jarDir = null;
+
+    for (const dir of searchDirs) {
+      try {
+        if (!fs.existsSync(dir)) continue;
+        const files = fs.readdirSync(dir).filter(f => f.endsWith('.jar'));
+        const candidates = files.filter(f => !/\.original$/.test(f) && !/\.jar\.original$/.test(f));
+        const jars = candidates.length ? candidates : files;
+        if (jars.length) {
+          jars.sort((a, b) => {
+            const aStat = fs.statSync(path.join(dir, a));
+            const bStat = fs.statSync(path.join(dir, b));
+            return bStat.mtimeMs - aStat.mtimeMs;
+          });
+          jarPath = path.join(dir, jars[0]);
+          jarDir = dir;
+          break;
+        }
+      } catch (e) {
+        // ignore and continue searching
+        continue;
       }
     }
 
     if (!jarPath) {
-      const err = new Error('No runnable JAR found in target directory');
+      const err = new Error(`No runnable JAR found in any of: ${searchDirs.join(', ')}`);
       console.error(err.message);
       if (splashWindow) {
         splashWindow.webContents.send('startup-error', { message: err.message });
@@ -118,7 +131,7 @@ function startBackend() {
     console.log('Starting backend from JAR:', jarPath, 'with -no-browser-start');
 
     backendProcess = spawn(cmd, args, {
-      cwd: REPO_ROOT,
+      cwd: jarDir || REPO_ROOT,
       // Use a shell on Windows to ensure .cmd/.bat resolution works reliably
       shell: process.platform === 'win32',
       /*windowsHide: true,*/
