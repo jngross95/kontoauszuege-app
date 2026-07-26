@@ -25,7 +25,7 @@ jobs:
 
       - name: Create Dist
         run: |
-          ./dist.sh
+          ./dist.sh dist:linux
           ls -l electron-starter/dist/
 
       - name: Upload Linux bundle
@@ -49,7 +49,7 @@ jobs:
           cache: maven
 
       - name: Create Dist
-        run: bash ./dist.sh
+        run: bash ./dist.sh dist:win
         shell: bash
 
       - name: Upload Windows bundle
