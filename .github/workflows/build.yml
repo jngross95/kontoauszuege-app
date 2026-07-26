@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kontoauszuege-app-linux
-          path: electron-starter/dist/kontoauszuege-app-linux.tar.gz
+          path: electron-starter/dist/*.AppImage
 
   build-windows:
     runs-on: windows-latest
