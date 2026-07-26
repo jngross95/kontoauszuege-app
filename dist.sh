@@ -40,5 +40,6 @@ echo "Building Electron app"
 BUILD_TARGET="${1:-dist:win}"
 echo "Running: npm run $BUILD_TARGET"
 cd electron-starter
+npm ci
 npm run "$BUILD_TARGET"
 cd ..
