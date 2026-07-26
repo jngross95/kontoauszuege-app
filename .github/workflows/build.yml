@@ -25,41 +25,16 @@ jobs:
       - name: Build (production mode)
         run: mvn clean package -Dvaadin.productionMode=true -Pproduction
 
-      - name: Create minimal JRE with jlink
+      - name: Create Dist
         run: |
-          MODULES="java.se,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.naming.dns,jdk.unsupported,jdk.zipfs,jdk.management,jdk.management.agent,jdk.attach,jdk.charsets,jdk.localedata"
-          jlink \
-            --add-modules "$MODULES" \
-            --strip-debug \
-            --no-man-pages \
-            --no-header-files \
-            --compress zip-6 \
-            --output jre-minimal
-
-      - name: Assemble Linux bundle
-        run: |
-          JAR=$(ls target/kontoauszuege-app-*.jar | grep -v '\.original$' | head -1)
-          BUNDLE=kontoauszuege-app-linux
-          mkdir -p "$BUNDLE/app"
-          cp "$JAR" "$BUNDLE/app/app.jar"
-          cp -r jre-minimal "$BUNDLE/jre"
-          cat > "$BUNDLE/start.sh" << 'EOF'
-          #!/bin/sh
-          DIR="$(cd "$(dirname "$0")" && pwd)"
-          cd "$DIR"
-          exec "$DIR/jre/bin/java" \
-            -XX:+UseSerialGC \
-            -Xss512k \
-            -jar "$DIR/app/app.jar" "$@"
-          EOF
-          chmod +x "$BUNDLE/start.sh"
-          tar -czf kontoauszuege-app-linux.tar.gz "$BUNDLE"
+          ./dist.sh
+          ls -l electron-starter/dist/
 
       - name: Upload Linux bundle
         uses: actions/upload-artifact@v4
         with:
           name: kontoauszuege-app-linux
-          path: kontoauszuege-app-linux.tar.gz
+          path: electron-starter/dist/kontoauszuege-app-linux.tar.gz
 
   build-windows:
     runs-on: windows-latest
@@ -75,45 +50,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build (production mode)
-        run: mvn clean package -Dvaadin.productionMode=true -Pproduction
-        shell: cmd
-
-      - name: Create minimal JRE with jlink
+      - name: Create Dist
         run: |
-          $MODULES = "java.se,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.naming.dns,jdk.unsupported,jdk.zipfs,jdk.management,jdk.management.agent,jdk.attach,jdk.charsets,jdk.localedata"
-          jlink `
-            --add-modules $MODULES `
-            --strip-debug `
-            --no-man-pages `
-            --no-header-files `
-            --compress zip-6 `
-            --output jre-minimal
-        shell: pwsh
-
-      - name: Assemble Windows bundle
-        run: |
-          $JAR = Get-ChildItem target\kontoauszuege-app-*.jar |
-                 Where-Object { $_.Name -notmatch '\.original$' } |
-                 Select-Object -First 1 -ExpandProperty FullName
-          $BUNDLE = "kontoauszuege-app-windows"
-          New-Item -ItemType Directory -Force -Path "$BUNDLE\app" | Out-Null
-          Copy-Item $JAR "$BUNDLE\app\app.jar"
-          Copy-Item -Recurse jre-minimal "$BUNDLE\jre"
-          @'
-          @echo off
-          setlocal
-          set DIR=%~dp0
-          "%DIR%jre\bin\java.exe" ^
-            -XX:+UseSerialGC ^
-            -Xss512k ^
-            -jar "%DIR%app\app.jar" %*
-          '@ | Set-Content -Encoding ascii "$BUNDLE\start.bat"
-          Compress-Archive -Path $BUNDLE -DestinationPath kontoauszuege-app-windows.zip
-        shell: pwsh
+          ./dist.sh
 
       - name: Upload Windows bundle
         uses: actions/upload-artifact@v4
         with:
           name: kontoauszuege-app-windows
-          path: kontoauszuege-app-windows.zip
+          path: electron-starter/dist/Kontoauszuege Setup 1.0.0.exe
