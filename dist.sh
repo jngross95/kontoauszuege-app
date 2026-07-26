@@ -22,3 +22,5 @@ cp -v "$JAR" "$DIST_DIR/"
 
 echo "Done. Dist contents:"
 ls -l "$DIST_DIR"
+
+

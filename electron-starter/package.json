@@ -9,12 +9,10 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "check": "node --check main.js",
-    "prepare-jar": "node scripts/copy-jar.js",
-    "dist:linux": "npm run prepare-jar && electron-builder --linux zip",
-    "dist:win": "npm run prepare-jar && electron-builder --win zip",
-    "dist:mac": "npm run prepare-jar && electron-builder --mac dmg",
-    "dist:all": "npm run prepare-jar && electron-builder --linux zip --win zip --mac dmg"
+    "dist:linux": "electron-builder --linux zip",
+    "dist:win": "electron-builder --win zip",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:all": "electron-builder --linux zip --win zip --mac dmg"
   },
   "dependencies": {},
   "devDependencies": {
@@ -33,7 +31,7 @@
     ],
     "extraResources": [
       {
-        "from": "spring-boot-app",
+        "from": "../dist",
         "to": "spring-boot-app",
         "filter": ["**/*"]
       }
