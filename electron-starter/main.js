@@ -222,21 +222,71 @@ function waitForBackend(url, timeoutMs = 180000) {
   });
 }
 
-function shutdownBackend() {
+function shutdownBackend(timeoutMs = 10000) {
   shuttingDown = true;
 
-  if (backendProcess) {
-    if (process.platform === 'win32') {
-      spawn('taskkill', ['/pid', String(backendProcess.pid), '/T', '/F'], {
-        shell: false,
-        windowsHide: true,
-        stdio: 'ignore'
-      });
-    } else {
-      backendProcess.kill('SIGTERM');
+  return new Promise((resolve) => {
+    if (!backendProcess || !backendProcess.pid) {
+      backendProcess = null;
+      return resolve();
     }
-    backendProcess = null;
-  }
+
+    const pid = backendProcess.pid;
+    let finished = false;
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      backendProcess = null;
+      resolve();
+    };
+
+    // If the backendProcess exits on its own, resolve.
+    backendProcess.once('exit', finish);
+    backendProcess.once('close', finish);
+    backendProcess.once('error', (err) => {
+      console.error('Backend process error during shutdown:', err);
+      finish();
+    });
+
+    try {
+      if (process.platform === 'win32') {
+        // Use taskkill to ensure the whole process tree is terminated on Windows.
+        const killer = spawn('taskkill', ['/pid', String(pid), '/T', '/F'], {
+          shell: false,
+          windowsHide: true,
+          stdio: 'ignore'
+        });
+        // If taskkill fails quickly, we still wait for the timeout below.
+        killer.once('error', (e) => console.error('taskkill failed:', e));
+      } else {
+        // Try a graceful shutdown first.
+        try {
+          backendProcess.kill('SIGTERM');
+        } catch (e) {
+          console.error('Failed to send SIGTERM to backend process:', e);
+        }
+      }
+    } catch (e) {
+      console.error('Error while attempting to kill backend process:', e);
+    }
+
+    // Safety timeout: force kill if not exited within timeoutMs
+    setTimeout(() => {
+      if (!finished) {
+        try {
+          if (process.platform === 'win32') {
+            spawn('taskkill', ['/f', '/t', '/pid', String(pid)], { shell: true, windowsHide: true, stdio: 'ignore' });
+          } else {
+            try { process.kill(pid, 'SIGKILL'); } catch (e) { /* ignore */ }
+          }
+        } catch (e) {
+          console.error('Force-kill failed:', e);
+        }
+        finish();
+      }
+    }, timeoutMs);
+  });
 }
 
 async function bootstrap() {
@@ -286,13 +336,18 @@ app.whenReady().then(bootstrap);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    shutdownBackend();
     app.quit();
   }
 });
 
-app.on('before-quit', () => {
-  shutdownBackend();
+app.on('before-quit', (event) => {
+  if (shuttingDown) return;
+  event.preventDefault();
+  shutdownBackend().then(() => {
+    app.quit();
+  }).catch(() => {
+    app.quit();
+  });
 });
 
 app.on('activate', () => {
