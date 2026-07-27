@@ -7,6 +7,7 @@
   "type": "commonjs",
   "author": "",
   "homepage": "https://example.com/kontoauszuege",
+  "desktopName": "com.example.kontoauszuege",
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
@@ -47,7 +48,8 @@
         "deb",
         "flatpak"
       ],
-      "category": "Utility"
+      "category": "Utility",
+      "syncDesktopName": true
     },
     "win": {
       "target": [
@@ -70,6 +72,23 @@
         "libgtk-3-0"
       ],
       "priority": "optional"
+    },
+    "flatpak": {
+      "runtime": "org.freedesktop.Platform",
+      "runtimeVersion": "23.08",
+      "sdk": "org.freedesktop.Sdk",
+      "base": "org.electronjs.Electron2.BaseApp",
+      "baseVersion": "23.08",
+      "finishArgs": [
+        "--socket=wayland",
+        "--socket=x11",
+        "--share=ipc",
+        "--device=dri",
+        "--socket=pulseaudio",
+        "--filesystem=home",
+        "--share=network",
+        "--talk-name=org.freedesktop.Notifications"
+      ]
     }
   }
 }

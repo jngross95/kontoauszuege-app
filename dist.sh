@@ -6,6 +6,7 @@ ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DIST_DIR="$ROOT_DIR/dist"
 
 rm -rf "$DIST_DIR"
+rm -rf "$ROOT_DIR/electron-starter/dist"
 mkdir -p "$DIST_DIR"
 
 echo "Building production JAR..."
@@ -38,7 +39,7 @@ jlink \
 
 echo "Building Electron app"
 # Allow passing the npm script to run as first argument, default to "dist:win"
-BUILD_TARGET="${1:-dist:linux}"
+BUILD_TARGET="${1:-dist:linux:flatpak}"
 echo "Running: npm run $BUILD_TARGET"
 cd electron-starter
 npm ci
