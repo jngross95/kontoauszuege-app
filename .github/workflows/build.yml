@@ -35,11 +35,38 @@ jobs:
           ./dist.sh dist:linux:flatpak
           ls -l electron-starter/dist/
 
-      - name: Upload Linux bundle
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub release
+        id: create_release_linux
+        if: ${{ success() }}
+        uses: actions/create-release@v1
         with:
-          name: kontoauszuege-app-linux
-          path: electron-starter/dist/*.flatpak
+          tag_name: v${{ github.run_number }}-linux
+          release_name: Kontoauszuege flatpak (run ${{ github.run_number }})
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find Flatpak artifact
+        id: find_flatpak
+        run: |
+          f=$(ls electron-starter/dist/*.flatpak 2>/dev/null | head -n1 || true)
+          if [ -z "$f" ]; then
+            echo "No flatpak artifact found" >&2
+            exit 1
+          fi
+          echo "asset_path=$f" >> $GITHUB_OUTPUT
+          echo "asset_name=$(basename \"$f\")" >> $GITHUB_OUTPUT
+
+      - name: Upload Flatpak asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release_linux.outputs.upload_url }}
+          asset_path: ${{ steps.find_flatpak.outputs.asset_path }}
+          asset_name: ${{ steps.find_flatpak.outputs.asset_name }}
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-windows:
     runs-on: windows-latest
@@ -59,8 +86,35 @@ jobs:
         run: bash ./dist.sh dist:win
         shell: bash
 
-      - name: Upload Windows bundle
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub release
+        id: create_release_windows
+        if: ${{ success() }}
+        uses: actions/create-release@v1
         with:
-          name: kontoauszuege-app-windows
-          path: electron-starter/dist/*.exe
+          tag_name: v${{ github.run_number }}-windows
+          release_name: Kontoauszuege windows (run ${{ github.run_number }})
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find EXE artifact
+        id: find_exe
+        run: |
+          f=$(ls electron-starter/dist/*.exe 2>/dev/null | head -n1 || true)
+          if [ -z "$f" ]; then
+            echo "No exe artifact found" >&2
+            exit 1
+          fi
+          echo "asset_path=$f" >> $GITHUB_OUTPUT
+          echo "asset_name=$(basename \"$f\")" >> $GITHUB_OUTPUT
+
+      - name: Upload EXE asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release_windows.outputs.upload_url }}
+          asset_path: ${{ steps.find_exe.outputs.asset_path }}
+          asset_name: ${{ steps.find_exe.outputs.asset_name }}
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
