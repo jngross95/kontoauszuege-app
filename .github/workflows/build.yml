@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -35,41 +37,22 @@ jobs:
           ./dist.sh dist:linux:flatpak
           ls -l electron-starter/dist/
 
-      - name: Create GitHub release
-        id: create_release_linux
-        if: ${{ success() }}
-        uses: actions/create-release@v1
-        with:
-          tag_name: v${{ github.run_number }}-linux
-          release_name: Kontoauszuege flatpak (run ${{ github.run_number }})
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Find Flatpak artifact
-        id: find_flatpak
+      - name: Publish Flatpak as GitHub Release
+        if: success()
         run: |
-          f=$(ls electron-starter/dist/*.flatpak 2>/dev/null | head -n1 || true)
-          if [ -z "$f" ]; then
-            echo "No flatpak artifact found" >&2
-            exit 1
-          fi
-          echo "asset_path=$f" >> $GITHUB_OUTPUT
-          echo "asset_name=$(basename \"$f\")" >> $GITHUB_OUTPUT
-
-      - name: Upload Flatpak asset
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release_linux.outputs.upload_url }}
-          asset_path: ${{ steps.find_flatpak.outputs.asset_path }}
-          asset_name: ${{ steps.find_flatpak.outputs.asset_name }}
-          asset_content_type: application/octet-stream
+          TAG="v${{ github.run_number }}-linux"
+          ASSET=$(ls electron-starter/dist/*.flatpak 2>/dev/null | head -n1)
+          if [ -z "$ASSET" ]; then echo "No .flatpak artifact found"; exit 1; fi
+          gh release create "$TAG" "$ASSET" \
+            --title "Kontoauszuege flatpak (run ${{ github.run_number }})" \
+            --notes "Automated build from run ${{ github.run_number }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-windows:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -86,35 +69,15 @@ jobs:
         run: bash ./dist.sh dist:win
         shell: bash
 
-      - name: Create GitHub release
-        id: create_release_windows
-        if: ${{ success() }}
-        uses: actions/create-release@v1
-        with:
-          tag_name: v${{ github.run_number }}-windows
-          release_name: Kontoauszuege windows (run ${{ github.run_number }})
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Find EXE artifact
-        id: find_exe
+      - name: Publish EXE as GitHub Release
+        if: success()
         run: |
-          f=$(ls electron-starter/dist/*.exe 2>/dev/null | head -n1 || true)
-          if [ -z "$f" ]; then
-            echo "No exe artifact found" >&2
-            exit 1
-          fi
-          echo "asset_path=$f" >> $GITHUB_OUTPUT
-          echo "asset_name=$(basename \"$f\")" >> $GITHUB_OUTPUT
-
-      - name: Upload EXE asset
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release_windows.outputs.upload_url }}
-          asset_path: ${{ steps.find_exe.outputs.asset_path }}
-          asset_name: ${{ steps.find_exe.outputs.asset_name }}
-          asset_content_type: application/octet-stream
+          $tag = "v${{ github.run_number }}-windows"
+          $asset = Get-ChildItem electron-starter/dist/*.exe | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $asset) { Write-Error "No .exe artifact found"; exit 1 }
+          gh release create $tag $asset `
+            --title "Kontoauszuege windows (run ${{ github.run_number }})" `
+            --notes "Automated build from run ${{ github.run_number }}"  
+        shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
