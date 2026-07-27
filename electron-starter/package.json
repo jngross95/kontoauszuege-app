@@ -6,10 +6,12 @@
   "main": "main.js",
   "type": "commonjs",
   "author": "",
+  "homepage": "https://example.com/kontoauszuege",
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
     "dist:linux": "electron-builder --linux AppImage",
+    "dist:linux:deb": "electron-builder --linux deb",
     "dist:win": "electron-builder --win nsis",
     "dist:mac": "electron-builder --mac dmg",
     "dist:all": "electron-builder --linux AppImage --win nsis --mac dmg"
@@ -40,7 +42,8 @@
     ],
     "linux": {
       "target": [
-        "AppImage"
+        "AppImage",
+        "deb"
       ],
       "category": "Utility"
     },
@@ -58,6 +61,14 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true
+    }
+    ,
+    "deb": {
+      "maintainer": "Kontoauszuege Team <noreply@example.com>",
+      "depends": [
+        "libgtk-3-0"
+      ],
+      "priority": "optional"
     }
   }
 }
