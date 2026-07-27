@@ -21,7 +21,14 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
           cache: maven
-
+      - name: Install Flatpak tooling and runtimes
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder curl gnupg
+          # Ensure Flathub remote is available
+          sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          # Pre-install runtimes and Electron base to avoid long downloads during the build
+          sudo flatpak install --system -y flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 org.electronjs.Electron2.BaseApp//23.08 || true
 
       - name: Create Dist
         run: |
