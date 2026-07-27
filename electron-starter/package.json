@@ -12,6 +12,7 @@
     "dev": "electron .",
     "dist:linux": "electron-builder --linux AppImage",
     "dist:linux:deb": "electron-builder --linux deb",
+    "dist:linux:flatpak": "electron-builder --linux flatpak",
     "dist:win": "electron-builder --win nsis",
     "dist:mac": "electron-builder --mac dmg",
     "dist:all": "electron-builder --linux AppImage --win nsis --mac dmg"
@@ -43,7 +44,8 @@
     "linux": {
       "target": [
         "AppImage",
-        "deb"
+        "deb",
+        "flatpak"
       ],
       "category": "Utility"
     },
@@ -61,8 +63,7 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true
-    }
-    ,
+    },
     "deb": {
       "maintainer": "Kontoauszuege Team <noreply@example.com>",
       "depends": [
