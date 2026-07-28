@@ -26,17 +26,23 @@
     <h1>Kontoauszuege App</h1>
     <p>Persönliche Finanzverwaltung – lokal, ohne Cloud. Basiert auf Spring Boot &amp; Electron.</p>
 
-    <h2>Schnellinstallation</h2>
-    <p>App direkt per .flatpakref installieren (inkl. GPG-Verifikation):</p>
-    <div class="cmd">flatpak install --user https://jngross95.github.io/kontoauszuege-app/kontoauszuege.flatpakref</div>
-
-    <a class="btn" href="kontoauszuege.flatpakref">Mit Discover / GNOME Software öffnen (.flatpakref)</a>
+    <h2>Repository in Discover hinzufügen</h2>
+    <p>Fügt das Repository inkl. GPG-Key als durchsuchbare Quelle in Discover hinzu:</p>
+    <a class="btn" href="kontoauszuege.flatpakrepo">Repository in Discover hinzufügen (.flatpakrepo)</a>
 
     <hr />
 
-    <h2>Manuell – App installieren</h2>
-    <p class="small">Fügt den Remote automatisch hinzu (inkl. GPG-Key) und installiert die App:</p>
+    <h2>App installieren</h2>
+    <p>Nach dem Hinzufügen des Repositories:</p>
+    <div class="cmd">flatpak install --user kontoauszuege com.example.kontoauszuege</div>
+    <p class="small">Oder direkt per .flatpakref (Remote wird als nicht-durchsuchbar hinzugefügt):</p>
     <div class="cmd">flatpak install --user https://jngross95.github.io/kontoauszuege-app/kontoauszuege.flatpakref</div>
+
+    <hr />
+
+    <h2>Manuell – Repository hinzufügen</h2>
+    <p class="small">Mit GPG-Verifikation, ohne Discover:</p>
+    <div class="cmd">flatpak remote-add --user --from kontoauszuege https://jngross95.github.io/kontoauszuege-app/kontoauszuege.flatpakrepo</div>
 
     <h2>App starten</h2>
     <div class="cmd">flatpak run com.example.kontoauszuege</div>
