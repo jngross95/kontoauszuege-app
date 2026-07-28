@@ -74,6 +74,7 @@
       "priority": "optional"
     },
     "flatpak": {
+      "branch": "stable",
       "runtime": "org.freedesktop.Platform",
       "runtimeVersion": "23.08",
       "sdk": "org.freedesktop.Sdk",

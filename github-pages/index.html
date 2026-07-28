@@ -27,18 +27,16 @@
     <p>Persönliche Finanzverwaltung – lokal, ohne Cloud. Basiert auf Spring Boot &amp; Electron.</p>
 
     <h2>Schnellinstallation</h2>
-    <p>Repository hinzufügen und App installieren (ein Befehl):</p>
-    <div class="cmd">flatpak remote-add --if-not-exists --user kontoauszuege https://jngross95.github.io/kontoauszuege-app/repo &amp;&amp; flatpak install --user kontoauszuege com.example.kontoauszuege</div>
+    <p>App direkt per .flatpakref installieren (inkl. GPG-Verifikation):</p>
+    <div class="cmd">flatpak install --user https://jngross95.github.io/kontoauszuege-app/kontoauszuege.flatpakref</div>
 
     <a class="btn" href="kontoauszuege.flatpakref">Mit Discover / GNOME Software öffnen (.flatpakref)</a>
 
     <hr />
 
-    <h2>Manuell – Repository hinzufügen</h2>
-    <div class="cmd">flatpak remote-add --if-not-exists --user kontoauszuege https://jngross95.github.io/kontoauszuege-app/repo</div>
-
-    <h2>App installieren</h2>
-    <div class="cmd">flatpak install --user kontoauszuege com.example.kontoauszuege</div>
+    <h2>Manuell – App installieren</h2>
+    <p class="small">Fügt den Remote automatisch hinzu (inkl. GPG-Key) und installiert die App:</p>
+    <div class="cmd">flatpak install --user https://jngross95.github.io/kontoauszuege-app/kontoauszuege.flatpakref</div>
 
     <h2>App starten</h2>
     <div class="cmd">flatpak run com.example.kontoauszuege</div>
