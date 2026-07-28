@@ -49,6 +49,74 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload Flatpak as artifact for Pages deployment
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-bundle
+          path: electron-starter/dist/*.flatpak
+          retention-days: 1
+
+  deploy-pages:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Flatpak artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: flatpak-bundle
+          path: flatpak-bundle
+
+      - name: Install Flatpak
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak
+
+      - name: Create Flatpak repository
+        run: |
+          mkdir -p pages/repo
+          FLATPAK=$(ls flatpak-bundle/*.flatpak | head -n1)
+          flatpak build-import-bundle pages/repo "$FLATPAK"
+          flatpak build-update-repo pages/repo
+
+      - name: Create .flatpakref
+        run: |
+          cat > pages/kontoauszuege.flatpakref << 'EOF'
+          [Flatpak Ref]
+          Name=com.example.kontoauszuege
+          Branch=stable
+          Title=Kontoauszuege App
+          Url=https://jngross95.github.io/kontoauszuege-app/repo
+          RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo
+          IsRuntime=false
+          EOF
+
+      - name: Create index.html
+        run: cp github-pages/index.html pages/index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
   build-windows:
     runs-on: windows-latest
     permissions:
