@@ -26,23 +26,23 @@
     <h1>Kontoauszuege App</h1>
     <p>Persönliche Finanzverwaltung – lokal, ohne Cloud. Basiert auf Spring Boot &amp; Electron.</p>
 
-    <h2>Repository in Discover hinzufügen</h2>
-    <p>Fügt das Repository inkl. GPG-Key als durchsuchbare Quelle in Discover hinzu:</p>
-    <a class="btn" href="kontoauszuege.flatpakrepo">Repository in Discover hinzufügen (.flatpakrepo)</a>
+    <h2>Installation (empfohlen)</h2>
+    <p>Installiert als aktueller Nutzer – kein Root erforderlich:</p>
+    <div class="cmd">flatpak install --user https://jngross95.github.io/kontoauszuege-app/kontoauszuege.flatpakref</div>
 
     <hr />
 
-    <h2>App installieren</h2>
-    <p>Nach dem Hinzufügen des Repositories:</p>
-    <div class="cmd">flatpak install --user kontoauszuege com.example.kontoauszuege</div>
-    <p class="small">Oder direkt per .flatpakref (Remote wird als nicht-durchsuchbar hinzugefügt):</p>
-    <div class="cmd">flatpak install --user https://jngross95.github.io/kontoauszuege-app/kontoauszuege.flatpakref</div>
+    <h2>Via Discover / GNOME Software</h2>
+    <p class="small">Hinweis: Discover installiert standardmäßig systemweit (Root). Für Nutzer-Installation den obigen Befehl verwenden.</p>
+    <a class="btn" href="kontoauszuege.flatpakref">In Discover öffnen (.flatpakref)</a>
+    <a class="btn" href="kontoauszuege.flatpakrepo" style="margin-left:.5rem;background:#334155;color:var(--text)">Quelle in Discover hinzufügen (.flatpakrepo)</a>
 
     <hr />
 
     <h2>Manuell – Repository hinzufügen</h2>
     <p class="small">Mit GPG-Verifikation, ohne Discover:</p>
     <div class="cmd">flatpak remote-add --user --from kontoauszuege https://jngross95.github.io/kontoauszuege-app/kontoauszuege.flatpakrepo</div>
+    <div class="cmd">flatpak install --user kontoauszuege com.example.kontoauszuege</div>
 
     <h2>App starten</h2>
     <div class="cmd">flatpak run com.example.kontoauszuege</div>

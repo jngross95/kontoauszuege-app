@@ -102,8 +102,8 @@ jobs:
       - name: Create .flatpakref and .flatpakrepo
         run: |
           GPG_PUBLIC_KEY=$(gpg --export "$GPG_KEY_ID" | base64 -w 0)
-          sed "s/GPGKEY_PLACEHOLDER/$GPG_PUBLIC_KEY/" github-pages/kontoauszuege.flatpakref > pages/kontoauszuege.flatpakref
-          sed "s/GPGKEY_PLACEHOLDER/$GPG_PUBLIC_KEY/" github-pages/kontoauszuege.flatpakrepo > pages/kontoauszuege.flatpakrepo
+          sed "s|GPGKEY_PLACEHOLDER|$GPG_PUBLIC_KEY|" github-pages/kontoauszuege.flatpakref > pages/kontoauszuege.flatpakref
+          sed "s|GPGKEY_PLACEHOLDER|$GPG_PUBLIC_KEY|" github-pages/kontoauszuege.flatpakrepo > pages/kontoauszuege.flatpakrepo
 
       - name: Create index.html
         run: cp github-pages/index.html pages/index.html
