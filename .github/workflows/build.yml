@@ -102,24 +102,8 @@ jobs:
       - name: Create .flatpakref and .flatpakrepo
         run: |
           GPG_PUBLIC_KEY=$(gpg --export "$GPG_KEY_ID" | base64 -w 0)
-          cat > pages/kontoauszuege.flatpakref << EOF
-          [Flatpak Ref]
-          Name=com.example.kontoauszuege
-          Branch=stable
-          Title=Kontoauszuege App
-          Url=https://jngross95.github.io/kontoauszuege-app/repo
-          RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo
-          IsRuntime=false
-          GPGKey=$GPG_PUBLIC_KEY
-          EOF
-          cat > pages/kontoauszuege.flatpakrepo << EOF
-          [Flatpak Repo]
-          Title=Kontoauszuege
-          Url=https://jngross95.github.io/kontoauszuege-app/repo
-          Homepage=https://jngross95.github.io/kontoauszuege-app/
-          Comment=Kontoauszuege App Repository
-          GPGKey=$GPG_PUBLIC_KEY
-          EOF
+          sed "s/GPGKEY_PLACEHOLDER/$GPG_PUBLIC_KEY/" github-pages/kontoauszuege.flatpakref > pages/kontoauszuege.flatpakref
+          sed "s/GPGKEY_PLACEHOLDER/$GPG_PUBLIC_KEY/" github-pages/kontoauszuege.flatpakrepo > pages/kontoauszuege.flatpakrepo
 
       - name: Create index.html
         run: cp github-pages/index.html pages/index.html

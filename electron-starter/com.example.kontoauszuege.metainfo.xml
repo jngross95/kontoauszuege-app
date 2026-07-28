@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.example.kontoauszuege</id>
+  <name>Kontoauszuege</name>
+  <summary>Persönliche Finanzverwaltung – lokal, ohne Cloud</summary>
+  <description>
+    <p>Kontoauszuege ist eine persönliche Finanzverwaltungs-App, die lokal und ohne Cloud läuft. Basiert auf Spring Boot und Electron.</p>
+  </description>
+  <url type="homepage">https://jngross95.github.io/kontoauszuege-app/</url>
+  <developer>
+    <name>Kontoauszuege Team</name>
+  </developer>
+  <launchable type="desktop-id">com.example.kontoauszuege.desktop</launchable>
+  <releases>
+    <release version="1.0.0" date="2026-07-28"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

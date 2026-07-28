@@ -80,6 +80,9 @@
       "sdk": "org.freedesktop.Sdk",
       "base": "org.electronjs.Electron2.BaseApp",
       "baseVersion": "23.08",
+      "files": [
+        ["com.example.kontoauszuege.metainfo.xml", "/app/share/metainfo/com.example.kontoauszuege.metainfo.xml"]
+      ],
       "finishArgs": [
         "--socket=wayland",
         "--socket=x11",
