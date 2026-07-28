@@ -30,7 +30,7 @@ jobs:
           # Ensure Flathub remote is available
           sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           # Pre-install runtimes and Electron base to avoid long downloads during the build
-          sudo flatpak install --system -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 org.electronjs.Electron2.BaseApp//24.08 || true
+          sudo flatpak install --system -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.electronjs.Electron2.BaseApp//25.08 || true
 
       - name: Create Dist
         run: |

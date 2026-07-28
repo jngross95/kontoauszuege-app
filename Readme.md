@@ -24,3 +24,12 @@ cp kontoauszuege-app.desktop ~/.local/share/applications/kontoauszuege-app.deskt
 
 # Githubpages
 https://jngross95.github.io/kontoauszuege-app/
+
+
+Versionen:
+aktuell 25.08
+https://github.com/flathub/org.electronjs.Electron2.BaseApp
+
+achtung version taucht auch in der build.yml auf:
+sudo flatpak install --system -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.electronjs.Electron2.BaseApp//25.08 || true
+
