@@ -81,7 +81,7 @@
       "base": "org.electronjs.Electron2.BaseApp",
       "baseVersion": "25.08",
       "files": [
-        ["com.example.kontoauszuege.metainfo.xml", "/app/share/metainfo/com.example.kontoauszuege.metainfo.xml"]
+        ["com.example.kontoauszuege.metainfo.xml", "/share/metainfo/com.example.kontoauszuege.metainfo.xml"]
       ],
       "finishArgs": [
         "--socket=wayland",

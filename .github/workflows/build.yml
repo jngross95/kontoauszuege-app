@@ -96,16 +96,6 @@ jobs:
           FLATPAK=$(ls flatpak-bundle/*.flatpak | head -n1)
           flatpak build-import-bundle pages/repo "$FLATPAK"
 
-          # metainfo.xml in den OSTree-Commit injizieren
-          COMMIT=$(ostree --repo=pages/repo rev-parse app/com.example.kontoauszuege/x86_64/stable)
-          ostree --repo=pages/repo checkout --user-mode "$COMMIT" /tmp/flatpak-checkout
-          mkdir -p /tmp/flatpak-checkout/files/share/metainfo
-          cp electron-starter/com.example.kontoauszuege.metainfo.xml /tmp/flatpak-checkout/files/share/metainfo/
-          ostree --repo=pages/repo commit \
-            --branch=app/com.example.kontoauszuege/x86_64/stable \
-            --tree=dir=/tmp/flatpak-checkout \
-            --no-bindings
-
           COMMIT=$(ostree --repo=pages/repo rev-parse app/com.example.kontoauszuege/x86_64/stable)
           ostree gpg-sign --repo=pages/repo "$COMMIT" "$GPG_KEY_ID"
           flatpak build-update-repo --gpg-sign="$GPG_KEY_ID" --title="Kontoauszuege" --homepage="https://jngross95.github.io/kontoauszuege-app/" pages/repo
