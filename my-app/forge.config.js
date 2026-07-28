@@ -1,5 +1,7 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+const pkg = require('./package.json');
+const appName = (pkg.productName || pkg.name || 'my-app').toLowerCase().replace(/\s+/g, '-');
 
 module.exports = {
   packagerConfig: {
@@ -9,12 +11,29 @@ module.exports = {
   makers: [
     {
       name: '@electron-forge/maker-deb',
-      config: {},
+      config: {
+        options: {
+          maintainer: 'Jürgen Gross <jngross95@gmail.com>',
+          homepage: 'https://example.com',
+          section: 'utils',
+          priority: 'optional',
+          depends: [],
+          // use the package.json version for the deb package
+          version: require('./package.json').version,
+        },
+      },
     },
     {
       name: '@electron-forge/maker-flatpak',
       config: {
         id: 'com.example.myapp',
+        name: pkg.productName || pkg.name,
+        version: pkg.version,
+        summary: pkg.description || '',
+        description: pkg.description || '',
+        license: pkg.license || 'MIT',
+        url: pkg.homepage || 'https://example.com',
+        command: appName,
         base: 'org.electronjs.Electron2.BaseApp',
         baseVersion: '25.08',
         runtime: 'org.freedesktop.Platform',
