@@ -10,6 +10,34 @@ module.exports = {
     {
       name: '@electron-forge/maker-deb',
       config: {},
+    },
+    {
+      name: '@electron-forge/maker-flatpak',
+      config: {
+        id: 'com.example.myapp',
+        base: 'org.electronjs.Electron2.BaseApp',
+        baseVersion: '25.08',
+        runtime: 'org.freedesktop.Platform',
+        runtimeVersion: '25.08',
+        sdk: 'org.freedesktop.Sdk',
+        sdkVersion: '25.08',
+        // files to include in the flatpak bundle (optional)
+        // files: [ ['path/on/host', '/path/in/flatpak'] ],
+        finishArgs: [
+          '--share=network',
+          '--share=ipc',
+          '--socket=wayland',
+          '--socket=x11',
+          '--socket=session-bus',
+          '--socket=pulseaudio',
+          '--device=dri',
+          '--filesystem=home',
+          '--env=TMPDIR=/var/tmp',
+          '--talk-name=org.freedesktop.Notifications'
+        ],
+        // optional extra modules for flatpak-builder
+        modules: []
+      }
     }
   ],
   plugins: [
