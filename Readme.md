@@ -20,3 +20,7 @@ String dstName,
 
 
 cp kontoauszuege-app.desktop ~/.local/share/applications/kontoauszuege-app.desktop
+
+
+# Githubpages
+https://jngross95.github.io/kontoauszuege-app/

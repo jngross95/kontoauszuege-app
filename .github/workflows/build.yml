@@ -81,7 +81,13 @@ jobs:
       - name: Install Flatpak
         run: |
           sudo apt-get update
-          sudo apt-get install -y flatpak ostree
+          sudo apt-get install -y flatpak ostree gnupg
+
+      - name: Import GPG signing key
+        run: |
+          echo "${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}" | base64 -d | gpg --import
+          GPG_KEY_ID=$(gpg --list-keys --with-colons flatpak@kontoauszuege | grep '^fpr' | head -1 | cut -d: -f10)
+          echo "GPG_KEY_ID=$GPG_KEY_ID" >> $GITHUB_ENV
 
       - name: Create Flatpak repository
         run: |
@@ -89,11 +95,12 @@ jobs:
           ostree init --mode=archive-z2 --repo=pages/repo
           FLATPAK=$(ls flatpak-bundle/*.flatpak | head -n1)
           flatpak build-import-bundle pages/repo "$FLATPAK"
-          flatpak build-update-repo pages/repo
+          flatpak build-update-repo --gpg-sign="$GPG_KEY_ID" pages/repo
 
       - name: Create .flatpakref
         run: |
-          cat > pages/kontoauszuege.flatpakref << 'EOF'
+          GPG_PUBLIC_KEY=$(gpg --export "$GPG_KEY_ID" | base64 -w 0)
+          cat > pages/kontoauszuege.flatpakref << EOF
           [Flatpak Ref]
           Name=com.example.kontoauszuege
           Branch=stable
@@ -101,6 +108,7 @@ jobs:
           Url=https://jngross95.github.io/kontoauszuege-app/repo
           RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo
           IsRuntime=false
+          GPGKey=$GPG_PUBLIC_KEY
           EOF
 
       - name: Create index.html
