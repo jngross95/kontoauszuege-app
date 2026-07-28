@@ -4,6 +4,10 @@ const fs = require('fs');
 const http = require('http');
 const path = require('path');
 
+// Must be set before app is ready so the WM_CLASS matches the Flatpak appId.
+// KDE Discover uses this to detect that the launched app window has appeared.
+app.setName('Kontoauszuege');
+
 const REPO_ROOT = path.resolve(__dirname, '..');
 const BACKEND_URL = process.env.KONTOAUSZUEGE_URL || 'http://127.0.0.1:8084';
 const BACKEND_ENTRY = `${BACKEND_URL.replace(/\/$/, '')}/`;

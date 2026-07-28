@@ -43,5 +43,6 @@ BUILD_TARGET="${1:-dist:linux:flatpak}"
 echo "Running: npm run $BUILD_TARGET"
 cd electron-starter
 npm ci
+export DEBUG=electron-builder 
 npm run "$BUILD_TARGET"
 cd ..
