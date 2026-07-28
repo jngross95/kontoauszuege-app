@@ -95,6 +95,8 @@ jobs:
           ostree init --mode=archive-z2 --repo=pages/repo
           FLATPAK=$(ls flatpak-bundle/*.flatpak | head -n1)
           flatpak build-import-bundle pages/repo "$FLATPAK"
+          COMMIT=$(ostree --repo=pages/repo rev-parse app/com.example.kontoauszuege/x86_64/stable)
+          ostree gpg-sign --repo=pages/repo "$COMMIT" "$GPG_KEY_ID"
           flatpak build-update-repo --gpg-sign="$GPG_KEY_ID" pages/repo
 
       - name: Create .flatpakref
