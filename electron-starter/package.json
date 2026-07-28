@@ -13,7 +13,7 @@
     "dev": "electron .",
     "dist:linux": "electron-builder --linux AppImage",
     "dist:linux:deb": "electron-builder --linux deb",
-    "dist:linux:flatpak": "rm -rf \"$HOME/.cache/electron-builder\" /tmp/flatpak-bundler-* && PATH=\"$PWD/bin:$PATH\" electron-builder --linux flatpak",
+    "dist:linux:flatpak": "export DEBUG=\"@malept/flatpak-bundler\"&&rm -rf \"$HOME/.cache/electron-builder\" /tmp/flatpak-bundler-* && PATH=\"$PWD/bin:$PATH\" electron-builder --linux flatpak",
     "dist:win": "electron-builder --win nsis",
     "dist:mac": "electron-builder --mac dmg",
     "dist:all": "electron-builder --linux AppImage --win nsis --mac dmg"
