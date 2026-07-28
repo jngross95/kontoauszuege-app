@@ -30,7 +30,7 @@ jobs:
           # Ensure Flathub remote is available
           sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           # Pre-install runtimes and Electron base to avoid long downloads during the build
-          sudo flatpak install --system -y flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 org.electronjs.Electron2.BaseApp//23.08 || true
+          sudo flatpak install --system -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 org.electronjs.Electron2.BaseApp//24.08 || true
 
       - name: Create Dist
         run: |
@@ -97,7 +97,7 @@ jobs:
           flatpak build-import-bundle pages/repo "$FLATPAK"
           COMMIT=$(ostree --repo=pages/repo rev-parse app/com.example.kontoauszuege/x86_64/stable)
           ostree gpg-sign --repo=pages/repo "$COMMIT" "$GPG_KEY_ID"
-          flatpak build-update-repo --gpg-sign="$GPG_KEY_ID" pages/repo
+          flatpak build-update-repo --gpg-sign="$GPG_KEY_ID" --title="Kontoauszuege" --homepage="https://jngross95.github.io/kontoauszuege-app/" pages/repo
 
       - name: Create .flatpakref and .flatpakrepo
         run: |
