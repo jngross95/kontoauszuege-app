@@ -11,12 +11,15 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "dist:linux": "electron-builder --linux AppImage",
-    "dist:linux:deb": "electron-builder --linux deb",
-    "dist:linux:flatpak": "export DEBUG=\"@malept/flatpak-bundler\"&&rm -rf \"$HOME/.cache/electron-builder\" /tmp/flatpak-bundler-* && PATH=\"$PWD/bin:$PATH\" electron-builder --linux flatpak",
+    "package": "electron-builder --linux dir",
+    "dist:linux:appimage": "rm -rf .flatpak-builder && electron-builder --linux AppImage",
+    "dist:linux:deb": "rm -rf .flatpak-builder && electron-builder --linux deb",
+    "dist:linux:dir": "rm -rf .flatpak-builder && rm -rf \"$HOME/.cache/electron-builder\" /tmp/flatpak-bundler-* && PATH=\"$PWD/bin:$PATH\" electron-builder --linux dir",
     "dist:win": "electron-builder --win nsis",
     "dist:mac": "electron-builder --mac dmg",
-    "dist:all": "electron-builder --linux AppImage --win nsis --mac dmg"
+    "dist:all": "electron-builder --linux AppImage --win nsis --mac dmg",
+    "flatpak:build": "flatpak-builder --force-clean --repo=repo build com.example.kontoauszuege.yml",
+    "dist:linux:flatpak": "npm run dist:linux:dir && npm run flatpak:build"
   },
   "devDependencies": {
     "electron": "^43.2.0",
@@ -81,7 +84,7 @@
       "base": "org.electronjs.Electron2.BaseApp",
       "baseVersion": "25.08",
       "files": [
-        ["com.example.kontoauszuege.metainfo.xml", "/app/share/metainfo/com.example.kontoauszuege.metainfo.xml"]
+       
       ],
       "finishArgs": [
         "--socket=wayland",

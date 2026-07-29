@@ -12,6 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -30,58 +35,12 @@ jobs:
           # Ensure Flathub remote is available
           sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           # Pre-install runtimes and Electron base to avoid long downloads during the build
-          sudo flatpak install --system -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.electronjs.Electron2.BaseApp//25.08 || true
+          sudo flatpak install --system -y flatpak ostree gnupg org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.electronjs.Electron2.BaseApp//25.08 || true
 
       - name: Create Dist
         run: |
           ./dist.sh dist:linux:flatpak
-          ls -l electron-starter/dist/
-
-      - name: Publish Flatpak as GitHub Release
-        if: success()
-        run: |
-          TAG="v${{ github.run_number }}-linux"
-          ASSET=$(ls electron-starter/dist/*.flatpak 2>/dev/null | head -n1)
-          if [ -z "$ASSET" ]; then echo "No .flatpak artifact found"; exit 1; fi
-          gh release create "$TAG" "$ASSET" \
-            --title "Kontoauszuege flatpak (run ${{ github.run_number }})" \
-            --notes "Automated build from run ${{ github.run_number }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Flatpak as artifact for Pages deployment
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: flatpak-bundle
-          path: electron-starter/dist/*.flatpak
-          retention-days: 1
-
-  deploy-pages:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download Flatpak artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: flatpak-bundle
-          path: flatpak-bundle
-
-      - name: Install Flatpak
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y flatpak ostree gnupg
+          ls -l electron-starter/repo/
 
       - name: Import GPG signing key
         run: |
@@ -92,9 +51,7 @@ jobs:
       - name: Create Flatpak repository
         run: |
           mkdir -p pages/repo
-          ostree init --mode=archive-z2 --repo=pages/repo
-          FLATPAK=$(ls flatpak-bundle/*.flatpak | head -n1)
-          flatpak build-import-bundle pages/repo "$FLATPAK"
+          cp -r electron-starter/repo/* pages/repo/
           COMMIT=$(ostree --repo=pages/repo rev-parse app/com.example.kontoauszuege/x86_64/stable)
           ostree gpg-sign --repo=pages/repo "$COMMIT" "$GPG_KEY_ID"
           flatpak build-update-repo --gpg-sign="$GPG_KEY_ID" --title="Kontoauszuege" --homepage="https://jngross95.github.io/kontoauszuege-app/" pages/repo

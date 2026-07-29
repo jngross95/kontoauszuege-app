@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.example.myapp</id>
+  <name>my-app</name>
+  <summary>Coole Software</summary>
+  <developer_name>JSoft</developer_name>
+  <metadata_license>MIT</metadata_license>
+  <summary>My Electron application description</summary>
+  <description>
+    My Electron application description
+  </description>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <url type="homepage">https://example.com</url>
+  <update_contact>https://example.com</update_contact>
+  <releases>
+    <release version="1.0.0" date="2026-07-28"/>
+  </releases>
+  <developer_name>Jürgen Gross</developer_name>
+</component>

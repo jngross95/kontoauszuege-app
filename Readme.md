@@ -33,3 +33,11 @@ https://github.com/flathub/org.electronjs.Electron2.BaseApp
 achtung version taucht auch in der build.yml auf:
 sudo flatpak install --system -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.electronjs.Electron2.BaseApp//25.08 || true
 
+
+
+find . -type f -exec grep -n "3.1.2" {} +
+flatpak info --show-location com.example.kontoauszuege
+
+
+python3 -m http.server 8080 --directory repo/
+flatpak remote-add --user --no-gpg-verify local-app http://localhost:8080

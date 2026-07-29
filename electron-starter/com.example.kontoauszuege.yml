@@ -1,0 +1,49 @@
+app-id: org.flathub.electron-sample-app
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: '25.08'
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node24
+command: run.sh
+separate-locales: false
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --share=network
+  - --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
+build-options:
+  append-path: /usr/lib/sdk/node24/bin
+  env:
+    NPM_CONFIG_LOGLEVEL: info
+modules:
+  - name: com.example.kontoauszuege
+    buildsystem: simple
+    build-commands:
+      # Bundle the already built Electron output into the Flatpak app
+      - cp -a ./dist/linux-unpacked /app/main
+      # Install app wrapper
+      - install -Dm755 -t /app/bin/ ../run.sh
+      # Install AppStream metadata
+      - install -Dm644 com.example.kontoauszuege.metainfo.xml /app/share/metainfo/com.example.kontoauszuege.metainfo.xml
+      # Install desktop file and icon
+      - install -Dm644 com.example.kontoauszuege.desktop /app/share/applications/com.example.kontoauszuege.desktop
+      #- install -Dm644 images/logo.svg /app/share/icons/hicolor/scalable/apps/com.example.kontoauszuege.svg
+    subdir: main
+    sources:
+      - type: file
+        path: com.example.kontoauszuege.desktop
+        dest: main
+      - type: file
+        path: com.example.kontoauszuege.metainfo.xml
+        dest: main
+      - type: dir
+        path: dist/linux-unpacked
+        dest: main/dist/linux-unpacked
+      - type: script
+        dest-filename: run.sh
+        commands:
+          - zypak-wrapper.sh /app/main/com.example.kontoauszuege "$@"

@@ -55,7 +55,12 @@ module.exports = {
           '--talk-name=org.freedesktop.Notifications'
         ],
         // optional extra modules for flatpak-builder
-        modules: []
+        modules: [
+         
+        ],
+        // Copy AppStream metainfo into the Flatpak
+        files: [
+        ]
       }
     }
   ],

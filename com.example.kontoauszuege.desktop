@@ -1,0 +1,18 @@
+[Desktop Entry]
+Comment[de_DE]=
+Comment=
+Exec=run.sh
+GenericName[de_DE]=
+GenericName=
+Icon=/home/jngross/proj/kontoauszuege-app/src/main/resources/META-INF/resources/icons/kontoausz-favicon-48.png
+MimeType=
+Name[de_DE]=kontoausz-app
+Name=kontoausz-app
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=
+StartupWMClass=KontoauszuegeApp
