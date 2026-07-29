@@ -2,11 +2,12 @@
 Comment[de_DE]=
 Comment=
 Exec=run.sh
+Icon=com.example.kontoauszuege
 GenericName[de_DE]=
 GenericName=
 MimeType=
-Name[de_DE]=kontoausz-app
-Name=kontoausz-app
+Name[de_DE]=Kontoauszuege
+Name=Kontoauszuege
 Path=
 StartupNotify=true
 Terminal=false

@@ -9,6 +9,7 @@
   <url type="homepage">https://jngross95.github.io/kontoauszuege-app/</url>
   <developer>
     <name>Kontoauszuege Team</name>
+    <id>jngross95</id>
   </developer>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
