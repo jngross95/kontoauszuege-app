@@ -31,7 +31,7 @@ modules:
       - install -Dm644 com.example.kontoauszuege.metainfo.xml /app/share/metainfo/com.example.kontoauszuege.metainfo.xml
       # Install desktop file and icon
       - install -Dm644 com.example.kontoauszuege.desktop /app/share/applications/com.example.kontoauszuege.desktop
-      #- install -Dm644 images/logo.svg /app/share/icons/hicolor/scalable/apps/com.example.kontoauszuege.svg
+      - install -Dm644 images/logo.svg /app/share/icons/hicolor/scalable/apps/com.example.kontoauszuege.svg
     subdir: main
     sources:
       - type: file
@@ -43,6 +43,9 @@ modules:
       - type: dir
         path: dist/linux-unpacked
         dest: main/dist/linux-unpacked
+      - type: file
+        path: images/logo.svg
+        dest: main/images
       - type: script
         dest-filename: run.sh
         commands:
