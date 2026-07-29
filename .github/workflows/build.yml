@@ -55,7 +55,7 @@ jobs:
         run: |
           mkdir -p pages/repo
           cp -r electron-starter/repo/* pages/repo/
-          COMMIT=$(ostree --repo=pages/repo rev-parse app/com.example.kontoauszuege/x86_64/stable)
+          COMMIT=$(ostree --repo=pages/repo rev-parse app/com.example.kontoauszuege/x86_64/master)
           ostree gpg-sign --repo=pages/repo "$COMMIT" "$GPG_KEY_ID"
           flatpak build-update-repo --gpg-sign="$GPG_KEY_ID" --title="Kontoauszuege" --homepage="https://jngross95.github.io/kontoauszuege-app/" pages/repo
 
