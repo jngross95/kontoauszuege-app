@@ -15,6 +15,12 @@ finish-args:
   - --socket=pulseaudio
   - --share=network
   - --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
+  - --socket=x11
+  - --device=dri
+  - --socket=session-bus
+  - --filesystem=home
+  - --talk-name=org.freedesktop.Notifications
+  - --own-name=com.example.kontoauszuege
 build-options:
   append-path: /usr/lib/sdk/node24/bin
   env:
