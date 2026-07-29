@@ -19,7 +19,8 @@
     "dist:mac": "electron-builder --mac dmg",
     "dist:all": "electron-builder --linux AppImage --win nsis --mac dmg",
     "flatpak:build": "flatpak-builder --force-clean --repo=repo build com.example.kontoauszuege.yml",
-    "dist:linux:flatpak": "npm run dist:linux:dir && npm run flatpak:build"
+    "dist:linux:flatpak": "npm run dist:linux:dir && npm run flatpak:build",
+    "bundle": "flatpak build-bundle repo com.example.kontoauszuege.flatpak com.example.kontoauszuege master"
   },
   "devDependencies": {
     "electron": "^43.2.0",
