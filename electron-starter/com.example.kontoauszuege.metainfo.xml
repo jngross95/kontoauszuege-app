@@ -10,6 +10,8 @@
   <developer>
     <name>Kontoauszuege Team</name>
   </developer>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
   <launchable type="desktop-id">com.example.kontoauszuege.desktop</launchable>
   <releases>
     <release version="1.0.0" date="2026-07-28"/>
