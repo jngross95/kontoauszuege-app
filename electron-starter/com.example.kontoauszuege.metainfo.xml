@@ -7,13 +7,13 @@
     <p>Kontoauszuege ist eine persönliche Finanzverwaltungs-App, die lokal und ohne Cloud läuft. Basiert auf Spring Boot und Electron.</p>
   </description>
   <url type="homepage">https://jngross95.github.io/kontoauszuege-app/</url>
-  <developer>
-    <name>Kontoauszuege Team</name>
-    <id>jngross95</id>
-  </developer>
+  <developer_name>Kontoauszuege Team</developer_name>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
   <launchable type="desktop-id">com.example.kontoauszuege.desktop</launchable>
+  <categories>
+    <category>Utility</category>
+  </categories>
   <releases>
     <release version="1.0.0" date="2026-07-28"/>
   </releases>

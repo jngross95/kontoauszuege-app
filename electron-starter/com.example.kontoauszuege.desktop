@@ -1,18 +1,10 @@
 [Desktop Entry]
-Comment[de_DE]=
-Comment=
+Name=Kontoauszuege
+Comment=Persönliche Finanzverwaltung – lokal, ohne Cloud
 Exec=run.sh
 Icon=com.example.kontoauszuege
-GenericName[de_DE]=
-GenericName=
-MimeType=
-Name[de_DE]=Kontoauszuege
-Name=Kontoauszuege
-Path=
-StartupNotify=true
 Terminal=false
-TerminalOptions=
 Type=Application
-X-KDE-SubstituteUID=false
-X-KDE-Username=
+StartupNotify=true
+Categories=Utility;
 StartupWMClass=KontoauszuegeApp
