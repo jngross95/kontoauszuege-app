@@ -32,6 +32,8 @@ public class BankConnection implements AutoCloseable {
     final String user;
     final String bankPin;
 
+    private String customMessages = "";
+
     public BankConnection(String name, String bic, String user, String bankPin, DlgCallback callback) {
         this.name = name;
         this.bic = bic;
@@ -477,67 +479,75 @@ public class BankConnection implements AutoCloseable {
             String endToEndId,
             String usage) throws Exception {
 
-        if(isTestBank())
-            return "ok";
+        try {
+            if (isTestBank())
+                return "ok";
 
-        var src = getKonto(iban);
+            var src = getKonto(iban);
 
-        HBCIJob<?> umsatzJob =  handle.newJob("UebSEPA");
+            HBCIJob<?> umsatzJob = handle.newJob("UebSEPA");
 
-        var bic = info.getBic();
-        //src.name = HBCIProperties.replace(src.name,HBCIProperties.TEXT_REPLACEMENTS_SEPA);
+            var bic = info.getBic();
+            //src.name = HBCIProperties.replace(src.name,HBCIProperties.TEXT_REPLACEMENTS_SEPA);
 
-        umsatzJob.setParam("src",  src);
+            umsatzJob.setParam("src", src);
 
-        umsatzJob.setParam("src.bic",  bic);
-        //var iban = HBCIUtils.getIBANForKonto(src);
-        umsatzJob.setParam("src.iban", iban);
+            umsatzJob.setParam("src.bic", bic);
+            //var iban = HBCIUtils.getIBANForKonto(src);
+            umsatzJob.setParam("src.iban", iban);
 
-        org.kapott.hbci.structures.Konto dst = new org.kapott.hbci.structures.Konto();
+            org.kapott.hbci.structures.Konto dst = new org.kapott.hbci.structures.Konto();
 
-        if( !HBCIUtils.checkIBANCRC(dstIban))
-        {
-            throw new Exception(String.format("CRC Check fehlgeschlagen für die iban:'%s'. Empfänger Name: %s" ,
-                    dstIban, dstName));
+            if (!HBCIUtils.checkIBANCRC(dstIban)) {
+                throw new Exception(String.format("CRC Check fehlgeschlagen für die iban:'%s'. Empfänger Name: %s",
+                        dstIban, dstName));
+            }
+
+            dst.iban = dstIban;
+            dst.bic = dstBic;
+            dst.name = dstName;
+            umsatzJob.setParam("dst", dst);
+            umsatzJob.setParam("btg", new Value(btgValue, "EUR"));
+
+            if (usage != null && usage.length() > 0)
+                umsatzJob.setParam("usage", usage);
+
+
+            if (endToEndId != null && endToEndId.trim().length() > 0)
+                umsatzJob.setParam("endtoendid", endToEndId);
+
+
+            umsatzJob.addToQueue(); // Zur Liste der auszufuehrenden Auftraege hinzufuegen
+
+            System.out.println("before handle.execute");
+
+            HBCIExecStatus status = handle.execute();
+
+            // Pruefen, ob die Kommunikation mit der Bank grundsaetzlich geklappt hat
+            if (!status.isOK()) {
+                throw new Exception(String.format("Fehler beim handle.execute: %s", status.toString()));
+            }
+
+            var result = umsatzJob.getJobResult();
+
+            // Pruefen, ob der Abruf  geklappt hat
+            if (!result.isOK()) {
+                var msg = String.format("Fehler beim umsatzJob.getJobResult: %s", result.toString());
+                System.out.println("--------- ERROR --------\n" + msg + "\n\n" + customMessages);
+                throw new Exception(msg);
+            }
+
+            var ret = result.getJobStatus().toString();
+            System.out.println("--------- JobResult: --------\n" + ret);
+
+            System.out.println("------ Kontoauszüge holen erfolgreich ------\n");
+            return ret;
+        } catch(Exception e) {
+            var msg = String.format("Fehler beim getJobResult: %s", e.toString()+"\n\n" + customMessages);
+            System.out.println("--------- ERROR --------\n" + msg);
+
+            throw e;
         }
-
-        dst.iban = dstIban;
-        dst.bic = dstBic;
-        dst.name = dstName;
-        umsatzJob.setParam("dst",dst);
-        umsatzJob.setParam("btg",new Value(btgValue,"EUR"));
-
-        if (usage != null && usage.length() > 0)
-            umsatzJob.setParam("usage",usage);
-
-
-        if (endToEndId != null && endToEndId.trim().length() > 0)
-            umsatzJob.setParam("endtoendid",  endToEndId);
-
-
-        umsatzJob.addToQueue(); // Zur Liste der auszufuehrenden Auftraege hinzufuegen
-
-        System.out.println("before handle.execute");
-
-        HBCIExecStatus status = handle.execute();
-
-        // Pruefen, ob die Kommunikation mit der Bank grundsaetzlich geklappt hat
-        if (!status.isOK()) {
-            throw new Exception(String.format("Fehler beim handle.execute: %s" , status.toString()));
-        }
-
-        var result =  umsatzJob.getJobResult();
-
-        // Pruefen, ob der Abruf  geklappt hat
-        if (!result.isOK()) {
-            throw new Exception(String.format("Fehler beim umsatzJob.getJobResult: %s" , result.toString()));
-        }
-
-        var ret = result.getJobStatus().toString();
-        System.out.println("--------- JobResult: --------\n"+ret);
-
-        System.out.println("------ Kontoauszüge holen erfolgreich ------\n");
-        return ret;
     }
 
 
@@ -574,7 +584,7 @@ public class BankConnection implements AutoCloseable {
         public void log(String msg, int level, Date date, StackTraceElement trace)
         {
             // Ausgabe von Log-Meldungen bei Bedarf
-            System.out.println(msg);
+            System.out.println("LOG-MSG: '"+msg+"'");
         }
 
         /**
@@ -827,10 +837,9 @@ public class BankConnection implements AutoCloseable {
                     break;
                 //
                 ////////////////////////////////////////////////////////////////////////
-
                 // Manche Fehlermeldungen werden hier ausgegeben
                 case HAVE_ERROR:
-                    BankConnection.log(msg);
+                    BankConnection.log("HAVE_ERROR:'"+msg+"'");
                     break;
                 case NEED_COUNTRY:
                     retData.replace(0,retData.length(),"DE");
@@ -860,6 +869,13 @@ public class BankConnection implements AutoCloseable {
                     sb.append(x.toString());
                 }
             }
+
+            if(statusTag==28) {
+                //Meldung der Bank
+                BankConnection currentConnection= BankConnection.currentConnection;
+                currentConnection.customMessages += sb.toString();
+            }
+
             System.out.println(String.format("statusTag=%d  o=%s",statusTag, sb.toString()   ));
         }
 
