@@ -129,7 +129,7 @@ public class UeberweisungenView extends VerticalLayout {
         bearbeitenBtn.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
         bearbeitenBtn.setEnabled(false);
 
-        kopierenBtn = new Button("Kopieren", VaadinIcon.COPY.create(), e -> kopieren());
+        kopierenBtn = new Button("Kopieren", VaadinIcon.EDIT.create(), e -> kopieren());
         kopierenBtn.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
         kopierenBtn.setEnabled(false);
 
