@@ -130,7 +130,7 @@ public class UeberweisungenView extends VerticalLayout {
         bearbeitenBtn.setEnabled(false);
 
         kopierenBtn = new Button("Kopieren", VaadinIcon.COPY.create(), e -> kopieren());
-        kopierenBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        kopierenBtn.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
         kopierenBtn.setEnabled(false);
 
         loeschenBtn = new Button("Löschen", VaadinIcon.TRASH.create(), e -> loeschen());
@@ -162,6 +162,7 @@ public class UeberweisungenView extends VerticalLayout {
         neu.setEmpfaengerBic(selected.getEmpfaengerBic());
         neu.setEmpfaengerIban(selected.getEmpfaengerIban());
         neu.setVerwendungszweck(selected.getVerwendungszweck());
+        neu.setInstantPayment(selected.isInstantPayment());
         //neu.setBetrag(selected.getBetrag());
         neu.setStatus(UeberweisungStatus.NEW);
         ladeFormular(neu);
