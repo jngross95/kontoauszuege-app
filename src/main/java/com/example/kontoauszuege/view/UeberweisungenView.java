@@ -67,6 +67,7 @@ public class UeberweisungenView extends VerticalLayout {
     private Button bearbeitenBtn;
     private Button sendenBtn;
     private Button loeschenBtn;
+    private Button kopierenBtn;
 
     public UeberweisungenView(UeberweisungService service,
                               BankAccountService bankAccountService,
@@ -126,6 +127,10 @@ public class UeberweisungenView extends VerticalLayout {
         bearbeitenBtn.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
         bearbeitenBtn.setEnabled(false);
 
+        kopierenBtn = new Button("Kopieren", VaadinIcon.COPY.create(), e -> kopieren());
+        kopierenBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        kopierenBtn.setEnabled(false);
+
         loeschenBtn = new Button("Löschen", VaadinIcon.TRASH.create(), e -> loeschen());
         loeschenBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
         loeschenBtn.setEnabled(false);
@@ -134,12 +139,31 @@ public class UeberweisungenView extends VerticalLayout {
         sendenBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
         sendenBtn.setEnabled(false);
 
-        HorizontalLayout toolbar = new HorizontalLayout(neuBtn, bearbeitenBtn, loeschenBtn, sendenBtn);
+        HorizontalLayout toolbar = new HorizontalLayout(neuBtn, bearbeitenBtn, kopierenBtn, loeschenBtn, sendenBtn);
         toolbar.setAlignItems(FlexComponent.Alignment.CENTER);
         toolbar.setPadding(false);
         toolbar.setSpacing(true);
         toolbar.getStyle().set("padding-bottom", "var(--lumo-space-s)");
         return toolbar;
+    }
+
+    private void kopieren() {
+        if (selected == null) {
+            Notification.show("Bitte zuerst eine Überweisung auswählen.",
+                    2500, Notification.Position.MIDDLE);
+            return;
+        }
+        isNeu = true;
+        UeberweisungDataObject neu = new UeberweisungDataObject();
+        neu.setSenderIban(selected.getSenderIban());
+        neu.setEmpfaenger(selected.getEmpfaenger());
+        neu.setEmpfaengerBic(selected.getEmpfaengerBic());
+        neu.setEmpfaengerIban(selected.getEmpfaengerIban());
+        neu.setVerwendungszweck(selected.getVerwendungszweck());
+        //neu.setBetrag(selected.getBetrag());
+        neu.setStatus(UeberweisungStatus.NEW);
+        ladeFormular(neu);
+        editDialog.open();
     }
 
     // ── Grid ──────────────────────────────────────────────────────────────
@@ -675,6 +699,9 @@ public class UeberweisungenView extends VerticalLayout {
         }
         if (loeschenBtn != null) {
             loeschenBtn.setEnabled(hasSelection);
+        }
+        if (kopierenBtn != null) {
+            kopierenBtn.setEnabled(hasSelection);
         }
     }
 }
