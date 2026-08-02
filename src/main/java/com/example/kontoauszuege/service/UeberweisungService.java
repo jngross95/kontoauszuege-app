@@ -170,13 +170,14 @@ public class UeberweisungService {
         }
 
         return connection.UeberweisungAusfuehren(
-                normalize(ueberweisung.getSenderIban()),
-                ueberweisung.getEmpfaenger(),
-                empfaengerBic,
-                empfaengerIban,
-                betrag,
-                null,
-                ueberweisung.getVerwendungszweck());
+            normalize(ueberweisung.getSenderIban()),
+            ueberweisung.getEmpfaenger(),
+            empfaengerBic,
+            empfaengerIban,
+            betrag,
+            null,
+            ueberweisung.getVerwendungszweck(),
+            ueberweisung.isInstantPayment());
     }
 
     private String normalize(String value) {

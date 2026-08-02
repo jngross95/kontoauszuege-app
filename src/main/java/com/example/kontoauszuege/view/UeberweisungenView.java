@@ -22,6 +22,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import org.kapott.hbci.manager.HBCIUtils;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 // NumberRenderer import removed (unused)
@@ -55,6 +56,7 @@ public class UeberweisungenView extends VerticalLayout {
     private final TextField        empfaengerIbanField = new TextField("Empfänger-IBAN");
     private final TextField        empfaengerBicField = new TextField("Empfänger-BIC");
     private final TextField        betragField        = new TextField("Betrag (€)");
+    private final Checkbox         instantCheckbox    = new Checkbox("Echtzeit (SEPA Instant)");
 
     private List<BankAccountDataObject> senderItems = List.of();
     private List<EmpfaengerInfo> bekannteEmpfaenger = List.of();
@@ -449,6 +451,8 @@ public class UeberweisungenView extends VerticalLayout {
         empfaengerIbanField.getElement().setAttribute("autocapitalize", "off");
         form.add(verwendungszweck);
         form.setColspan(verwendungszweck, 4);
+        form.add(instantCheckbox);
+        form.setColspan(instantCheckbox, 4);
         form.add(betragField);
         empfaengerBicField.getElement().setAttribute("spellcheck", "false");
         empfaengerBicField.getElement().setAttribute("autocorrect", "off");
@@ -592,6 +596,7 @@ public class UeberweisungenView extends VerticalLayout {
         selected.setEmpfaengerBic(empfaengerBicField.getValue());
         selected.setEmpfaengerIban(empfaengerIbanField.getValue());
         selected.setVerwendungszweck(verwendungszweck.getValue());
+        selected.setInstantPayment(instantCheckbox.getValue());
         String betragText = betragField.getValue().trim().replace(",", ".");
         try {
             BigDecimal amt = betragText.isEmpty() ? BigDecimal.ZERO : new BigDecimal(betragText);
@@ -644,6 +649,8 @@ public class UeberweisungenView extends VerticalLayout {
         empfaengerField.setInvalid(false);
         empfaengerIbanField.setInvalid(false);
         empfaengerIbanField.setErrorMessage("");
+        instantCheckbox.setValue(u.isInstantPayment());
+        instantCheckbox.setInvalid(false);
     }
 
     private void clearFormular() {
@@ -659,6 +666,8 @@ public class UeberweisungenView extends VerticalLayout {
         empfaengerField.setInvalid(false);
         empfaengerIbanField.setInvalid(false);
         empfaengerIbanField.setErrorMessage("");
+        instantCheckbox.clear();
+        instantCheckbox.setInvalid(false);
     }
 
     private Image senderIcon(BankAccountDataObject konto) {

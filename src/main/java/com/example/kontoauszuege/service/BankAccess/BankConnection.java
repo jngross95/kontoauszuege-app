@@ -469,7 +469,7 @@ public class BankConnection implements AutoCloseable {
         return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
-    public String  UeberweisungAusfuehren(
+        public String  UeberweisungAusfuehren(
             String iban,
 
             String dstName,
@@ -477,7 +477,8 @@ public class BankConnection implements AutoCloseable {
             String dstIban,
             BigDecimal btgValue,
             String endToEndId,
-            String usage) throws Exception {
+            String usage,
+            boolean instant) throws Exception {
 
         try {
             if (isTestBank())
@@ -485,7 +486,7 @@ public class BankConnection implements AutoCloseable {
 
             var src = getKonto(iban);
 
-            HBCIJob<?> umsatzJob = handle.newJob("UebSEPA");
+            HBCIJob<?> umsatzJob = handle.newJob(instant ? "InstUebSEPA" : "UebSEPA");
 
             var bic = info.getBic();
             //src.name = HBCIProperties.replace(src.name,HBCIProperties.TEXT_REPLACEMENTS_SEPA);

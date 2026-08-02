@@ -14,6 +14,7 @@ public class UeberweisungDataObject extends DataObject {
     private String empfaengerBic;
     private String verwendungszweck;
     private BigDecimal betrag;
+    private boolean instantPayment = false;
 
     public UeberweisungDataObject() {
     }
@@ -49,4 +50,7 @@ public class UeberweisungDataObject extends DataObject {
 
     public BigDecimal getBetrag()                    { return betrag; }
     public void       setBetrag(BigDecimal betrag)   { this.betrag = betrag; }
+
+    public boolean isInstantPayment() { return instantPayment; }
+    public void setInstantPayment(boolean instantPayment) { this.instantPayment = instantPayment; }
 }
