@@ -9,7 +9,7 @@ mvn spring-boot:run
 
 # production build
 mvn clean package -Dvaadin.productionMode=true -Pproduction
-target/start.sh
+start.sh
 
 String dstName,
             String dstBic,
