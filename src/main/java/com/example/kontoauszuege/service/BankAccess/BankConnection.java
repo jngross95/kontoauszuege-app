@@ -391,6 +391,9 @@ public class BankConnection implements AutoCloseable {
                 }
             }
             kb.Verwendungszweck +=  sbusage.toString();
+
+            //name2+name ..
+            //System.out.println("name = "+buchung.other.name+"  ;;   name2 = "+buchung.other.name2);
         }
 
         System.out.println("------------- Kontoauszüge holen erfolgreich  --------------- ");
