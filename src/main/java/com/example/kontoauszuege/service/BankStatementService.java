@@ -66,9 +66,9 @@ public class BankStatementService {
                     .collect(java.util.stream.Collectors.toList());
         }
 
-        Set<String> vorhandeneKeys = new HashSet<>();
+        HashMap<String, BankStatementDataObject> vorhandeneKeys = new HashMap<String, BankStatementDataObject>();
         for (BankStatementDataObject statement : bestehendeStatements) {
-            vorhandeneKeys.add(buildStatementKey(statement));
+            vorhandeneKeys.put(buildStatementKey(statement), statement);
         }
 
         Map<String, BankContactDataObject> kontaktNachBic = new HashMap<>();
@@ -122,7 +122,7 @@ public class BankStatementService {
                     for (KontoBuchung buchung : buchungen) {
                         BankStatementDataObject statement = toDataObject(iban, buchung);
                         String key = buildStatementKey(statement);
-                        if (vorhandeneKeys.contains(key)) {
+                        if (vorhandeneKeys.containsKey(key)) {
                             continue;
                         }
 
