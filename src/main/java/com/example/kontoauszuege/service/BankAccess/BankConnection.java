@@ -361,6 +361,10 @@ public class BankConnection implements AutoCloseable {
                     kb.Empfaenger = buchung.other.name;
                 }
 
+                if(buchung.other.name2 != null) {
+                    kb.Empfaenger2 = buchung.other.name2;
+                }
+
                 if(buchung.other.bic != null) {
                     kb.EmpfaengerBLZ = buchung.other.bic;
                 }

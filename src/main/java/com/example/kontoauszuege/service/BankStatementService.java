@@ -142,6 +142,7 @@ public class BankStatementService {
         statement.setWertstellungsdatum(buchung.Wertstellungsdatum);
         statement.setGeschaeftsvorfall(defaultString(buchung.Geschaeftsvorfall));
         statement.setEmpfaenger(defaultString(buchung.Empfaenger));
+        statement.setEmpfaenger2(defaultString(buchung.Empfaenger2));
         statement.setEmpfaengerKontoNr(defaultString(buchung.EmpfaengerKontoNr));
         statement.setEmpfaengerBLZ(defaultString(buchung.EmpfaengerBLZ));
         statement.setBetrag(defaultBigDecimal(buchung.Betrag));

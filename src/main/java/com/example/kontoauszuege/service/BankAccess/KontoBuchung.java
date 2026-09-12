@@ -8,6 +8,7 @@ public class KontoBuchung {
     public Date Wertstellungsdatum=new Date();
     public String Geschaeftsvorfall ="";
     public String Empfaenger="";
+    public String Empfaenger2="";
     public String EmpfaengerKontoNr="";
     public String EmpfaengerBLZ="";
     public BigDecimal Betrag = new BigDecimal(0);

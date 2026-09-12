@@ -13,6 +13,7 @@ public class BankStatementDataObject extends DataObject {
     private Date wertstellungsdatum = new Date();
     private String geschaeftsvorfall = "";
     private String empfaenger = "";
+    private String empfaenger2 = "";
     private String empfaengerKontoNr = "";
     private String empfaengerBLZ = "";
     private BigDecimal betrag = new BigDecimal(0);
@@ -57,6 +58,14 @@ public class BankStatementDataObject extends DataObject {
 
     public void setEmpfaenger(String empfaenger) {
         this.empfaenger = empfaenger;
+    }
+
+    public String getEmpfaenger2() {
+        return empfaenger2;
+    }
+
+    public void setEmpfaenger2(String empfaenger2) {
+        this.empfaenger2 = empfaenger2;
     }
 
     public String getEmpfaengerKontoNr() {
