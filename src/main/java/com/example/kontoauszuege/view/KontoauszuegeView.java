@@ -319,8 +319,8 @@ public class KontoauszuegeView extends VerticalLayout {
             layout.setPadding(false);
             layout.setSpacing(false);
             layout.getStyle().set("min-width", "0");
-            if (stmt.getEmpfaenger() != null && !stmt.getEmpfaenger().isBlank()) {
-                layout.add(new Span(stmt.getEmpfaenger()));
+            if (stmt.getEmpfaengerUI() != null && !stmt.getEmpfaengerUI().isBlank()) {
+                layout.add(new Span(stmt.getEmpfaengerUI()));
             }
             if (stmt.getEmpfaengerKontoNr() != null && !stmt.getEmpfaengerKontoNr().isBlank()) {
                 Span ibanSpan = new Span(stmt.getEmpfaengerKontoNr());
@@ -333,8 +333,8 @@ public class KontoauszuegeView extends VerticalLayout {
                 .setHeader("Empfänger")
                 .setSortable(true)
                 .setComparator((s1, s2) -> {
-                    String n1 = s1.getEmpfaenger() != null ? s1.getEmpfaenger() : "";
-                    String n2 = s2.getEmpfaenger() != null ? s2.getEmpfaenger() : "";
+                    String n1 = s1.getEmpfaengerUI() != null ? s1.getEmpfaengerUI() : "";
+                    String n2 = s2.getEmpfaengerUI() != null ? s2.getEmpfaengerUI() : "";
                     return n1.compareToIgnoreCase(n2);
                 })
                 .setResizable(true)
@@ -387,7 +387,7 @@ public class KontoauszuegeView extends VerticalLayout {
     private void ladeKontoauszuege(String filter) {
         var liste = service.getAllStatements().stream()
                 .filter(s -> filter == null || filter.isBlank() || 
-                        (s.getEmpfaenger() != null && s.getEmpfaenger().toLowerCase().contains(filter.toLowerCase())) ||
+                        (s.getEmpfaengerUI() != null && s.getEmpfaengerUI().toLowerCase().contains(filter.toLowerCase())) ||
                         (s.getVerwendungszweck() != null && s.getVerwendungszweck().toLowerCase().contains(filter.toLowerCase())))
                 .toList();
         if (aktiveKontoIban != null && !aktiveKontoIban.isBlank()) {

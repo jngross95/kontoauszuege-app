@@ -68,6 +68,14 @@ public class BankStatementDataObject extends DataObject {
         this.empfaenger2 = empfaenger2;
     }
 
+    public String getEmpfaengerUI() {
+         var ret = getEmpfaenger2();
+         if (ret == null || ret.isEmpty()) {
+             ret = getEmpfaenger();
+         }
+         return ret;
+    }
+
     public String getEmpfaengerKontoNr() {
         return empfaengerKontoNr;
     }
