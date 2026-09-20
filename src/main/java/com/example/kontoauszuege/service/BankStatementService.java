@@ -28,6 +28,7 @@ public class BankStatementService {
     private final DataAccessService dataAccessService;
     private final BankAccountService bankAccountService;
     private final BankContactService bankContactService;
+    private static final String DATE_FORMAT = "dd.MM.yyyy";
 
     public BankStatementService(DataAccessService dataAccessService,
                                 BankAccountService bankAccountService,
@@ -169,6 +170,62 @@ public class BankStatementService {
             deleteStatementsByIban(bankAccountDataObject.getIban());
         }
         dataAccessService.delete(bankAccountDataObject);
+    }
+
+    /**
+     * Exports all statements to a spreadsheet file. The file is created in the system
+     * temp directory and named kontoauszuege-<GUID>.xlsx (content is XLSX).
+     * @return the created File
+     */
+    public java.io.File exportAllStatementsAsSpreadsheet() throws Exception {
+        List<BankStatementDataObject> statements = getAllStatements();
+
+        String uuid = java.util.UUID.randomUUID().toString();
+        String filename = "kontoauszuege-" + uuid + ".xlsx";
+        String tmpdir = System.getProperty("java.io.tmpdir");
+        java.io.File outFile = new java.io.File(tmpdir, filename);
+
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
+            var sheet = wb.createSheet("Kontoauszuege");
+
+            // header
+            var header = sheet.createRow(0);
+            String[] cols = new String[]{"IBAN","Buchungsdatum","Wertstellungsdatum","Geschäftsvorfall","Empfänger","EmpfängerKontoNr","EmpfängerBLZ","Betrag","Verwendungszweck","Saldo"};
+            for (int i = 0; i < cols.length; i++) {
+                header.createCell(i).setCellValue(cols[i]);
+            }
+
+            java.text.SimpleDateFormat df = new java.text.SimpleDateFormat(DATE_FORMAT);
+
+            int rowIdx = 1;
+            for (BankStatementDataObject s : statements) {
+                var row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(s.getIban() != null ? s.getIban() : "");
+                row.createCell(1).setCellValue(s.getBuchungsdatum() != null ? df.format(s.getBuchungsdatum()) : "");
+                row.createCell(2).setCellValue(s.getWertstellungsdatum() != null ? df.format(s.getWertstellungsdatum()) : "");
+                row.createCell(3).setCellValue(s.getGeschaeftsvorfall() != null ? s.getGeschaeftsvorfall() : "");
+                row.createCell(4).setCellValue(s.getEmpfaengerUI() != null ? s.getEmpfaengerUI() : "");
+                row.createCell(5).setCellValue(s.getEmpfaengerKontoNr() != null ? s.getEmpfaengerKontoNr() : "");
+                row.createCell(6).setCellValue(s.getEmpfaengerBLZ() != null ? s.getEmpfaengerBLZ() : "");
+                row.createCell(7).setCellValue(s.getBetrag() != null ? s.getBetrag().toPlainString() : "0");
+                row.createCell(8).setCellValue(s.getVerwendungszweck() != null ? s.getVerwendungszweck() : "");
+                row.createCell(9).setCellValue(s.getSaldo() != null ? s.getSaldo().toPlainString() : "0");
+            }
+
+            // autosize columns (best effort)
+            for (int i = 0; i < cols.length; i++) {
+                try {
+                    sheet.autoSizeColumn(i);
+                } catch (Exception ignored) {
+                }
+            }
+
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(outFile)) {
+                wb.write(fos);
+            }
+        }
+
+        return outFile;
     }
 
     private String buildStatementKey(BankStatementDataObject statement) {

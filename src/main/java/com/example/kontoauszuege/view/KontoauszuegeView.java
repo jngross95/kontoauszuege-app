@@ -220,6 +220,33 @@ public class KontoauszuegeView extends VerticalLayout {
         });
 
         HorizontalLayout left = new HorizontalLayout(kontoSelect, alleHolenButton);
+        // Export button: exports all statements via service to a spreadsheet file (.xlsx)
+        Button exportButton = new Button("Exportieren", VaadinIcon.DOWNLOAD.create());
+        exportButton.addClickListener(e -> {
+            try {
+                final com.vaadin.flow.component.UI ui = com.vaadin.flow.component.UI.getCurrent();
+                Thread bg = new Thread(() -> {
+                    try {
+                        java.io.File out = service.exportAllStatementsAsSpreadsheet();
+                        ui.access(() -> {
+                            Notification.show("Export abgeschlossen: " + out.getAbsolutePath(), 8000, Notification.Position.MIDDLE)
+                                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                        });
+                    } catch (Exception ex) {
+                        ui.access(() -> {
+                            Notification error = Notification.show("Fehler beim Export: " + ex.getMessage(), 8000, Notification.Position.MIDDLE);
+                            error.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                        });
+                    }
+                });
+                bg.setDaemon(true);
+                bg.start();
+            } catch (Exception ex) {
+                Notification error = Notification.show("Fehler beim Starten des Exports: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+                error.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+        left.add(exportButton);
         left.setAlignItems(Alignment.BASELINE);
 
         HorizontalLayout toolbar = new HorizontalLayout(left, suchfeld);
