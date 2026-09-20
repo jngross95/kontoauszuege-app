@@ -246,6 +246,11 @@ public class BankStatementService {
 
             java.text.SimpleDateFormat df = new java.text.SimpleDateFormat(DATE_FORMAT);
 
+            // create a numeric cell style for amounts to ensure numeric cells (no leading apostrophe in LibreOffice)
+            var dataFormat = wb.createDataFormat();
+            var numberStyle = wb.createCellStyle();
+            numberStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
             int rowIdx = 1;
             for (BankStatementDataObject s : statements) {
                 var row = sheet.createRow(rowIdx++);
@@ -256,9 +261,24 @@ public class BankStatementService {
                 row.createCell(4).setCellValue(s.getEmpfaengerUI() != null ? s.getEmpfaengerUI() : "");
                 row.createCell(5).setCellValue(s.getEmpfaengerKontoNr() != null ? s.getEmpfaengerKontoNr() : "");
                 row.createCell(6).setCellValue(s.getEmpfaengerBLZ() != null ? s.getEmpfaengerBLZ() : "");
-                row.createCell(7).setCellValue(s.getBetrag() != null ? s.getBetrag().toPlainString() : "0");
+
+                var amountCell = row.createCell(7);
+                if (s.getBetrag() != null) {
+                    amountCell.setCellValue(s.getBetrag().doubleValue());
+                } else {
+                    amountCell.setCellValue(0.0);
+                }
+                amountCell.setCellStyle(numberStyle);
+
                 row.createCell(8).setCellValue(s.getVerwendungszweck() != null ? s.getVerwendungszweck() : "");
-                row.createCell(9).setCellValue(s.getSaldo() != null ? s.getSaldo().toPlainString() : "0");
+
+                var saldoCell = row.createCell(9);
+                if (s.getSaldo() != null) {
+                    saldoCell.setCellValue(s.getSaldo().doubleValue());
+                } else {
+                    saldoCell.setCellValue(0.0);
+                }
+                saldoCell.setCellStyle(numberStyle);
             }
 
             // autosize columns (best effort)
