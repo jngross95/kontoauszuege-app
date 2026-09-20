@@ -11,6 +11,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.notification.Notification;
@@ -224,25 +226,28 @@ public class KontoauszuegeView extends VerticalLayout {
         Button exportButton = new Button("Exportieren", VaadinIcon.DOWNLOAD.create());
         exportButton.addClickListener(e -> {
             try {
-                final com.vaadin.flow.component.UI ui = com.vaadin.flow.component.UI.getCurrent();
-                Thread bg = new Thread(() -> {
-                    try {
-                        java.io.File out = service.exportAllStatementsAsSpreadsheet();
-                        ui.access(() -> {
-                            Notification.show("Export abgeschlossen: " + out.getAbsolutePath(), 8000, Notification.Position.MIDDLE)
-                                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                        });
-                    } catch (Exception ex) {
-                        ui.access(() -> {
-                            Notification error = Notification.show("Fehler beim Export: " + ex.getMessage(), 8000, Notification.Position.MIDDLE);
-                            error.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                        });
-                    }
-                });
-                bg.setDaemon(true);
-                bg.start();
+                java.io.File out = service.exportAllStatementsAsSpreadsheet();
+                try {
+                    StreamResource resource = new StreamResource(out.getName(), (com.vaadin.flow.server.InputStreamFactory) () -> {
+                        try {
+                            return new java.io.FileInputStream(out);
+                        } catch (java.io.FileNotFoundException fnf) {
+                            return new java.io.ByteArrayInputStream(("Fehler beim Lesen der Datei: " + fnf.getMessage()).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                        }
+                    });
+                    Anchor download = new Anchor(resource, "");
+                    download.getElement().setAttribute("download", true);
+                    download.getStyle().set("display", "none");
+                    add(download);
+                    download.getElement().executeJs("this.click()");
+                    Notification.show("Export gestartet und Download initiiert", 5000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                } catch (Exception ex2) {
+                    Notification error = Notification.show("Download vorbereiten fehlgeschlagen: " + ex2.getMessage(), 8000, Notification.Position.MIDDLE);
+                    error.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                }
             } catch (Exception ex) {
-                Notification error = Notification.show("Fehler beim Starten des Exports: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+                Notification error = Notification.show("Export fehlgeschlagen: " + ex.getMessage(), 8000, Notification.Position.MIDDLE);
                 error.addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         });
