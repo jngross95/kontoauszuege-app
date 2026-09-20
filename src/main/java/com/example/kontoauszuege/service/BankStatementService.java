@@ -226,8 +226,8 @@ public class BankStatementService {
      * temp directory and named kontoauszuege-<GUID>.xlsx (content is XLSX).
      * @return the created File
      */
-    public java.io.File exportAllStatementsAsSpreadsheet() throws Exception {
-        List<BankStatementDataObject> statements = getAllStatements();
+    public java.io.File exportStatementsAsSpreadsheet(String filter, String activeIban) throws Exception {
+        List<BankStatementDataObject> statements = getStatements(filter, activeIban);
 
         String uuid = java.util.UUID.randomUUID().toString();
         String filename = "kontoauszuege-" + uuid + ".xlsx";

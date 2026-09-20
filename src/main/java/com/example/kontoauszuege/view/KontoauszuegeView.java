@@ -226,7 +226,7 @@ public class KontoauszuegeView extends VerticalLayout {
         Button exportButton = new Button("Exportieren", VaadinIcon.DOWNLOAD.create());
         exportButton.addClickListener(e -> {
             try {
-                java.io.File out = service.exportAllStatementsAsSpreadsheet();
+                java.io.File out = service.exportStatementsAsSpreadsheet(suchfeld.getValue(), aktiveKontoIban);
                 try {
                     StreamResource resource = new StreamResource(out.getName(), (com.vaadin.flow.server.InputStreamFactory) () -> {
                         try {
