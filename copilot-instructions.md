@@ -16,3 +16,11 @@ Verhalten bei Antworten:
 Pfad zur Konfiguration: `.vscode/mcp.json`
 
 Wenn du Anpassungen möchtest (z. B. harte Priorisierung einer lokalen URL), sag Bescheid.
+
+**Build-Hinweis**
+
+- **Bitte ausführen:** Führe für einen Produktions-Build das folgende Maven-Kommando aus:
+
+	mvn clean package -Dvaadin.productionMode=true -Pproduction
+
+	Dieser Befehl erstellt das Artefakt im Produktionsmodus (Vaadin optimiert) und verwendet das `production`-Profil.

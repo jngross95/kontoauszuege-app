@@ -417,45 +417,8 @@ public class KontoauszuegeView extends VerticalLayout {
     }
 
     private void ladeKontoauszuege(String filter) {
-        // Support multiple search terms combined with '&&' (AND semantics).
-        List<String> tokens;
-        if (filter == null || filter.isBlank()) {
-            tokens = List.of();
-        } else {
-            tokens = java.util.Arrays.stream(filter.split("&&"))
-                    .map(String::trim)
-                    .filter(t -> !t.isBlank())
-                    .map(String::toLowerCase)
-                    .toList();
-        }
-
-        var liste = service.getAllStatements().stream()
-                .filter(s -> {
-                    if (tokens.isEmpty()) return true;
-                    String datum = "";
-                    if (s.getWertstellungsdatum() != null) {
-                        try {
-                            datum = new java.text.SimpleDateFormat(DATE_FORMAT).format(s.getWertstellungsdatum()).toLowerCase();
-                        } catch (Exception ignored) {
-                        }
-                    }
-                    String empfaenger = s.getEmpfaengerUI() == null ? "" : s.getEmpfaengerUI().toLowerCase();
-                    String verwendung = s.getVerwendungszweck() == null ? "" : s.getVerwendungszweck().toLowerCase();
-                    String str = datum+empfaenger + verwendung;
-                    // For AND semantics: every token must appear in at least one of the searchable fields
-                    for (String tok : tokens) {
-                        if (!str.contains(tok)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                })
-                .toList();
-        if (aktiveKontoIban != null && !aktiveKontoIban.isBlank()) {
-            liste = liste.stream()
-                    .filter(s -> Objects.equals(normalisiereIban(aktiveKontoIban), normalisiereIban(s.getIban())))
-                    .toList();
-        }
+        // Delegate filtering to business layer; pass UI filter string and optional IBAN
+        var liste = service.getStatements(filter, aktiveKontoIban);
         grid.setItems(liste);
     }
 

@@ -49,6 +49,55 @@ public class BankStatementService {
         return mutable;
     }
 
+    /**
+     * Returns statements filtered by a search filter and/or a specific IBAN.
+     * The filter supports multiple terms combined with '&&' (AND semantics).
+     * The searchable fields are: Wertstellungsdatum (formatted), Empfänger (UI) and Verwendungszweck.
+     */
+    public List<BankStatementDataObject> getStatements(String filter, String iban) {
+        List<String> tokens;
+        if (filter == null || filter.isBlank()) {
+            tokens = List.of();
+        } else {
+            tokens = java.util.Arrays.stream(filter.split("&&"))
+                    .map(String::trim)
+                    .filter(t -> !t.isBlank())
+                    .map(String::toLowerCase)
+                    .toList();
+        }
+
+        List<BankStatementDataObject> liste = getAllStatements().stream()
+                .filter(s -> {
+                    if (tokens.isEmpty()) return true;
+                    String datum = "";
+                    if (s.getWertstellungsdatum() != null) {
+                        try {
+                            datum = new java.text.SimpleDateFormat(DATE_FORMAT).format(s.getWertstellungsdatum()).toLowerCase();
+                        } catch (Exception ignored) {
+                        }
+                    }
+                    String empfaenger = s.getEmpfaengerUI() == null ? "" : s.getEmpfaengerUI().toLowerCase();
+                    String verwendung = s.getVerwendungszweck() == null ? "" : s.getVerwendungszweck().toLowerCase();
+                    String str = datum + empfaenger + verwendung;
+                    for (String tok : tokens) {
+                        if (!str.contains(tok)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                .toList();
+
+        if (iban != null && !iban.isBlank()) {
+            String norm = normalize(iban);
+            liste = liste.stream()
+                    .filter(s -> Objects.equals(norm, normalize(s.getIban())))
+                    .toList();
+        }
+
+        return liste;
+    }
+
     public BankStatementDataObject addStatement(BankStatementDataObject statement) {
         return dataAccessService.insert(statement);
     }
