@@ -496,6 +496,7 @@ public class UeberweisungenView extends VerticalLayout {
     private void neueUeberweisung() {
         isNeu = true;
         UeberweisungDataObject neu = new UeberweisungDataObject();
+        neu.setInstantPayment(true);
         ladeFormular(neu);
         editDialog.open();
     }
